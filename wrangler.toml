@@ -1,5 +1,40 @@
 name = "build-a-brand-app"
-compatibility_date = "2024-09-23"
+main = "src/index.js"
+compatibility_date = "2025-01-15"
 compatibility_flags = ["nodejs_compat"]
 
-pages_build_output_dir = ".vercel/output/static"
+# Static assets (CSS, client JS, images, favicon)
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+# D1 database — id filled in after Lisa adds D1:Edit to her API token, then:
+#   wrangler d1 create build-a-brand-db
+[[d1_databases]]
+binding = "DB"
+database_name = "build-a-brand-db"
+database_id = "a8e48ecc-1364-45dd-90e5-d89338bef43e"
+
+# KV — sessions
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "0fa2cc146d6b4f9f9806d7e3ee481e52"
+
+# Cloudflare Browser Rendering — used by /api/brand-guide to render PDF
+[browser]
+binding = "BROWSER"
+
+# Custom domain attaches after Lisa updates GoDaddy nameservers and the
+# photolilo.com zone moves from "pending" to "active" on her CF account.
+# [[routes]]
+# pattern = "brand.photolilo.com"
+# custom_domain = true
+
+[vars]
+APP_NAME = "Build a Brand"
+APP_BRAND = "LiLo Photography & Branding"
+APP_URL = "https://brand.photolilo.com"
+# Stripe price IDs (live)
+STRIPE_PRICE_COURSE = "price_1TRbrdILMmwtGFlFcNoHpguJ"
+STRIPE_PRICE_COURSE_COACHING = "price_1TRbrgILMmwtGFlF9sSCACmX"
+STRIPE_PRICE_UPSELL_CALL = "price_1TRfg0ILMmwtGFlFHoUHqZrf"

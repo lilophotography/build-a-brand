@@ -1,0 +1,135 @@
+/* PDF print styles — used by /brand-guide/print which is rendered through
+   Cloudflare Browser Rendering and captured as PDF. */
+
+@page {
+  size: A4;
+  margin: 0;
+}
+html, body {
+  background: var(--cream);
+  margin: 0;
+  padding: 0;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+body.page-print { font-family: var(--sans); }
+
+.pdf-page {
+  width: 210mm;
+  min-height: 297mm;
+  page-break-after: always;
+  page-break-inside: avoid;
+  position: relative;
+  box-sizing: border-box;
+}
+.pdf-page:last-child { page-break-after: auto; }
+
+/* Cover page */
+.pdf-cover {
+  background: var(--ink);
+  color: var(--white);
+  padding: 80mm 22mm 30mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.pdf-cover__eyebrow {
+  font-size: 9pt;
+  letter-spacing: 0.30em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin: 0 0 12mm;
+}
+.pdf-cover__title {
+  font-family: var(--serif);
+  font-size: 38pt;
+  line-height: 1.15;
+  color: var(--white);
+  margin: 0 0 12mm;
+  font-weight: 400;
+}
+.pdf-cover__sub {
+  font-size: 12pt;
+  color: rgba(255,255,255,0.7);
+  margin: 0 0 24mm;
+  max-width: 130mm;
+  line-height: 1.5;
+}
+.pdf-cover__divider {
+  width: 18mm;
+  height: 1px;
+  background: var(--gold);
+  margin: 0 0 12mm;
+}
+.pdf-cover__meta {
+  font-size: 9pt;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.10em;
+  margin: 0;
+}
+
+/* Section pages */
+.pdf-section {
+  background: var(--cream);
+  padding: 0 0 30mm;
+}
+.pdf-section__header {
+  background: var(--ink);
+  color: var(--white);
+  padding: 28mm 22mm 16mm;
+}
+.pdf-section__num {
+  font-size: 9pt;
+  letter-spacing: 0.22em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin: 0 0 6mm;
+}
+.pdf-section__title {
+  font-family: var(--serif);
+  font-size: 28pt;
+  color: var(--white);
+  margin: 0;
+  font-weight: 400;
+}
+.pdf-section__desc {
+  font-size: 11pt;
+  color: rgba(255,255,255,0.55);
+  margin: 4mm 0 0;
+  line-height: 1.5;
+  max-width: 130mm;
+}
+.pdf-section__body {
+  padding: 18mm 22mm;
+}
+.pdf-section__label {
+  font-size: 8pt;
+  letter-spacing: 0.22em;
+  color: var(--terracotta);
+  text-transform: uppercase;
+  margin: 0 0 6mm;
+  font-weight: 600;
+}
+.pdf-section__summary {
+  font-size: 11pt;
+  color: var(--ink);
+  line-height: 1.75;
+}
+.pdf-section__empty {
+  background: var(--cream-deep);
+  border-radius: 4mm;
+  padding: 8mm 10mm;
+  font-size: 11pt;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+.pdf-section__footer {
+  position: absolute;
+  bottom: 14mm;
+  left: 22mm;
+  right: 22mm;
+  font-size: 8pt;
+  letter-spacing: 0.18em;
+  color: var(--gold);
+  text-transform: uppercase;
+}

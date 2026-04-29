@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #1e293b;
+      --text-light: #64748b;
+      --border: #e2e8f0;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --green: #22c55e;
+      --red: #ef4444;
+      --orange: #f59e0b;
+      --purple: #8b5cf6;
+      --radius: 8px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* Login */
+    .login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    .login-box { background: var(--card); padding: 2rem; border-radius: var(--radius); box-shadow: 0 1px 3px rgba(0,0,0,.1); width: 100%; max-width: 400px; }
+    .login-box h1 { font-size: 1.25rem; margin-bottom: 1.5rem; text-align: center; }
+    .login-box input { width: 100%; padding: .6rem .8rem; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: .75rem; font-size: .9rem; }
+    .login-box button { width: 100%; padding: .7rem; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); cursor: pointer; font-size: .9rem; font-weight: 600; }
+    .login-box button:hover { background: var(--accent-hover); }
+    .login-error { color: var(--red); font-size: .85rem; margin-bottom: .5rem; text-align: center; }
+
+    /* Layout */
+    .app { display: none; }
+    .app.active { display: flex; min-height: 100vh; }
+    .sidebar { width: 220px; background: #1e293b; color: #fff; padding: 1.5rem 0; flex-shrink: 0; display: flex; flex-direction: column; }
+    .sidebar h2 { font-size: 1rem; padding: 0 1.25rem; margin-bottom: 1.5rem; opacity: .9; }
+    .sidebar a { display: block; padding: .6rem 1.25rem; color: #94a3b8; text-decoration: none; font-size: .9rem; transition: all .15s; }
+    .sidebar a:hover, .sidebar a.active { color: #fff; background: rgba(255,255,255,.08); }
+    .sidebar .spacer { flex: 1; }
+    .sidebar .logout-btn { padding: .6rem 1.25rem; color: #94a3b8; cursor: pointer; font-size: .85rem; border: none; background: none; text-align: left; }
+    .sidebar .logout-btn:hover { color: #fff; }
+    .main { flex: 1; padding: 1.5rem 2rem; overflow-y: auto; }
+
+    /* Stat Cards */
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-card { background: var(--card); padding: 1.25rem; border-radius: var(--radius); box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+    .stat-card .label { font-size: .8rem; color: var(--text-light); text-transform: uppercase; letter-spacing: .5px; }
+    .stat-card .value { font-size: 1.75rem; font-weight: 700; margin-top: .25rem; }
+    .stat-card .sub { font-size: .8rem; color: var(--text-light); margin-top: .25rem; }
+
+    /* Badges */
+    .badge { display: inline-block; padding: .15rem .5rem; border-radius: 999px; font-size: .75rem; font-weight: 600; }
+    .badge-free { background: #e2e8f0; color: #475569; }
+    .badge-paid { background: #dcfce7; color: #166534; }
+    .badge-vip { background: #ede9fe; color: #5b21b6; }
+    .badge-active { background: #dcfce7; color: #166534; }
+    .badge-deactivated { background: #fee2e2; color: #991b1b; }
+
+    /* Tables */
+    .table-wrap { background: var(--card); border-radius: var(--radius); box-shadow: 0 1px 2px rgba(0,0,0,.05); overflow: hidden; }
+    .table-header { display: flex; align-items: center; gap: .75rem; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .table-header h3 { font-size: 1rem; margin-right: auto; }
+    .search-input { padding: .4rem .75rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: .85rem; width: 220px; }
+    .filter-btn { padding: .35rem .7rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--card); cursor: pointer; font-size: .8rem; color: var(--text-light); }
+    .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn { padding: .4rem .85rem; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); cursor: pointer; font-size: .85rem; font-weight: 500; }
+    .btn:hover { background: var(--accent-hover); }
+    .btn-sm { padding: .25rem .5rem; font-size: .8rem; }
+    .btn-danger { background: var(--red); }
+    .btn-danger:hover { background: #dc2626; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: .65rem 1.25rem; text-align: left; font-size: .85rem; }
+    th { color: var(--text-light); font-weight: 600; font-size: .75rem; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--border); }
+    td { border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8fafc; }
+    .clickable { cursor: pointer; }
+    .pagination { display: flex; align-items: center; gap: .5rem; padding: .75rem 1.25rem; justify-content: center; }
+    .pagination button { padding: .3rem .6rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--card); cursor: pointer; font-size: .8rem; }
+    .pagination button:disabled { opacity: .4; cursor: default; }
+    .pagination span { font-size: .85rem; color: var(--text-light); }
+
+    /* Member Detail */
+    .detail-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+    .detail-header .back { cursor: pointer; font-size: 1.25rem; color: var(--text-light); text-decoration: none; }
+    .detail-header h2 { font-size: 1.25rem; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+    .detail-card { background: var(--card); padding: 1.25rem; border-radius: var(--radius); box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+    .detail-card h4 { font-size: .85rem; color: var(--text-light); margin-bottom: .75rem; text-transform: uppercase; letter-spacing: .5px; }
+    .detail-card .field { margin-bottom: .5rem; }
+    .detail-card .field-label { font-size: .75rem; color: var(--text-light); }
+    .detail-card .field-value { font-size: .9rem; }
+    .notes-area { width: 100%; min-height: 80px; padding: .5rem; border: 1px solid var(--border); border-radius: var(--radius); font-family: inherit; font-size: .85rem; resize: vertical; }
+    .detail-card select { padding: .3rem .5rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: .85rem; }
+    .activity-list { max-height: 300px; overflow-y: auto; }
+    .activity-item { padding: .5rem 0; border-bottom: 1px solid var(--border); font-size: .85rem; display: flex; justify-content: space-between; }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-time { color: var(--text-light); font-size: .75rem; }
+
+    /* Daily chart */
+    .chart { display: flex; align-items: flex-end; gap: 4px; height: 60px; margin-top: .5rem; }
+    .chart-bar { background: var(--accent); border-radius: 2px 2px 0 0; min-width: 14px; opacity: .7; }
+    .chart-bar:hover { opacity: 1; }
+
+    /* Invite modal */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 100; align-items: center; justify-content: center; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: var(--card); padding: 1.5rem; border-radius: var(--radius); width: 100%; max-width: 400px; }
+    .modal h3 { margin-bottom: 1rem; font-size: 1rem; }
+    .modal input, .modal select { width: 100%; padding: .5rem .75rem; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: .75rem; font-size: .85rem; }
+    .modal-actions { display: flex; gap: .5rem; justify-content: flex-end; }
+
+    /* Sub-tabs (for Settings view) */
+    .sub-tabs { display: flex; gap: .25rem; margin-bottom: 1.25rem; }
+    .sub-tab { padding: .4rem .85rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--card); cursor: pointer; font-size: .85rem; color: var(--text-light); }
+    .sub-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* Config form fields */
+    .field-group { margin-bottom: 1rem; }
+    .field-group label { display: block; font-size: .8rem; font-weight: 600; color: var(--text-light); margin-bottom: .3rem; text-transform: uppercase; letter-spacing: .5px; }
+    .field-group input[type="text"], .field-group input[type="url"], .field-group select { width: 100%; padding: .5rem .6rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: .9rem; }
+    .field-group textarea { width: 100%; min-height: 120px; padding: .6rem; border: 1px solid var(--border); border-radius: var(--radius); font-family: 'SF Mono', Monaco, monospace; font-size: .85rem; resize: vertical; line-height: 1.5; }
+    .field-group input[type="color"] { width: 50px; height: 35px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; padding: 2px; }
+    .field-group input[type="number"] { width: 120px; padding: .5rem .6rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: .9rem; }
+    .color-row { display: flex; align-items: center; gap: .75rem; margin-bottom: .75rem; }
+    .color-row label { margin-bottom: 0; min-width: 100px; }
+    .color-row .hex { font-size: .8rem; color: var(--text-light); font-family: monospace; }
+    .helper { font-size: .75rem; color: var(--text-light); margin-top: .25rem; }
+    .btn-row { display: flex; gap: .5rem; justify-content: flex-end; margin-top: .75rem; }
+    .btn-reset { padding: .4rem .85rem; background: none; color: var(--text-light); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; font-size: .85rem; }
+    .btn-reset:hover { color: var(--red); border-color: var(--red); }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .status-dot.active { background: var(--green); }
+    .status-dot.missing { background: var(--red); }
+    .status-item { display: flex; align-items: center; gap: .5rem; font-size: .85rem; color: var(--text); }
+    .sub-panel { display: none; }
+    .sub-panel.active { display: block; }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--text); color: #fff; padding: .75rem 1.25rem; border-radius: 6px; font-size: .9rem; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 200; }
+    .toast.show { opacity: 1; }
+    .toast.error { background: var(--red); }
+
+    /* Footer */
+    .footer { text-align: center; padding: 1rem; font-size: .75rem; color: var(--text-light); margin-top: auto; }
+    .footer a { color: var(--accent); text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+
+    /* Responsive */
+    
+    /* Sub-tabs (Settings view) */
+    .sub-tabs { display: flex; gap: 0.25rem; margin-bottom: 1.25rem; }
+    .sub-tab { padding: .4rem .85rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--card); cursor: pointer; font-size: .85rem; color: var(--text-light); }
+    .sub-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    /* Config form elements */
+    .field-group { margin-bottom: 1rem; }
+    .field-group label { display: block; font-size: .8rem; font-weight: 600; color: var(--text-light); margin-bottom: .3rem; text-transform: uppercase; letter-spacing: .5px; }
+    .field-group input[type="text"], .field-group input[type="url"], .field-group select { width: 100%; padding: .5rem .6rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: .9rem; }
+    .field-group textarea { width: 100%; min-height: 120px; padding: .6rem; border: 1px solid var(--border); border-radius: var(--radius); font-family: 'SF Mono', Monaco, monospace; font-size: .85rem; resize: vertical; line-height: 1.5; }
+    .field-group input[type="color"] { width: 50px; height: 35px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; padding: 2px; }
+    .field-group input[type="number"] { width: 120px; padding: .5rem .6rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: .9rem; }
+    .color-row { display: flex; align-items: center; gap: .75rem; margin-bottom: .75rem; }
+    .color-row label { margin-bottom: 0; min-width: 100px; }
+    .color-row .hex { font-size: .8rem; color: var(--text-light); font-family: monospace; }
+    .helper { font-size: .75rem; color: var(--text-light); margin-top: .25rem; }
+    .var-list { font-size: .75rem; color: var(--text-light); margin-top: .5rem; padding: .5rem; background: #f8fafc; border-radius: var(--radius); }
+    .var-list code { background: var(--border); padding: .1rem .3rem; border-radius: 2px; font-size: .75rem; }
+    .btn-row { display: flex; gap: .5rem; justify-content: flex-end; margin-top: .75rem; }
+    .btn-save { padding: .4rem .85rem; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); cursor: pointer; font-size: .85rem; font-weight: 500; }
+    .btn-save:hover { background: var(--accent-hover); }
+    .btn-reset { padding: .4rem .85rem; background: none; color: var(--text-light); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; font-size: .85rem; }
+    .btn-reset:hover { color: var(--red); border-color: var(--red); }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .status-dot.active { background: var(--green); }
+    .status-dot.missing { background: var(--red); }
+    .status-item { display: flex; align-items: center; gap: .5rem; font-size: .85rem; color: var(--text); }
+    /* Toast */
+    .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--text); color: #fff; padding: .75rem 1.25rem; border-radius: 6px; font-size: .9rem; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 200; }
+    .toast.show { opacity: 1; }
+    .toast.error { background: var(--red); }
+@media (max-width: 768px) {
+      .sidebar { width: 60px; }
+      .sidebar h2, .sidebar a span { display: none; }
+      .main { padding: 1rem; }
+      .detail-grid { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+    </style>
+</head>
+<body>
+
+
+<!-- Login Screen -->
+<div id="login-screen" class="login-wrap">
+  <div class="login-box">
+    <h1>Admin Login</h1>
+    <div id="login-error" class="login-error" style="display:none"></div>
+    <input type="email" id="login-email" placeholder="Email" autocomplete="email">
+    <input type="password" id="login-password" placeholder="Password" autocomplete="current-password">
+    <button onclick="doLogin()">Sign In</button>
+  </div>
+</div>
+
+<!-- App Shell -->
+<div id="app" class="app">
+  <nav class="sidebar">
+    <h2 id="app-title">Admin</h2>
+    <a href="#" onclick="showView('dashboard')" data-view="dashboard">Dashboard</a>
+    <a href="#" onclick="showView('members')" data-view="members">Members</a>
+    <a href="#" onclick="showView('revenue')" data-view="revenue">Revenue</a>
+    <a href="#" onclick="showView('activity')" data-view="activity">Activity</a>
+    <a href="#" onclick="showView('settings')" data-view="settings">Settings</a>
+    <a href="#" onclick="showView('payments')" data-view="payments">AI &amp; Payments</a>
+    <div class="spacer"></div>
+    <button class="logout-btn" onclick="doLogout()">Log Out</button>
+  </nav>
+  <div class="main">
+    <!-- Dashboard View -->
+    <div id="view-dashboard" class="view">
+      <h2 style="margin-bottom:1rem">Dashboard</h2>
+      <div class="stats" id="stat-cards"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="detail-card">
+          <h4>Daily Active Users (14 days)</h4>
+          <div class="chart" id="dau-chart"></div>
+        </div>
+        <div class="detail-card">
+          <h4>Recent Activity</h4>
+          <div class="activity-list" id="recent-activity"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Members View -->
+    <div id="view-members" class="view" style="display:none">
+      <div class="table-wrap">
+        <div class="table-header">
+          <h3>Members</h3>
+          <input class="search-input" id="member-search" placeholder="Search name or email..." oninput="debounceSearch()">
+          <button class="filter-btn active" data-filter="" onclick="setFilter(this)">All</button>
+          <button class="filter-btn" data-filter="free" onclick="setFilter(this)">Free</button>
+          <button class="filter-btn" data-filter="paid" onclick="setFilter(this)">Paid</button>
+          <button class="filter-btn" data-filter="vip" onclick="setFilter(this)">VIP</button>
+          <button class="btn" onclick="showInviteModal()">Invite Member</button>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Name</th><th>Email</th><th>Tier</th><th>Status</th><th>Last Active</th><th>Total Paid</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="members-tbody"></tbody>
+        </table>
+        <div class="pagination" id="members-pagination"></div>
+      </div>
+    </div>
+
+    <!-- Member Detail View -->
+    <div id="view-member-detail" class="view" style="display:none">
+      <div class="detail-header">
+        <a class="back" onclick="showView('members')">&larr;</a>
+        <h2 id="detail-name"></h2>
+        <span id="detail-tier-badge" class="badge"></span>
+        <span id="detail-status-badge" class="badge"></span>
+      </div>
+      <div class="detail-grid">
+        <div class="detail-card">
+          <h4>Profile</h4>
+          <div id="detail-profile"></div>
+        </div>
+        <div class="detail-card">
+          <h4>Subscription</h4>
+          <div id="detail-subscription"></div>
+        </div>
+        <div class="detail-card">
+          <h4>Admin Notes</h4>
+          <textarea class="notes-area" id="detail-notes" onblur="saveNotes()"></textarea>
+        </div>
+        <div class="detail-card">
+          <h4>Quick Actions</h4>
+          <div id="detail-actions"></div>
+        </div>
+        <div class="detail-card">
+          <h4>Progress</h4>
+          <div id="detail-progress"></div>
+        </div>
+        <div class="detail-card">
+          <h4>Payment History</h4>
+          <div id="detail-payments"></div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-header"><h3>Activity Timeline</h3></div>
+        <div class="activity-list" id="detail-activity" style="padding:0 1.25rem 1rem"></div>
+      </div>
+    </div>
+
+    <!-- Revenue View -->
+    <div id="view-revenue" class="view" style="display:none">
+      <h2 style="margin-bottom:1rem">Revenue</h2>
+      <div class="stats" id="revenue-stats"></div>
+      <div class="table-wrap" style="margin-top:1rem">
+        <div class="table-header"><h3>Paying Members</h3></div>
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Plan</th><th>Amount</th></tr></thead>
+          <tbody id="revenue-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Activity View -->
+    <div id="view-activity" class="view" style="display:none">
+      <div class="table-wrap">
+        <div class="table-header">
+          <h3>Activity Log</h3>
+          <button class="btn btn-sm btn-danger" onclick="cleanupActivity()">Purge 90+ days</button>
+        </div>
+        <table>
+          <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Path</th></tr></thead>
+          <tbody id="activity-tbody"></tbody>
+        </table>
+        <div class="pagination" id="activity-pagination"></div>
+      </div>
+    </div>
+
+
+    <!-- Settings View -->
+    <div id="view-settings" class="view" style="display:none">
+      <h2 style="margin-bottom:1rem">Settings</h2>
+      <div class="sub-tabs">
+        <button class="sub-tab active" data-subtab="prompts" onclick="switchSubTab('prompts')">Prompts</button>
+        <button class="sub-tab" data-subtab="branding" onclick="switchSubTab('branding')">Branding</button>
+        <button class="sub-tab" data-subtab="copy" onclick="switchSubTab('copy')">Copy</button>
+      </div>
+      <div class="sub-panel" id="sub-prompts">
+        <div id="prompts-container"><p style="color:var(--text-light); padding: 1rem 0;">Loading prompts...</p></div>
+      </div>
+      <div class="sub-panel" id="sub-branding" style="display:none">
+        <div class="detail-card" style="margin-bottom:1rem">
+          <h4 style="margin-bottom:1rem">Brand Identity</h4>
+          <div class="field-group"><label>App Name</label><input type="text" id="brand-app_name" data-cat="branding" data-key="app_name"></div>
+          <div class="field-group"><label>Tagline</label><input type="text" id="brand-tagline" data-cat="branding" data-key="tagline"></div>
+          <div class="field-group"><label>Logo URL</label><input type="url" id="brand-logo_url" data-cat="branding" data-key="logo_url" placeholder="https://..."><p class="helper">Direct link to your logo image (PNG or SVG recommended)</p></div>
+        </div>
+        <div class="detail-card" style="margin-bottom:1rem">
+          <h4 style="margin-bottom:1rem">Colors</h4>
+          <div class="color-row"><label>Primary</label><input type="color" id="brand-primary_color" data-cat="branding" data-key="primary_color"><span class="hex" id="hex-primary_color"></span></div>
+          <div class="color-row"><label>Accent</label><input type="color" id="brand-accent_color" data-cat="branding" data-key="accent_color"><span class="hex" id="hex-accent_color"></span></div>
+          <div class="color-row"><label>Background</label><input type="color" id="brand-background_color" data-cat="branding" data-key="background_color"><span class="hex" id="hex-background_color"></span></div>
+          <div class="color-row"><label>Text</label><input type="color" id="brand-text_color" data-cat="branding" data-key="text_color"><span class="hex" id="hex-text_color"></span></div>
+        </div>
+        <div class="detail-card" style="margin-bottom:1rem">
+          <h4 style="margin-bottom:1rem">Typography</h4>
+          <div class="field-group"><label>Font Family</label><input type="text" id="brand-font_family" data-cat="branding" data-key="font_family" placeholder="Inter, sans-serif"></div>
+        </div>
+        <div class="btn-row"><button class="btn-reset" onclick="resetCategory('branding')">Reset All to Default</button><button class="btn-save" onclick="saveBranding()">Save Branding</button></div>
+      </div>
+      <div class="sub-panel" id="sub-copy" style="display:none">
+        <div class="detail-card" style="margin-bottom:1rem">
+          <h4 style="margin-bottom:1rem">Landing Page</h4>
+          <div class="field-group"><label>Page Title</label><input type="text" id="copy-page_title" data-cat="copy" data-key="page_title"></div>
+          <div class="field-group"><label>Brand Description</label><textarea id="copy-brand_description" data-cat="copy" data-key="brand_description" style="min-height:80px"></textarea></div>
+        </div>
+        <div class="detail-card" style="margin-bottom:1rem">
+          <h4 style="margin-bottom:1rem">Buttons</h4>
+          <div class="field-group"><label>Sign In Button</label><input type="text" id="copy-signin_button" data-cat="copy" data-key="signin_button"></div>
+          <div class="field-group"><label>Sign Up Button</label><input type="text" id="copy-signup_button" data-cat="copy" data-key="signup_button"></div>
+        </div>
+        <div id="step-labels-container"></div>
+        <div class="btn-row"><button class="btn-reset" onclick="resetCategory('copy')">Reset All to Default</button><button class="btn-save" onclick="saveCopy()">Save Copy</button></div>
+      </div>
+    </div>
+
+    <!-- AI & Payments View -->
+    <div id="view-payments" class="view" style="display:none">
+      <h2 style="margin-bottom:1rem">AI &amp; Payments</h2>
+      <div class="detail-card" style="margin-bottom:1rem">
+        <h4 style="margin-bottom:1rem">AI Model</h4>
+        <div class="field-group"><label>Model</label>
+          <select id="settings-model" data-cat="settings" data-key="model">
+            <option value="claude-haiku-4-5-20251001">Haiku 4.5</option>
+            <option value="claude-sonnet-4-20250514">Sonnet 4</option>
+            <option value="claude-opus-4-20250514">Opus 4</option>
+          </select></div>
+        <div class="field-group"><label>Max Tokens</label><input type="number" id="settings-max_tokens" data-cat="settings" data-key="max_tokens" min="256" max="8192" step="256"><p class="helper">Maximum length of AI responses (256-8192)</p></div>
+        <div class="field-group"><label>Conversation History Length</label><input type="number" id="settings-max_history" data-cat="settings" data-key="max_history" min="2" max="50" step="2"><p class="helper">Number of previous messages included for context (2-50)</p></div>
+        <div class="btn-row"><button class="btn-reset" onclick="resetCategory('settings')">Reset to Default</button><button class="btn-save" onclick="saveAISettings()">Save AI Settings</button></div>
+      </div>
+      <div class="detail-card" style="margin-bottom:1rem">
+        <h4 style="margin-bottom:1rem">Stripe Config</h4>
+        <p class="helper" style="margin-bottom:1rem">Connect Stripe to accept payments. Secret keys are set as Worker secrets and never stored in the database.</p>
+        <div class="field-group"><label>Publishable Key</label><input type="text" id="stripe-public_key" data-cat="stripe" data-key="public_key" placeholder="pk_test_... or pk_live_..."><p class="helper">Find this in Stripe Dashboard &gt; Developers &gt; API Keys</p></div>
+        <div class="field-group"><label>Pricing Table ID</label><input type="text" id="stripe-pricing_table_id" data-cat="stripe" data-key="pricing_table_id" placeholder="prctbl_..."><p class="helper">Create a Pricing Table in Stripe Dashboard &gt; More &gt; Pricing Tables</p></div>
+        <div class="btn-row"><button class="btn-save" onclick="saveStripe()">Save Stripe Config</button></div>
+      </div>
+      <div class="detail-card" style="margin-bottom:1rem">
+        <h4 style="margin-bottom:1rem">Secrets Status</h4>
+        <p class="helper" style="margin-bottom:1rem">Set via CLI (<code>wrangler secret put KEY_NAME</code>). Cannot be changed here.</p>
+        <div style="display:flex; flex-direction:column; gap:.75rem;">
+          <div class="status-item"><span class="status-dot missing" id="dot-secret-key"></span><span>Secret Key</span></div>
+          <div class="status-item"><span class="status-dot missing" id="dot-webhook-secret"></span><span>Webhook Secret</span></div>
+          <div class="status-item"><span class="status-dot missing" id="dot-anthropic-key"></span><span>Anthropic API Key</span></div>
+        </div>
+      </div>
+      <div class="detail-card" style="margin-bottom:1rem">
+        <h4 style="margin-bottom:1rem">Webhook Setup</h4>
+        <p class="helper" style="margin-bottom:.75rem">Add this URL as a webhook endpoint in Stripe Dashboard:</p>
+        <div style="background:#f8fafc; padding:.6rem .8rem; border-radius:var(--radius); font-family:monospace; font-size:.85rem; word-break:break-all; border:1px solid var(--border);" id="webhook-url"></div>
+        <p class="helper" style="margin-top:.75rem">Subscribe to these events:</p>
+        <ul style="font-size:.8rem; color:var(--text-light); margin-top:.35rem; padding-left:1.25rem;">
+          <li><code>checkout.session.completed</code></li>
+          <li><code>customer.subscription.updated</code></li>
+          <li><code>customer.subscription.deleted</code></li>
+          <li><code>invoice.payment_succeeded</code></li>
+          <li><code>invoice.payment_failed</code></li>
+        </ul>
+      </div>
+      <div class="detail-card" style="margin-bottom:1rem">
+        <h4 style="margin-bottom:.75rem">Customer Portal</h4>
+        <p class="helper">Enable in Stripe Dashboard &gt; Settings &gt; Billing &gt; Customer Portal. Lets members change plans, update payment methods, and cancel from their profile page.</p>
+      </div>
+    </div>
+    <!-- Footer -->
+    <div class="footer">
+      Created by <a href="https://steinsolutions.ai" target="_blank">Stein Solutions</a>
+    </div>
+  </div>
+</div>
+
+<!-- Invite Modal -->
+<div class="modal-overlay" id="invite-modal">
+  <div class="modal">
+    <h3>Invite Member</h3>
+    <input type="text" id="invite-name" placeholder="Name">
+    <input type="email" id="invite-email" placeholder="Email">
+    <select id="invite-tier">
+      <option value="free">Free</option>
+      <option value="paid">Paid</option>
+      <option value="vip">VIP</option>
+    </select>
+    <div id="invite-result" style="font-size:.85rem;margin-bottom:.75rem;display:none"></div>
+    <div class="modal-actions">
+      <button class="btn" style="background:var(--border);color:var(--text)" onclick="closeInviteModal()">Cancel</button>
+      <button class="btn" onclick="doInvite()">Create Account</button>
+    </div>
+  </div>
+</div>
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================
+// CONFIG — Change these per app
+// ============================================
+const APP_NAME = 'Admin'; // Shows in sidebar
+const API_BASE = '/admin/api';
+
+// ============================================
+// STATE
+// ============================================
+let currentView = 'dashboard';
+let currentMemberId = null;
+let memberFilter = '';
+let memberSearch = '';
+let memberPage = 1;
+let activityPage = 1;
+let searchTimeout = null;
+let configDefaults = {};
+let currentConfig = {};
+
+// ============================================
+// AUTH
+// ============================================
+function getToken() { return localStorage.getItem('admin_token'); }
+function setToken(t) { localStorage.setItem('admin_token', t); }
+function clearToken() { localStorage.removeItem('admin_token'); }
+
+async function api(path, opts = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  const token = getToken();
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(`${API_BASE}${path}`, { ...opts, headers });
+  if (res.status === 401) { clearToken(); location.reload(); return null; }
+  return res.json();
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+
+  const data = await api('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (!data || data.error) {
+    errEl.textContent = data?.error || 'Login failed';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  setToken(data.token);
+  startApp();
+}
+
+function doLogout() {
+  api('/auth/logout', { method: 'POST' });
+  clearToken();
+  document.getElementById('app').classList.remove('active');
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+// ============================================
+// APP INIT
+// ============================================
+async function startApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').classList.add('active');
+  document.getElementById('app-title').textContent = APP_NAME;
+  showView('dashboard');
+}
+
+function showView(view) {
+  document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+  document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+  const viewEl = document.getElementById(`view-${view}`);
+  if (viewEl) viewEl.style.display = 'block';
+  const navEl = document.querySelector(`[data-view="${view}"]`);
+  if (navEl) navEl.classList.add('active');
+  currentView = view;
+
+  if (view === 'dashboard') loadDashboard();
+  if (view === 'members') loadMembers();
+  if (view === 'revenue') loadRevenue();
+  if (view === 'activity') loadActivity();
+  if (view === 'settings') loadSettings();
+  if (view === 'payments') loadPayments();
+}
+
+// ============================================
+// DASHBOARD
+// ============================================
+async function loadDashboard() {
+  const data = await api('/stats');
+  if (!data) return;
+
+  const cards = document.getElementById('stat-cards');
+  cards.innerHTML = `
+    <div class="stat-card"><div class="label">Total Members</div><div class="value">${data.total_users}</div></div>
+    <div class="stat-card"><div class="label">Active (7 days)</div><div class="value">${data.active_last_7d}</div></div>
+    <div class="stat-card"><div class="label">New This Month</div><div class="value">${data.new_this_month}</div></div>
+    <div class="stat-card"><div class="label">MRR</div><div class="value">$${(data.mrr_cents / 100).toFixed(0)}</div></div>
+  `;
+
+  // Tier badges
+  const tiers = data.tier_breakdown || {};
+  const tierHtml = Object.entries(tiers).map(([t, c]) =>
+    `<span class="badge badge-${t}">${t}: ${c}</span>`
+  ).join(' ');
+  if (tierHtml) {
+    cards.innerHTML += `<div class="stat-card"><div class="label">By Tier</div><div style="margin-top:.5rem">${tierHtml}</div></div>`;
+  }
+
+  // DAU chart
+  const chart = document.getElementById('dau-chart');
+  const daily = data.daily_active || [];
+  const maxCount = Math.max(...daily.map(d => d.count), 1);
+  chart.innerHTML = daily.reverse().map(d =>
+    `<div class="chart-bar" style="height:${Math.max((d.count / maxCount) * 100, 4)}%" title="${d.date}: ${d.count}"></div>`
+  ).join('');
+
+  // Recent activity
+  const actData = await api('/activity?limit=15');
+  const actList = document.getElementById('recent-activity');
+  if (actData?.activity) {
+    actList.innerHTML = actData.activity.map(a =>
+      `<div class="activity-item"><span>${a.user_name || 'Unknown'} — ${a.action}</span><span class="activity-time">${timeAgo(a.created_at)}</span></div>`
+    ).join('');
+  }
+}
+
+// ============================================
+// MEMBERS
+// ============================================
+async function loadMembers() {
+  const params = new URLSearchParams({ page: memberPage, limit: 25 });
+  if (memberFilter) params.set('tier', memberFilter);
+  if (memberSearch) params.set('search', memberSearch);
+
+  const data = await api(`/members?${params}`);
+  if (!data) return;
+
+  const tbody = document.getElementById('members-tbody');
+  tbody.innerHTML = data.members.map(m => `
+    <tr class="clickable" onclick="showMemberDetail(${m.id})">
+      <td><strong>${esc(m.name)}</strong></td>
+      <td>${esc(m.email)}</td>
+      <td><span class="badge badge-${m.tier}">${m.tier}</span></td>
+      <td><span class="badge badge-${m.status}">${m.status}</span></td>
+      <td>${m.last_active ? timeAgo(m.last_active) : 'Never'}</td>
+      <td>$${((m.total_paid_cents || 0) / 100).toFixed(0)}</td>
+      <td>
+        <select class="btn-sm" onclick="event.stopPropagation()" onchange="changeTier(${m.id}, this.value)">
+          ${['free','paid','vip'].map(t => `<option value="${t}" ${t===m.tier?'selected':''}>${t}</option>`).join('')}
+        </select>
+      </td>
+    </tr>
+  `).join('');
+
+  // Pagination
+  const pag = document.getElementById('members-pagination');
+  pag.innerHTML = `
+    <button onclick="memberPage--;loadMembers()" ${data.page <= 1 ? 'disabled' : ''}>Prev</button>
+    <span>Page ${data.page} of ${data.pages}</span>
+    <button onclick="memberPage++;loadMembers()" ${data.page >= data.pages ? 'disabled' : ''}>Next</button>
+  `;
+}
+
+function setFilter(btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  memberFilter = btn.dataset.filter;
+  memberPage = 1;
+  loadMembers();
+}
+
+function debounceSearch() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    memberSearch = document.getElementById('member-search').value;
+    memberPage = 1;
+    loadMembers();
+  }, 300);
+}
+
+async function changeTier(id, tier) {
+  await api(`/members/${id}`, { method: 'PUT', body: JSON.stringify({ tier }) });
+  loadMembers();
+}
+
+// ============================================
+// MEMBER DETAIL
+// ============================================
+async function showMemberDetail(id) {
+  currentMemberId = id;
+  document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+  document.getElementById('view-member-detail').style.display = 'block';
+
+  const data = await api(`/members/${id}`);
+  if (!data) return;
+  const m = data.member;
+  const sub = data.subscription;
+
+  document.getElementById('detail-name').textContent = m.name;
+  document.getElementById('detail-tier-badge').className = `badge badge-${m.tier}`;
+  document.getElementById('detail-tier-badge').textContent = m.tier;
+  document.getElementById('detail-status-badge').className = `badge badge-${m.status}`;
+  document.getElementById('detail-status-badge').textContent = m.status;
+
+  document.getElementById('detail-profile').innerHTML = `
+    <div class="field"><div class="field-label">Email</div><div class="field-value">${esc(m.email)}</div></div>
+    <div class="field"><div class="field-label">Member Since</div><div class="field-value">${formatDate(m.created_at)}</div></div>
+    <div class="field"><div class="field-label">Last Active</div><div class="field-value">${m.last_active ? timeAgo(m.last_active) : 'Never'}</div></div>
+    <div class="field"><div class="field-label">Logins</div><div class="field-value">${m.login_count}</div></div>
+    <div class="field"><div class="field-label">Total Paid</div><div class="field-value">$${((m.total_paid_cents || 0) / 100).toFixed(2)}</div></div>
+  `;
+
+  document.getElementById('detail-subscription').innerHTML = sub ? `
+    <div class="field"><div class="field-label">Plan</div><div class="field-value">${sub.plan_name} — $${(sub.amount_cents / 100).toFixed(2)}/${sub.interval_type}</div></div>
+    <div class="field"><div class="field-label">Status</div><div class="field-value"><span class="badge badge-${sub.status === 'active' ? 'active' : 'deactivated'}">${sub.status}</span></div></div>
+    <div class="field"><div class="field-label">Current Period</div><div class="field-value">${formatDate(sub.current_period_start)} — ${formatDate(sub.current_period_end)}</div></div>
+  ` : '<p style="color:var(--text-light);font-size:.85rem">No subscription</p>';
+
+  document.getElementById('detail-notes').value = m.notes || '';
+
+  document.getElementById('detail-actions').innerHTML = `
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+      <select onchange="changeMemberTier(this.value)" style="padding:.3rem .5rem;border:1px solid var(--border);border-radius:var(--radius);font-size:.85rem">
+        ${['free','paid','vip'].map(t => `<option value="${t}" ${t===m.tier?'selected':''}>${t}</option>`).join('')}
+      </select>
+      <button class="btn btn-sm ${m.status === 'deactivated' ? '' : 'btn-danger'}" onclick="toggleMemberStatus()">
+        ${m.status === 'deactivated' ? 'Reactivate' : 'Deactivate'}
+      </button>
+    </div>
+  `;
+
+  // Load progress
+  const progData = await api(`/members/${id}/progress`);
+  const progEl = document.getElementById('detail-progress');
+  if (progData?.progress) {
+    const p = progData.progress;
+    if (p.message) {
+      progEl.innerHTML = `<p style="color:var(--text-light);font-size:.85rem">${esc(p.message)}</p>`;
+    } else {
+      progEl.innerHTML = Object.entries(p).map(([k, v]) =>
+        `<div class="field"><div class="field-label">${esc(k)}</div><div class="field-value">${esc(String(v))}</div></div>`
+      ).join('');
+    }
+  }
+
+  // Load payments
+  const payData = await api(`/members/${id}/payments`);
+  const payEl = document.getElementById('detail-payments');
+  if (payData?.payments?.length) {
+    payEl.innerHTML = payData.payments.slice(0, 10).map(p =>
+      `<div class="activity-item"><span>$${(p.amount_cents / 100).toFixed(2)} — ${p.status}</span><span class="activity-time">${formatDate(p.paid_at)}</span></div>`
+    ).join('');
+  } else {
+    payEl.innerHTML = '<p style="color:var(--text-light);font-size:.85rem">No payments</p>';
+  }
+
+  // Load activity
+  const actData = await api(`/members/${id}/activity`);
+  const actEl = document.getElementById('detail-activity');
+  if (actData?.activity?.length) {
+    actEl.innerHTML = actData.activity.slice(0, 30).map(a =>
+      `<div class="activity-item"><span>${a.action}</span><span class="activity-time">${timeAgo(a.created_at)}</span></div>`
+    ).join('');
+  } else {
+    actEl.innerHTML = '<p style="color:var(--text-light);font-size:.85rem;padding:.5rem 0">No activity</p>';
+  }
+}
+
+async function saveNotes() {
+  if (!currentMemberId) return;
+  const notes = document.getElementById('detail-notes').value;
+  await api(`/members/${currentMemberId}`, { method: 'PUT', body: JSON.stringify({ notes }) });
+}
+
+async function changeMemberTier(tier) {
+  if (!currentMemberId) return;
+  await api(`/members/${currentMemberId}`, { method: 'PUT', body: JSON.stringify({ tier }) });
+  showMemberDetail(currentMemberId);
+}
+
+async function toggleMemberStatus() {
+  if (!currentMemberId) return;
+  const data = await api(`/members/${currentMemberId}`);
+  const newStatus = data.member.status === 'deactivated' ? 'active' : 'deactivated';
+  if (newStatus === 'deactivated' && !confirm('Deactivate this member? They will be logged out.')) return;
+  if (newStatus === 'deactivated') {
+    await api(`/members/${currentMemberId}`, { method: 'DELETE' });
+  } else {
+    await api(`/members/${currentMemberId}`, { method: 'PUT', body: JSON.stringify({ status: 'active' }) });
+  }
+  showMemberDetail(currentMemberId);
+}
+
+// ============================================
+// REVENUE
+// ============================================
+async function loadRevenue() {
+  const data = await api('/revenue');
+  if (!data) return;
+
+  document.getElementById('revenue-stats').innerHTML = `
+    <div class="stat-card"><div class="label">MRR</div><div class="value">$${((data.mrr_cents || 0) / 100).toFixed(0)}</div></div>
+    <div class="stat-card"><div class="label">Total Revenue</div><div class="value">$${((data.total_revenue_cents || 0) / 100).toFixed(0)}</div></div>
+  `;
+
+  const tbody = document.getElementById('revenue-tbody');
+  tbody.innerHTML = (data.paying_members || []).map(m => `
+    <tr>
+      <td>${esc(m.name)}</td>
+      <td>${esc(m.email)}</td>
+      <td>${m.plan_name || 'paid'}</td>
+      <td>$${((m.amount_cents || 0) / 100).toFixed(2)}/mo</td>
+    </tr>
+  `).join('');
+}
+
+// ============================================
+// ACTIVITY LOG
+// ============================================
+async function loadActivity() {
+  const data = await api(`/activity?page=${activityPage}&limit=50`);
+  if (!data) return;
+
+  const tbody = document.getElementById('activity-tbody');
+  tbody.innerHTML = (data.activity || []).map(a => `
+    <tr>
+      <td>${timeAgo(a.created_at)}</td>
+      <td>${esc(a.user_name || 'Unknown')}</td>
+      <td>${esc(a.action)}</td>
+      <td style="color:var(--text-light)">${esc(a.path)}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('activity-pagination').innerHTML = `
+    <button onclick="activityPage--;loadActivity()" ${activityPage <= 1 ? 'disabled' : ''}>Prev</button>
+    <span>Page ${activityPage}</span>
+    <button onclick="activityPage++;loadActivity()">Next</button>
+  `;
+}
+
+async function cleanupActivity() {
+  if (!confirm('Delete activity logs older than 90 days?')) return;
+  const data = await api('/activity/cleanup', { method: 'DELETE' });
+  alert(`Deleted ${data?.deleted || 0} old entries`);
+  loadActivity();
+}
+
+// ============================================
+// INVITE MODAL
+// ============================================
+function showInviteModal() {
+  document.getElementById('invite-modal').classList.add('active');
+  document.getElementById('invite-result').style.display = 'none';
+  document.getElementById('invite-name').value = '';
+  document.getElementById('invite-email').value = '';
+  document.getElementById('invite-tier').value = 'free';
+}
+
+function closeInviteModal() {
+  document.getElementById('invite-modal').classList.remove('active');
+}
+
+async function doInvite() {
+  const name = document.getElementById('invite-name').value;
+  const email = document.getElementById('invite-email').value;
+  const tier = document.getElementById('invite-tier').value;
+
+  const data = await api('/members/invite', {
+    method: 'POST',
+    body: JSON.stringify({ name, email, tier }),
+  });
+
+  const resultEl = document.getElementById('invite-result');
+  resultEl.style.display = 'block';
+
+  if (data?.ok) {
+    resultEl.style.color = 'var(--green)';
+    resultEl.innerHTML = `Account created! Temp password: <strong>${data.temp_password}</strong><br><small>Share this with the user. They should change it on first login.</small>`;
+    loadMembers();
+  } else {
+    resultEl.style.color = 'var(--red)';
+    resultEl.textContent = data?.error || 'Failed to create account';
+  }
+}
+
+// ============================================
+// HELPERS
+// ============================================
+function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+function timeAgo(dateStr) {
+  if (!dateStr) return '';
+  const diff = (Date.now() - new Date(dateStr + 'Z').getTime()) / 1000;
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+  return formatDate(dateStr);
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  return new Date(dateStr + 'Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+
+// ============================================
+// CONFIG - load defaults + overrides
+// ============================================
+async function loadConfig() {
+  const results = await Promise.all([api('/config'), api('/config/defaults')]);
+  currentConfig = (results[0] && results[0].config) || {};
+  configDefaults = (results[1] && results[1].defaults) || {};
+}
+
+async function loadSettings() {
+  await loadConfig();
+  renderPrompts();
+  renderBranding();
+  renderCopy();
+}
+
+function switchSubTab(tab) {
+  document.querySelectorAll('.sub-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.sub-panel').forEach(function(p) { p.style.display = 'none'; });
+  document.querySelector('[data-subtab="' + tab + '"]').classList.add('active');
+  document.getElementById('sub-' + tab).style.display = 'block';
+}
+
+function renderPrompts() {
+  var container = document.getElementById('prompts-container');
+  var pd = configDefaults.prompts || {};
+  var po = currentConfig.prompts || {};
+  var keys = Object.keys(pd);
+  if (keys.length === 0) {
+    container.innerHTML = '<div class="detail-card"><p style="color:var(--text-light)">No prompt defaults configured. Add prompts to the DEFAULTS object in config.js first.</p></div>';
+    return;
+  }
+  container.innerHTML = keys.map(function(key) {
+    var override = po[key];
+    var val = override ? override.value : pd[key];
+    var isOv = !!override;
+    var label = key.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+    var meta = isOv ? 'Changed ' + new Date(override.updated_at).toLocaleDateString() : 'Using default';
+    return '<div class="detail-card" style="margin-bottom:1rem">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">' +
+      '<h4 style="margin-bottom:0">' + esc(label) + '</h4>' +
+      '<span style="font-size:.75rem;color:var(--text-light)">' + meta + '</span></div>' +
+      '<div class="field-group"><textarea id="prompt-' + key + '" rows="8">' + esc(val) + '</textarea>' +
+      '<div class="var-list">Available variables: <code>{{userName}}</code> <code>{{userEmail}}</code></div></div>' +
+      '<div class="btn-row">' +
+      (isOv ? "<button class=\"btn-reset\" onclick=\"resetKey('prompts','" + key + "')\">Reset to Default</button>" : '') +
+      "<button class=\"btn-save\" onclick=\"savePrompt('" + key + "')\">Save</button></div></div>";
+  }).join('');
+}
+
+function renderBranding() {
+  var bd = configDefaults.branding || {};
+  var bo = currentConfig.branding || {};
+  setFieldValue('brand-app_name', bo, bd, 'app_name');
+  setFieldValue('brand-tagline', bo, bd, 'tagline');
+  setFieldValue('brand-logo_url', bo, bd, 'logo_url');
+  setFieldValue('brand-font_family', bo, bd, 'font_family');
+  ['primary_color','accent_color','background_color','text_color'].forEach(function(key) {
+    var val = (bo[key] && bo[key].value) || bd[key] || '#333333';
+    var el = document.getElementById('brand-' + key);
+    if (el) {
+      el.value = val;
+      var hexEl = document.getElementById('hex-' + key);
+      if (hexEl) hexEl.textContent = val;
+      el.oninput = function() { if (hexEl) hexEl.textContent = el.value; };
+    }
+  });
+}
+
+function renderCopy() {
+  var cd = configDefaults.copy || {};
+  var co = currentConfig.copy || {};
+  setFieldValue('copy-page_title', co, cd, 'page_title');
+  setFieldValue('copy-brand_description', co, cd, 'brand_description');
+  setFieldValue('copy-signin_button', co, cd, 'signin_button');
+  setFieldValue('copy-signup_button', co, cd, 'signup_button');
+  var stepLabels = (co.step_labels && co.step_labels.value) || cd.step_labels || [];
+  var container = document.getElementById('step-labels-container');
+  if (stepLabels.length > 0) {
+    container.innerHTML = '<div class="detail-card" style="margin-bottom:1rem"><h4 style="margin-bottom:1rem">Step Labels</h4>' +
+      stepLabels.map(function(label, i) {
+        return '<div class="field-group"><label>Step ' + (i+1) + '</label><input type="text" class="step-label-input" value="' + esc(label) + '" data-index="' + i + '"></div>';
+      }).join('') + '</div>';
+  } else { container.innerHTML = ''; }
+}
+
+async function loadPayments() {
+  await loadConfig();
+  renderAISettings();
+  renderStripeConfig();
+  checkSecretsStatus();
+}
+
+function renderAISettings() {
+  var sd = configDefaults.settings || {};
+  var so = currentConfig.settings || {};
+  var model = (so.model && so.model.value) || sd.model || 'claude-sonnet-4-20250514';
+  var el = document.getElementById('settings-model');
+  if (el) el.value = model;
+  setFieldValue('settings-max_tokens', so, sd, 'max_tokens');
+  setFieldValue('settings-max_history', so, sd, 'max_history');
+}
+
+function renderStripeConfig() {
+  var sd = configDefaults.stripe || {};
+  var so = currentConfig.stripe || {};
+  setFieldValue('stripe-public_key', so, sd, 'public_key');
+  setFieldValue('stripe-pricing_table_id', so, sd, 'pricing_table_id');
+  var wh = document.getElementById('webhook-url');
+  if (wh) wh.textContent = location.origin + '/admin/api/stripe/webhook';
+}
+
+async function checkSecretsStatus() {
+  try {
+    var res = await api('/secrets/status');
+    var dk = document.getElementById('dot-secret-key');
+    var dw = document.getElementById('dot-webhook-secret');
+    var da = document.getElementById('dot-anthropic-key');
+    if (dk) dk.className = 'status-dot ' + (res.stripe_key ? 'active' : 'missing');
+    if (dw) dw.className = 'status-dot ' + (res.webhook_secret ? 'active' : 'missing');
+    if (da) da.className = 'status-dot ' + (res.anthropic_key ? 'active' : 'missing');
+  } catch(e) {
+    ['dot-secret-key','dot-webhook-secret','dot-anthropic-key'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.className = 'status-dot missing';
+    });
+  }
+}
+
+async function savePrompt(key) {
+  var el = document.getElementById('prompt-' + key);
+  if (!el) return;
+  await saveItems([{ category: 'prompts', key: key, value: el.value }]);
+}
+
+async function saveBranding() {
+  var items = [];
+  document.querySelectorAll('#sub-branding [data-cat="branding"]').forEach(function(el) {
+    items.push({ category: 'branding', key: el.dataset.key, value: el.value });
+  });
+  await saveItems(items);
+}
+
+async function saveCopy() {
+  var items = [];
+  document.querySelectorAll('#sub-copy [data-cat="copy"]').forEach(function(el) {
+    items.push({ category: 'copy', key: el.dataset.key, value: el.value });
+  });
+  var si = document.querySelectorAll('.step-label-input');
+  if (si.length > 0) {
+    items.push({ category: 'copy', key: 'step_labels', value: Array.from(si).map(function(e) { return e.value; }) });
+  }
+  await saveItems(items);
+}
+
+async function saveAISettings() {
+  var items = [];
+  document.querySelectorAll('#view-payments [data-cat="settings"]').forEach(function(el) {
+    var val = el.value;
+    if (el.type === 'number') val = parseInt(val) || 0;
+    items.push({ category: 'settings', key: el.dataset.key, value: val });
+  });
+  await saveItems(items);
+}
+
+async function saveStripe() {
+  var items = [];
+  document.querySelectorAll('#view-payments [data-cat="stripe"]').forEach(function(el) {
+    items.push({ category: 'stripe', key: el.dataset.key, value: el.value.trim() });
+  });
+  await saveItems(items);
+}
+
+async function saveItems(items) {
+  try {
+    var res = await api('/config', { method: 'PUT', body: JSON.stringify({ items: items }) });
+    if (res.error) { toast(res.error, true); }
+    else { toast('Saved ' + res.saved + ' setting' + (res.saved > 1 ? 's' : '')); await loadConfig(); }
+  } catch(e) { toast('Save failed', true); }
+}
+
+async function resetKey(category, key) {
+  if (!confirm('Reset "' + key.replace(/_/g, ' ') + '" to default?')) return;
+  try {
+    var res = await api('/config/reset', { method: 'POST', body: JSON.stringify({ category: category, key: key }) });
+    if (res.error) { toast(res.error, true); }
+    else { toast(res.message); if (currentView === 'settings') loadSettings(); if (currentView === 'payments') loadPayments(); }
+  } catch(e) { toast('Reset failed', true); }
+}
+
+async function resetCategory(category) {
+  if (!confirm('Reset ALL ' + category + ' settings to defaults? This cannot be undone.')) return;
+  try {
+    var res = await api('/config/reset', { method: 'POST', body: JSON.stringify({ category: category, key: '*' }) });
+    if (res.error) { toast(res.error, true); }
+    else { toast(res.message); if (currentView === 'settings') loadSettings(); if (currentView === 'payments') loadPayments(); }
+  } catch(e) { toast('Reset failed', true); }
+}
+
+function setFieldValue(elId, overrides, defs, key) {
+  var el = document.getElementById(elId);
+  if (!el) return;
+  el.value = (overrides[key] && overrides[key].value !== undefined) ? overrides[key].value : (defs[key] || '');
+}
+
+function toast(msg, isError) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(function() { el.className = 'toast'; }, 3000);
+}
+
+// ============================================
+// BOOT
+// ============================================
+if (getToken()) {
+  api('/auth/me').then(data => {
+    if (data?.admin) startApp();
+  });
+}
+</script>
+</body>
+</html>
