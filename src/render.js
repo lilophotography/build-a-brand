@@ -126,7 +126,7 @@ export function publicFooter() {
     </div>
   </div>
   <div class="footer__bottom">
-    <p>© ${year} LiLo Photography &amp; Branding. All rights reserved.</p>
+    <p>© ${year} <a href="/admin" style="color:inherit;text-decoration:none">LiLo Photography &amp; Branding</a>. All rights reserved.</p>
   </div>
 </footer>`;
 }
@@ -145,6 +145,29 @@ ${main}
 </main>
 ${scripts}
 <script src="/app.js" defer></script>
+<script>
+// Live admin config: replaces text on [data-config] elements + sets brand
+// CSS vars from app_config (cream, terracotta, etc.). Empty config = no-op.
+fetch('/api/config/public').then(r => r.json()).then(cfg => {
+  if (cfg && cfg.copy) {
+    document.querySelectorAll('[data-config]').forEach(el => {
+      const key = el.getAttribute('data-config');
+      const val = cfg.copy[key];
+      if (val !== undefined && val !== null && val !== '') el.textContent = val;
+    });
+  }
+  if (cfg && cfg.branding) {
+    const root = document.documentElement.style;
+    for (const [k, v] of Object.entries(cfg.branding)) {
+      if (typeof v !== 'string' || !v) continue;
+      // Skip non-color/font keys; map snake_case to CSS var names
+      if (k === 'app_name' || k === 'tagline' || k === 'logo_url') continue;
+      root.setProperty('--' + k.replace(/_/g, '-'), v);
+    }
+    if (cfg.branding.app_name) document.title = cfg.branding.app_name + ' · LiLo Photography & Branding';
+  }
+}).catch(() => {});
+</script>
 </body>
 </html>`;
 }

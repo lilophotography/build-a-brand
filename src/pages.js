@@ -11,21 +11,21 @@ export function renderLanding(user) {
   const isSignedIn = !!user;
   const main = `
 <section class="hero">
-  <p class="eyebrow">Build a Brand · The Course</p>
-  <h1 class="hero__title">A brand with purpose<br><em>is a brand with power.</em></h1>
-  <p class="hero__lede">Five AI-guided sessions with Lisa's brand strategist. One downloadable Brand Guide. Strategic branding that drives revenue, not vibes.</p>
+  <p class="eyebrow" data-config="hero_eyebrow">Build a Brand · The Course</p>
+  <h1 class="hero__title"><span data-config="hero_title_line_1">A brand with purpose</span><br><em><span data-config="hero_title_line_2">is a brand with power.</span></em></h1>
+  <p class="hero__lede" data-config="hero_lede">Five AI-guided sessions with Lisa's brand strategist. One downloadable Brand Guide. Strategic branding that drives revenue, not vibes.</p>
   <div class="hero__actions">
     ${isSignedIn
-      ? `<a href="/dashboard" class="btn btn--primary">Continue Building</a>`
-      : `<a href="#pricing" class="btn btn--primary">Get Started</a>
-         <a href="/sign-in" class="btn btn--ghost">Sign in</a>`}
+      ? `<a href="/dashboard" class="btn btn--primary" data-config="hero_cta_continue">Continue Building</a>`
+      : `<a href="#pricing" class="btn btn--primary" data-config="hero_cta_primary">Get Started</a>
+         <a href="/sign-in" class="btn btn--ghost" data-config="hero_cta_signin">Sign in</a>`}
   </div>
-  <p class="hero__trust">A LiLo Photography &amp; Branding course. Built for growing businesses ready to scale.</p>
+  <p class="hero__trust" data-config="hero_trust">A LiLo Photography &amp; Branding course. Built for growing businesses ready to scale.</p>
 </section>
 
 <section class="framework">
-  <p class="eyebrow eyebrow--gold">The Framework</p>
-  <h2 class="section-title section-title--inverse">The 5 V's of Brand Building</h2>
+  <p class="eyebrow eyebrow--gold" data-config="framework_eyebrow">The Framework</p>
+  <h2 class="section-title section-title--inverse" data-config="framework_title">The 5 V's of Brand Building</h2>
   <div class="framework__grid">
     ${TOOL_ORDER.map(k => {
       const m = TOOL_META[k];
@@ -39,7 +39,7 @@ export function renderLanding(user) {
       return `<div class="v-card">
         <span class="v-card__num">${m.num}</span>
         <h3 class="v-card__title">${esc(m.label)}</h3>
-        <p class="v-card__desc">${esc(desc)}</p>
+        <p class="v-card__desc" data-config="framework_${k}_desc">${esc(desc)}</p>
       </div>`;
     }).join('')}
   </div>
@@ -51,23 +51,23 @@ export function renderLanding(user) {
       <img src="/img/lisa-portrait.jpg" alt="Lisa Lord, founder of LiLo Photography & Branding" loading="lazy">
     </div>
     <div class="meet-lisa__body">
-      <p class="eyebrow">Meet your strategist</p>
-      <h2 class="meet-lisa__title">Hey, I'm Lisa.<br><em>My friends call me LiLo.</em></h2>
-      <p class="meet-lisa__lede">My superpower is helping business owners feel confident in their branding so they can show up in their marketing and take their business to the next level. I've been doing this for 14 years.</p>
-      <p class="meet-lisa__copy">This course is the framework I walk every 1:1 client through. The same Vision, Value, Voice, Visuals, and Visibility process. The same questions, the same prompts, the same direct feedback. Now in a format you can do on your time, at your pace, in your kitchen.</p>
-      <p class="meet-lisa__copy">If you've been winging your brand and it's costing you clients, you're in the right place.</p>
+      <p class="eyebrow" data-config="meet_eyebrow">Meet your strategist</p>
+      <h2 class="meet-lisa__title"><span data-config="meet_title_line_1">Hey, I'm Lisa.</span><br><em><span data-config="meet_title_line_2">My friends call me LiLo.</span></em></h2>
+      <p class="meet-lisa__lede" data-config="meet_lede">My superpower is helping business owners feel confident in their branding so they can show up in their marketing and take their business to the next level. I've been doing this for 14 years.</p>
+      <p class="meet-lisa__copy" data-config="meet_para_1">This course is the framework I walk every 1:1 client through. The same Vision, Value, Voice, Visuals, and Visibility process. The same questions, the same prompts, the same direct feedback. Now in a format you can do on your time, at your pace, in your kitchen.</p>
+      <p class="meet-lisa__copy" data-config="meet_para_2">If you've been winging your brand and it's costing you clients, you're in the right place.</p>
       <p class="meet-lisa__sign">Lisa</p>
     </div>
   </div>
 </section>
 
 <section class="how">
-  <h2 class="section-title">Your AI Brand Strategist, on call.</h2>
-  <p class="how__lede">Each session pairs Lisa's framework with a live AI conversation, so you don't just learn. You build. Every answer becomes part of your downloadable Brand Guide.</p>
+  <h2 class="section-title" data-config="how_title">Your AI Brand Strategist, on call.</h2>
+  <p class="how__lede" data-config="how_lede">Each session pairs Lisa's framework with a live AI conversation, so you don't just learn. You build. Every answer becomes part of your downloadable Brand Guide.</p>
   <div class="how__steps">
-    <div class="how__step"><span class="how__num">1</span><h3>Work through each V</h3><p>Answer guided questions with your personal AI brand strategist. Go deep or skip what you know.</p></div>
-    <div class="how__step"><span class="how__num">2</span><h3>Watch your guide build</h3><p>Every session generates polished deliverables: statements, copy, checklists. All saved to your Brand Guide.</p></div>
-    <div class="how__step"><span class="how__num">3</span><h3>Launch with confidence</h3><p>Download your complete Brand Guide as a PDF. Your brand foundation, done.</p></div>
+    <div class="how__step"><span class="how__num">1</span><h3 data-config="how_step_1_title">Work through each V</h3><p data-config="how_step_1_body">Answer guided questions with your personal AI brand strategist. Go deep or skip what you know.</p></div>
+    <div class="how__step"><span class="how__num">2</span><h3 data-config="how_step_2_title">Watch your guide build</h3><p data-config="how_step_2_body">Every session generates polished deliverables: statements, copy, checklists. All saved to your Brand Guide.</p></div>
+    <div class="how__step"><span class="how__num">3</span><h3 data-config="how_step_3_title">Launch with confidence</h3><p data-config="how_step_3_body">Download your complete Brand Guide as a PDF. Your brand foundation, done.</p></div>
   </div>
 </section>
 

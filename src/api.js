@@ -1,6 +1,7 @@
 // API routes (auth-required): chat stream, progress, profile, brand-guide PDF.
 
 import { TOOL_ORDER, buildSystemPrompt } from './prompts.js';
+import { getConfig } from './config.js';
 
 // ---------- Public dispatch ----------
 
@@ -29,7 +30,10 @@ async function chat(request, env, user) {
   if (!tool || !TOOL_ORDER.includes(tool)) return json({ error: 'Invalid tool' }, 400);
   if (!Array.isArray(messages)) return json({ error: 'Bad messages' }, 400);
 
-  const systemPrompt = buildSystemPrompt(tool, user);
+  // Load admin-editable config (prompts, model, max_tokens). Falls back to
+  // hardcoded DEFAULTS when the app_config table is empty.
+  const config = await getConfig(env);
+  const systemPrompt = buildSystemPrompt(tool, user, config);
   const apiKey = env.ANTHROPIC_API_KEY;
   if (!apiKey) return json({ error: 'Server misconfigured: missing Anthropic key' }, 500);
 
@@ -41,8 +45,8 @@ async function chat(request, env, user) {
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 2048,
+      model: config?.settings?.model || 'claude-sonnet-4-6',
+      max_tokens: config?.settings?.max_tokens || 2048,
       stream: true,
       system: systemPrompt,
       messages: messages.map(m => ({

@@ -205,8 +205,13 @@ const TOOL_INTROS = {
 
 // Build the full system prompt for a tool, prefixed with the user's onboarding
 // context so the AI can reference them by name and business.
-function buildSystemPrompt(tool, user) {
-  const base = SYSTEM_PROMPTS[tool];
+//
+// `config` is an optional object loaded from D1 via getConfig(env). When Lisa
+// edits a prompt in /admin, the saved value lives at config.prompts[tool] and
+// overrides the hardcoded SYSTEM_PROMPTS entry. Empty/missing config falls
+// back to the verbatim default below.
+function buildSystemPrompt(tool, user, config) {
+  const base = config?.prompts?.[tool] || SYSTEM_PROMPTS[tool];
   if (!base) return null;
   if (!user) return base;
   const lines = ['CONTEXT ABOUT THIS USER (use this to make the conversation personal):'];
