@@ -11,6 +11,7 @@ import {
   renderLisaLetter, renderOnboarding, renderDashboard, renderBrandBuilder,
   renderBrandGuide, renderBrandGuidePrint, renderCoaching, renderVComplete,
 } from './pages.js';
+import { renderCourseIndex, renderCourseLesson } from './course.js';
 import { TOOL_ORDER } from './prompts.js';
 import { redirect, htmlResponse } from './render.js';
 
@@ -100,7 +101,8 @@ export default {
       if (
         path === '/lisa' || path === '/onboarding' || path === '/dashboard' ||
         path === '/brand-guide' || path === '/coaching' ||
-        path.startsWith('/brand-builder/') || path.startsWith('/v-complete/')
+        path.startsWith('/brand-builder/') || path.startsWith('/v-complete/') ||
+        path === '/learn' || path.startsWith('/learn/')
       ) {
         const user = await authenticate(request, env);
         if (!user) return redirect('/sign-in');
@@ -141,6 +143,13 @@ export default {
             'SELECT summary FROM brand_progress WHERE user_id = ? AND tool = ?'
           ).bind(user.id, tool).first();
           return renderVComplete(user, tool, row?.summary || null);
+        }
+        if (path === '/learn') return renderCourseIndex(user);
+        if (path.startsWith('/learn/')) {
+          const slug = path.slice('/learn/'.length).replace(/\/$/, '');
+          const response = renderCourseLesson(user, slug);
+          if (!response) return redirect('/learn');
+          return response;
         }
       }
 

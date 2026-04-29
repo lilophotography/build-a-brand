@@ -15,5 +15,8 @@
   },
   "devDependencies": {
     "wrangler": "^4.86.0"
+  },
+  "dependencies": {
+    "marked": "^18.0.2"
   }
 }
