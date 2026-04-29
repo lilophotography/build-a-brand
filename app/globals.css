@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* LiLo Brand Colors */
+  --color-lilo-cream: #FAF7F2;
+  --color-lilo-warm-white: #FFFFFF;
+  --color-lilo-charcoal: #2B2B2B;
+  --color-lilo-dark: #1A1A1A;
+  --color-lilo-gold: #C9A96E;
+  --color-lilo-gold-light: #E8D5B0;
+  --color-lilo-terracotta: #AF493B;
+  --color-lilo-terracotta-dark: #9D4134;
+  --color-lilo-sage: #7A8C6E;
+  --color-lilo-muted: #6B6560;
+  --color-lilo-border: #E8E0D6;
+
+  /* Semantic */
+  --color-background: var(--color-lilo-cream);
+  --color-foreground: var(--color-lilo-charcoal);
+  --color-primary: var(--color-lilo-terracotta);
+  --color-primary-hover: var(--color-lilo-terracotta-dark);
+  --color-accent: var(--color-lilo-gold);
+  --color-muted: var(--color-lilo-muted);
+
+  /* Typography */
+  --font-heading: "Minerva Modern", "Georgia", serif;
+  --font-body: "Lato", "Helvetica Neue", sans-serif;
+  --font-accent: "Montserrat", "Helvetica Neue", sans-serif;
+
+  /* Spacing & Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+}
+
+:root {
+  --background: #FAF7F2;
+  --foreground: #2B2B2B;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Lato", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+  font-family: "Minerva Modern", "Georgia", serif;
+  font-weight: 400;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #FAF7F2; }
+::-webkit-scrollbar-thumb { background: #C9A96E; border-radius: 3px; }
+
+/* Selection */
+::selection { background: #E8D5B0; color: #2B2B2B; }
