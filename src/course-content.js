@@ -6,7 +6,7 @@ export const COURSE = {
     "id": 93925,
     "slug": "build-a-brand",
     "title": "Build A Brand",
-    "exported_at": "2026-04-29T23:01:46.394296+00:00",
+    "exported_at": "2026-04-30T00:10:04.948735+00:00",
     "source": "https://lilophotographyandbranding.thrivecart.com/l/build-a-brand/"
   },
   "modules": [
@@ -14,6 +14,18 @@ export const COURSE = {
       "order": 1,
       "title": "Module One: Your Vision",
       "slug": "module-one-your-vision",
+      "workbook": {
+        "title": "Module One- Workbook",
+        "description": "File size / description",
+        "url": "https://static.showit.co/file/OdfDVw4YTLyIwydDP7uctg/72755/build-a-brand_workbook-module_1_vision.pdf"
+      },
+      "bonus_downloads": [
+        {
+          "title": "Vision Implementation Checklist",
+          "description": "File size / description",
+          "url": "https://static.showit.co/file/rZvgecgdQmiluGPGdmUF2w/72755/5_vision_checklist.pdf"
+        }
+      ],
       "lessons": [
         {
           "order": 1,
@@ -24,6 +36,13 @@ export const COURSE = {
             "a3b5iKBqy2Q",
             "DZyCaUBi3zU"
           ],
+          "downloads": [
+            {
+              "title": "Module One- Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/OdfDVw4YTLyIwydDP7uctg/72755/build-a-brand_workbook-module_1_vision.pdf"
+            }
+          ],
           "body_md": "Module 1- Welcome\n\nWelcome to Build A Brand- Empowering You To Create A Confident Identity\n\n[VIDEO:https://www.youtube.com/embed/s0EOf4hZhCg?si=VR\\_S2GO9Xn3E-p7F]\n\nUPDATE: Using custom GPT's to really dial in your brand. Check it out!\n\n[VIDEO:https://www.youtube.com/embed/a3b5iKBqy2Q?si=8tj06ZUn-36KMn6i]\n\nA quick look at how to use the AI tools within the course.\n\n[VIDEO:https://www.youtube.com/embed/DZyCaUBi3zU?si=WjPRW8GjgMdMPz6b]\n\nFAQ's\n\n* Where do I find the downloads?\n\n  If there is an action item or something discussed in a video, you should find the download right below the video. The workbook for each section is included under each video, but there is only one workbook per section. If you prefer to print the entire workbook, it is linked in Module Six.\n* What if I have a question?\n\n  If you have any questions or problems, email lisa@photolilo.com. You will receive an answer in 1-2 business days.\n* How to I access the custom GPT's?\n\n  At the end of each section, there will be a link to that module's custom GPT. I highly recommend using the paid version of ChatGPT, but it is not necessary.\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Module One- Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\n**In order to get the most out of this course, download and print the workbook. Each lesson will go over a portion of the workbook. Each module has a separate workbook. However, if you would like to have it all in one document, you can find it at the end of this course in module 5.**\n\nThese lessons were designed to do **IN ORDER**. They build upon each other. So don't be the person who skips to the last page of the book because you will be lost! The custom GPT links will be in the \"Action Steps\" section of each module.\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nComplete course\n\nIntro\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         },
         {
@@ -32,6 +51,13 @@ export const COURSE = {
           "slug": "intro-1",
           "video_ids": [
             "h8BuhSNqjMk"
+          ],
+          "downloads": [
+            {
+              "title": "Module One- Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/OdfDVw4YTLyIwydDP7uctg/72755/build-a-brand_workbook-module_1_vision.pdf"
+            }
           ],
           "body_md": "Module 1- Intro\n\nMission, Vision and Values Introduction\n\n[VIDEO:https://www.youtube.com/embed/h8BuhSNqjMk?si=AKlpirlFWfS2vFTf]\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Module One- Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nComplete course\n\nMission\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         },
@@ -42,6 +68,13 @@ export const COURSE = {
           "video_ids": [
             "OZjXWNplueM"
           ],
+          "downloads": [
+            {
+              "title": "Module One- Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/OdfDVw4YTLyIwydDP7uctg/72755/build-a-brand_workbook-module_1_vision.pdf"
+            }
+          ],
           "body_md": "Module 1- Mission\n\nYour Mission Statement\n\n[VIDEO:https://www.youtube.com/embed/OZjXWNplueM?si=\\_pwoAFJsr02\\_fCgS]\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Module One- Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nComplete course\n\nVision\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         },
         {
@@ -50,6 +83,13 @@ export const COURSE = {
           "slug": "vision",
           "video_ids": [
             "J1dcN6ZneWE"
+          ],
+          "downloads": [
+            {
+              "title": "Module One- Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/OdfDVw4YTLyIwydDP7uctg/72755/build-a-brand_workbook-module_1_vision.pdf"
+            }
           ],
           "body_md": "Module 1- vision\n\nYour Vision\n\n[VIDEO:https://www.youtube.com/embed/J1dcN6ZneWE?si=k4FNiI-u4Pek7FZP]\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Module One- Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nComplete course\n\nValues\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         },
@@ -60,6 +100,13 @@ export const COURSE = {
           "video_ids": [
             "AGYa_PPDxfk"
           ],
+          "downloads": [
+            {
+              "title": "Module One- Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/OdfDVw4YTLyIwydDP7uctg/72755/build-a-brand_workbook-module_1_vision.pdf"
+            }
+          ],
           "body_md": "Module 1- Your values\n\nYour Values\n\n[VIDEO:https://www.youtube.com/embed/AGYa\\_PPDxfk?si=xtgzeyzEEdx0RXpA]\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Module One- Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nComplete course\n\nTake Action\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         },
         {
@@ -69,6 +116,18 @@ export const COURSE = {
           "video_ids": [
             "DZ92bVB7i8w"
           ],
+          "downloads": [
+            {
+              "title": "Module One- Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/OdfDVw4YTLyIwydDP7uctg/72755/build-a-brand_workbook-module_1_vision.pdf"
+            },
+            {
+              "title": "Vision Implementation Checklist",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/rZvgecgdQmiluGPGdmUF2w/72755/5_vision_checklist.pdf"
+            }
+          ],
           "body_md": "Module 1- action steps\n\nAction Steps & Custom GPT\n\n[VIDEO:https://www.youtube.com/embed/DZ92bVB7i8w?si=sA0UV4OaeALVD0lt]\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Module One- Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\nYour Action Steps:\n\n* Clarify Your Mission Statement\n* Craft Your Vision Statement\n* Define Your Values\n\nReady to harness the power of AI and go even deeper? [**Click here**](https://chatgpt.com/g/g-67f820199c8c8191aa849db1d80848a2-vision) to go to the custom GPT that will guide you through your Vision for your Brand.\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nVision- Custom GPT\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Vision Implementation Checklist\n\n##### File size / description\n\n###### DOWNLOAD\n\nAre you struggling with this content? Need an expert to guide you? I am here! Book a one hour \"Power Hour\" call with me and we can walk through this together.\n\nPower Hour Call\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)\n\nComplete course\n\nYour Value\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         }
       ]
@@ -77,6 +136,18 @@ export const COURSE = {
       "order": 2,
       "title": "Module Two: Your Value",
       "slug": "module-two-your-value",
+      "workbook": {
+        "title": "Module Two- Workbook",
+        "description": "File size / description",
+        "url": "https://static.showit.co/file/dacbNtPIQa67G_apoinoLQ/72755/build-a-brand_workbook-_module_2_value.pdf"
+      },
+      "bonus_downloads": [
+        {
+          "title": "Value Implementation Checklist",
+          "description": "File size / description",
+          "url": "https://static.showit.co/file/QP-Na-mlSou0voVy2uz1FA/72755/2_value_checklist.pdf"
+        }
+      ],
       "lessons": [
         {
           "order": 1,
@@ -84,6 +155,13 @@ export const COURSE = {
           "slug": "your-value",
           "video_ids": [
             "PeAlDXUvSys"
+          ],
+          "downloads": [
+            {
+              "title": "Module Two- Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/dacbNtPIQa67G_apoinoLQ/72755/build-a-brand_workbook-_module_2_value.pdf"
+            }
           ],
           "body_md": "Module 2- your value\n\nIdentifying Your Value\n\n[VIDEO:https://www.youtube.com/embed/PeAlDXUvSys?si=RVfokckGWusH\\_LYT]\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Module Two- Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\n**Be sure to download the workbook for Module 2. This is a NEW workbook.**\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nComplete course\n\nKey Demographics\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         },
@@ -94,6 +172,13 @@ export const COURSE = {
           "video_ids": [
             "s1XTw98k1ng"
           ],
+          "downloads": [
+            {
+              "title": "Module Two- Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/dacbNtPIQa67G_apoinoLQ/72755/build-a-brand_workbook-_module_2_value.pdf"
+            }
+          ],
           "body_md": "Module 2- your audience\n\nKnowing Your Audience- Key Demographics\n\n[VIDEO:https://www.youtube.com/embed/s1XTw98k1ng?si=M\\_2iBhFePrMvaRBL]\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Module Two- Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nComplete course\n\nExternal Problems\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         },
         {
@@ -102,6 +187,13 @@ export const COURSE = {
           "slug": "external-problems",
           "video_ids": [
             "zSC5KAw1XOY"
+          ],
+          "downloads": [
+            {
+              "title": "Module Two- Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/dacbNtPIQa67G_apoinoLQ/72755/build-a-brand_workbook-_module_2_value.pdf"
+            }
           ],
           "body_md": "Module 2- your audience\n\nKnowing Your Audience- External Problems\n\n[VIDEO:https://www.youtube.com/embed/zSC5KAw1XOY?si=cD6qq9FJ4oFTiZMx]\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Module Two- Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nComplete course\n\nInternal Problems\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         },
@@ -112,6 +204,13 @@ export const COURSE = {
           "video_ids": [
             "-rP1EtaOnYg"
           ],
+          "downloads": [
+            {
+              "title": "Module Two- Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/dacbNtPIQa67G_apoinoLQ/72755/build-a-brand_workbook-_module_2_value.pdf"
+            }
+          ],
           "body_md": "Module 2- your audience\n\nKnowing Your Audience- Internal Problems\n\n[VIDEO:https://www.youtube.com/embed/-rP1EtaOnYg?si=e2pdxVF9GjjMJdtI]\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Module Two- Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nComplete course\n\nTransformation\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         },
         {
@@ -121,6 +220,18 @@ export const COURSE = {
           "video_ids": [
             "XpCS30jAHRs"
           ],
+          "downloads": [
+            {
+              "title": "Module Two- Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/dacbNtPIQa67G_apoinoLQ/72755/build-a-brand_workbook-_module_2_value.pdf"
+            },
+            {
+              "title": "Value Implementation Checklist",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/QP-Na-mlSou0voVy2uz1FA/72755/2_value_checklist.pdf"
+            }
+          ],
           "body_md": "Module 2- your audience\n\nKnowing Your Audience- Transformation\n\n[VIDEO:https://www.youtube.com/embed/XpCS30jAHRs?si=KIsAdA\\_LW4v6g5y6]\n\nReady to use the power of AI to help you figure out your value? Get started by clicking the link below to get to the custom GPT for the value section of building your brand.\n\nValue- Custom GPT\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)\n\nNeed an expert to walk you through this? Don't stay stuck or overwhelmed! Book a one hour \"power hour\" call with me and we can work through it together!\n\nPower Hour Call\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Module Two- Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Value Implementation Checklist\n\n##### File size / description\n\n###### DOWNLOAD\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nComplete course\n\nI Help Statements\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         }
       ]
@@ -129,6 +240,18 @@ export const COURSE = {
       "order": 3,
       "title": "Module Three: Your Voice",
       "slug": "module-three-your-voice",
+      "workbook": {
+        "title": "Module Three- Workbook",
+        "description": "File size / description",
+        "url": "https://static.showit.co/file/1EFdwQQOQIq2Mk70Cn24wQ/72755/build-a-brand_workbook-module_3_voice.pdf"
+      },
+      "bonus_downloads": [
+        {
+          "title": "Voice Implementation Checklist",
+          "description": "File size / description",
+          "url": "https://static.showit.co/file/NvnNfiEjRsau4aulDJtBXg/72755/3_voice_checklist.pdf"
+        }
+      ],
       "lessons": [
         {
           "order": 1,
@@ -136,6 +259,13 @@ export const COURSE = {
           "slug": "i-help-statements",
           "video_ids": [
             "fKZY8WNgpSA"
+          ],
+          "downloads": [
+            {
+              "title": "Module Three- Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/1EFdwQQOQIq2Mk70Cn24wQ/72755/build-a-brand_workbook-module_3_voice.pdf"
+            }
           ],
           "body_md": "Module 3- your voice\n\nI Help Statements\n\n[VIDEO:https://www.youtube.com/embed/fKZY8WNgpSA?si=g\\_o034D34HcoJq7S]\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Module Three- Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\n**Be sure to download the workbook for Module 3. This is a NEW workbook.**\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nComplete course\n\nCommon Language\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         },
@@ -146,6 +276,13 @@ export const COURSE = {
           "video_ids": [
             "GFtR0nE0rQU"
           ],
+          "downloads": [
+            {
+              "title": "Module Three- Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/1EFdwQQOQIq2Mk70Cn24wQ/72755/build-a-brand_workbook-module_3_voice.pdf"
+            }
+          ],
           "body_md": "Module 3- your voice\n\nCommon Language\n\n[VIDEO:https://www.youtube.com/embed/GFtR0nE0rQU?si=pjFNW-1X52rWU0aV]\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Module Three- Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nComplete course\n\nAbout Me\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         },
         {
@@ -155,6 +292,18 @@ export const COURSE = {
           "video_ids": [
             "SO_w2uPRVK8"
           ],
+          "downloads": [
+            {
+              "title": "Module Three- Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/1EFdwQQOQIq2Mk70Cn24wQ/72755/build-a-brand_workbook-module_3_voice.pdf"
+            },
+            {
+              "title": "Voice Implementation Checklist",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/NvnNfiEjRsau4aulDJtBXg/72755/3_voice_checklist.pdf"
+            }
+          ],
           "body_md": "Module 3- your voice\n\nAbout Me: It's About Them!\n\n[VIDEO:https://www.youtube.com/embed/SO\\_w2uPRVK8?si=pZy2DcsBZkiUqo2v]\n\nYour voice and messaging is SO important! It can also be really daunting and overwhelming. Don't sit in the overwhelm! Book a one hour \"power hour\" call with me and we can work through your messaging together. Imagine getting this done in one hour and having messaging that makes you MONEY!\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Module Three- Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\nReady to harness the power of AI and work with the custom GPT for your Voice? Click below\n\nto get started now!\n\nVoice- Custom GPT\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Voice Implementation Checklist\n\n##### File size / description\n\n###### DOWNLOAD\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nPower Hour Call\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)\n\nComplete course\n\nLook and Feel\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         }
       ]
@@ -163,6 +312,18 @@ export const COURSE = {
       "order": 4,
       "title": "Module Four: Your Visuals",
       "slug": "module-four-your-visuals",
+      "workbook": {
+        "title": "Module Four- Workbook",
+        "description": "File size / description",
+        "url": "https://static.showit.co/file/4EysVFRoQDKOpxm9GG9ohQ/72755/build-a-brand_workbook-_module_4_visuals_1.pdf"
+      },
+      "bonus_downloads": [
+        {
+          "title": "Visual Implementation Checklist",
+          "description": "File size / description",
+          "url": "https://static.showit.co/file/6yZdEbuVQbCob9t3ApABLA/72755/4_visuals_checklist.pdf"
+        }
+      ],
       "lessons": [
         {
           "order": 1,
@@ -170,6 +331,13 @@ export const COURSE = {
           "slug": "look-and-feel",
           "video_ids": [
             "R2RbpKDDT08"
+          ],
+          "downloads": [
+            {
+              "title": "Module Four- Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/4EysVFRoQDKOpxm9GG9ohQ/72755/build-a-brand_workbook-_module_4_visuals_1.pdf"
+            }
           ],
           "body_md": "Module 4- your visuals\n\nLook & Feel\n\n[VIDEO:https://www.youtube.com/embed/R2RbpKDDT08?si=\\_0wl4ZAcSRue4EvC]\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Module Four- Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\n**Be sure to download the workbook for Module 4. This is a NEW workbook.**\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nComplete course\n\nYour Brand Colors\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         },
@@ -180,6 +348,13 @@ export const COURSE = {
           "video_ids": [
             "mez_vRPNIDk"
           ],
+          "downloads": [
+            {
+              "title": "Module Four- Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/4EysVFRoQDKOpxm9GG9ohQ/72755/build-a-brand_workbook-_module_4_visuals_1.pdf"
+            }
+          ],
           "body_md": "Module 4- your visuals\n\nYour Brand Colors\n\n[VIDEO:https://www.youtube.com/embed/mez\\_vRPNIDk?si=1iBfA\\_9B\\_PzV4ftz]\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Module Four- Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\n**Be sure to download the workbook for Module 4.**\n\n**Resources mentioned in this video:**\n\n[**Canva**](https://www.canva.com/)\n\n**Coolers**(Color Palette Generator)\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nComplete course\n\nYour Logo\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         },
         {
@@ -188,6 +363,13 @@ export const COURSE = {
           "slug": "your-logo",
           "video_ids": [
             "wgkJ4KX8CCA"
+          ],
+          "downloads": [
+            {
+              "title": "Module Four- Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/4EysVFRoQDKOpxm9GG9ohQ/72755/build-a-brand_workbook-_module_4_visuals_1.pdf"
+            }
           ],
           "body_md": "Module 4- your visuals\n\nYour Logo\n\n[VIDEO:https://www.youtube.com/embed/wgkJ4KX8CCA?si=X8acDc2VIp966Y3I]\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Module Four- Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nComplete course\n\nYour Fonts\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         },
@@ -198,6 +380,18 @@ export const COURSE = {
           "video_ids": [
             "o3lYAGGz_ac"
           ],
+          "downloads": [
+            {
+              "title": "Module Four- Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/4EysVFRoQDKOpxm9GG9ohQ/72755/build-a-brand_workbook-_module_4_visuals_1.pdf"
+            },
+            {
+              "title": "Visual Implementation Checklist",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/6yZdEbuVQbCob9t3ApABLA/72755/4_visuals_checklist.pdf"
+            }
+          ],
           "body_md": "Module 4- your visuals\n\nYour Fonts\n\n[VIDEO:https://www.youtube.com/embed/o3lYAGGz\\_ac?si=e12ulgTXrnwGug3A]\n\nReady to let AI to the heavy lifting for your visuals? Click below to get started with the custom Visuals GPT.\n\nVisuals- Custom GPT\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Module Four- Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Visual Implementation Checklist\n\n##### File size / description\n\n###### DOWNLOAD\n\nVisual Storyboard Template\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)\n\nIf you are wringing your hands together because you don't feel like you are \"creative enough\" to do this on your own...let's chat! Imagine having a visual brand expert by your side to look at all of your visuals and assure you that they are amazing and will work for your brand. Book a one hour \"power hour\" call and we can do it together!\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nPower Hour Call\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)\n\nComplete course\n\nYour Website\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         }
       ]
@@ -206,6 +400,43 @@ export const COURSE = {
       "order": 5,
       "title": "Module Five: Your Vehicle/Visibility",
       "slug": "module-five-your-vehicle-visibility",
+      "workbook": {
+        "title": "Module Five- Workbook",
+        "description": "File size / description",
+        "url": "https://static.showit.co/file/TpJK8ILPT-Kshz-JkfQpWA/72755/build-a-brand_workbook-_module_5_vehicle.pdf"
+      },
+      "bonus_downloads": [
+        {
+          "title": "Complete Workbook (all 5 modules)",
+          "description": "File size / description",
+          "url": "https://static.showit.co/file/B5wpr2O-QMWfqRkQk9xQrQ/72755/build-a-brand_workbook_complete.pdf"
+        },
+        {
+          "title": "20 Video Prompts & 100 Caption Starters",
+          "description": "File size / description",
+          "url": "https://static.showit.co/file/FPYER_NNTbG-lTokGRm3uA/72755/100_content_ideas_with_video_prompts.pdf"
+        },
+        {
+          "title": "Weekly Content Planner",
+          "description": "File size / description",
+          "url": "https://static.showit.co/file/MxEbESdVSCGR2FjJxWL2dg/72755/weekly_planner.pdf"
+        },
+        {
+          "title": "Monthly Content Planner",
+          "description": "File size / description",
+          "url": "https://static.showit.co/file/o4yvkjG2QaCTilQM6vEa4g/72755/monthly_content_calendar_1.pdf"
+        },
+        {
+          "title": "Vehicle Implementation Checklist",
+          "description": "File size / description",
+          "url": "https://static.showit.co/file/qahP-rxgQ_iSm2le6VH5_A/72755/1_vehicle_checklist.pdf"
+        },
+        {
+          "title": "Content Pillars",
+          "description": "File size / description",
+          "url": "https://static.showit.co/file/xUdKgAjZT8OALzNPdx_vDw/72755/content_breakdown.pdf"
+        }
+      ],
       "lessons": [
         {
           "order": 1,
@@ -213,6 +444,13 @@ export const COURSE = {
           "slug": "your-website",
           "video_ids": [
             "InI1yhGscBM"
+          ],
+          "downloads": [
+            {
+              "title": "Module Five- Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/TpJK8ILPT-Kshz-JkfQpWA/72755/build-a-brand_workbook-_module_5_vehicle.pdf"
+            }
           ],
           "body_md": "Module 5- your vehicle/Visibility\n\nYour Website\n\n[VIDEO:https://www.youtube.com/embed/InI1yhGscBM?si=EVn0vHYn7yJKGhsG]\n\nTry Showit- For Free!\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)\n\nNot sure how your website stacks up? Check out this FREE website report card powered by AI. This is another custom GPT that you can use to see how your website is doing and get some real feedback.\n\nWebsite Report Card- Custom GPT\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Module Five- Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\n**Be sure to download the workbook for Module 5. This is a NEW workbook.**\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nComplete course\n\nFinding A Rhythm\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         },
@@ -223,6 +461,23 @@ export const COURSE = {
           "video_ids": [
             "ShJ9kYNeMuw"
           ],
+          "downloads": [
+            {
+              "title": "Module Five- Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/TpJK8ILPT-Kshz-JkfQpWA/72755/build-a-brand_workbook-_module_5_vehicle.pdf"
+            },
+            {
+              "title": "Weekly Content Planner",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/MxEbESdVSCGR2FjJxWL2dg/72755/weekly_planner.pdf"
+            },
+            {
+              "title": "Monthly Content Planner",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/o4yvkjG2QaCTilQM6vEa4g/72755/monthly_content_calendar_1.pdf"
+            }
+          ],
           "body_md": "Module 5- your vehicle/Visibility\n\nFinding A Rhythm\n\n[VIDEO:https://www.youtube.com/embed/ShJ9kYNeMuw?si=XOqVlF4zLjicJVGt]\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Module Five- Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Weekly Content Planner\n\n##### File size / description\n\n###### DOWNLOAD\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Monthly Content Planner\n\n##### File size / description\n\n###### DOWNLOAD\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nComplete course\n\nAnchor Content\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         },
         {
@@ -231,6 +486,13 @@ export const COURSE = {
           "slug": "anchor-content",
           "video_ids": [
             "T1TEeZ4d6f4"
+          ],
+          "downloads": [
+            {
+              "title": "Module Five- Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/TpJK8ILPT-Kshz-JkfQpWA/72755/build-a-brand_workbook-_module_5_vehicle.pdf"
+            }
           ],
           "body_md": "Module 5- your vehicle/visibility\n\nAnchor Content\n\n[VIDEO:https://www.youtube.com/embed/T1TEeZ4d6f4?si=gwwGVkfHBCGcJZBe]\n\nReady to harness the power of AI for your brand's visibility? Click below to get started with the custom GPT.\n\nVisibility- Custom GPT\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Module Five- Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nComplete course\n\nContent Pillars\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         },
@@ -241,6 +503,18 @@ export const COURSE = {
           "video_ids": [
             "lwMZNv7pm58"
           ],
+          "downloads": [
+            {
+              "title": "Module Five- Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/TpJK8ILPT-Kshz-JkfQpWA/72755/build-a-brand_workbook-_module_5_vehicle.pdf"
+            },
+            {
+              "title": "Content Pillars",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/xUdKgAjZT8OALzNPdx_vDw/72755/content_breakdown.pdf"
+            }
+          ],
           "body_md": "Module 5- your vehicle\n\nContent Pillars\n\n[VIDEO:https://www.youtube.com/embed/lwMZNv7pm58?si=lXg6PxFR8OFbtjYO]\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Module Five- Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Content Pillars\n\n##### File size / description\n\n###### DOWNLOAD\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nComplete course\n\n100 Pieces of Content\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         },
         {
@@ -249,6 +523,18 @@ export const COURSE = {
           "slug": "100-pieces-of-content",
           "video_ids": [
             "tGVtpDmAD-4"
+          ],
+          "downloads": [
+            {
+              "title": "Module Five- Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/TpJK8ILPT-Kshz-JkfQpWA/72755/build-a-brand_workbook-_module_5_vehicle.pdf"
+            },
+            {
+              "title": "20 Video Prompts & 100 Caption Starters",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/FPYER_NNTbG-lTokGRm3uA/72755/100_content_ideas_with_video_prompts.pdf"
+            }
           ],
           "body_md": "Module 5- your vehicle/visibility\n\n100 Pieces of Content!\n\n[VIDEO:https://www.youtube.com/embed/tGVtpDmAD-4?si=5tjwUR2sPF\\_FK\\_3D]\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Module Five- Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### 20 Video Prompts & 100 Caption Starters\n\n##### File size / description\n\n###### DOWNLOAD\n\nWant a completely custom prompt that will help you create content for your business using AI? Get the custom prompt coach that will guide you through creating a prompt that for your business. It will help you figure out which platform to use, what pillars to use and how to talk to ChatGPT so it creates content that is in your voice! [Click here to purchase for $37.](https://lilophotographyandbranding.thrivecart.com/content-creation-prompt/)\n\n***\\*If you purchased this at the time you bought the course, go check your email for the link!***\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nComplete course\n\nScheduling\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         },
@@ -259,6 +545,13 @@ export const COURSE = {
           "video_ids": [
             "4Fc3hi_nMJQ"
           ],
+          "downloads": [
+            {
+              "title": "Module Five- Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/TpJK8ILPT-Kshz-JkfQpWA/72755/build-a-brand_workbook-_module_5_vehicle.pdf"
+            }
+          ],
           "body_md": "Module 5- your vehicle/visibility\n\nScheduling Content\n\n[VIDEO:https://www.youtube.com/embed/4Fc3hi\\_nMJQ?si=3LTsPlLD8zZ1rP9s]\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Module Five- Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\nTry Planoly\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nComplete course\n\nPhotography\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         },
         {
@@ -267,6 +560,13 @@ export const COURSE = {
           "slug": "photography",
           "video_ids": [
             "dV9-8hhEP8o"
+          ],
+          "downloads": [
+            {
+              "title": "Module Five- Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/TpJK8ILPT-Kshz-JkfQpWA/72755/build-a-brand_workbook-_module_5_vehicle.pdf"
+            }
           ],
           "body_md": "Module 5- your vehicle/visibility\n\nYour Brand Photos\n\n[VIDEO:https://www.youtube.com/embed/dV9-8hhEP8o?si=rzNYOAYhuLQG8DRq]\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Module Five- Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\nBook A Photo Session With LiLo\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nComplete course\n\nWhat's Next?\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         },
@@ -277,6 +577,23 @@ export const COURSE = {
           "video_ids": [
             "TZqrieCEVkI"
           ],
+          "downloads": [
+            {
+              "title": "Module Five- Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/TpJK8ILPT-Kshz-JkfQpWA/72755/build-a-brand_workbook-_module_5_vehicle.pdf"
+            },
+            {
+              "title": "Vehicle Implementation Checklist",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/qahP-rxgQ_iSm2le6VH5_A/72755/1_vehicle_checklist.pdf"
+            },
+            {
+              "title": "Complete Workbook (all 5 modules)",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/B5wpr2O-QMWfqRkQk9xQrQ/72755/build-a-brand_workbook_complete.pdf"
+            }
+          ],
           "body_md": "Module 5- your vehicle/visibility\n\nYour Brand Photos\n\n[VIDEO:https://www.youtube.com/embed/TZqrieCEVkI?si=HexPV55YALTCS4DR]\n\nCongrats! You finished the course. Now you need to pull it all together to makes sure you have a consistent and cohesive brand that is going to connect to your dream customers and make you money. If you want a brand expert to reassure you and help you pull it all together, I have you covered. In 60 minutes we can go over all that you have created to ensure that you are on the right track. This final step will give you confidence to tell the world what you have to offer and\n\nstart making money!\n\nPower Hour Call\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Module Five- Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Vehicle Implementation Checklist\n\n##### File size / description\n\n###### DOWNLOAD\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Complete Workbook (all 5 modules)\n\n##### File size / description\n\n###### DOWNLOAD\n\nInstagram Social Media Templates  \n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nComplete course\n\nEverything You Need!\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         }
       ]
@@ -285,12 +602,76 @@ export const COURSE = {
       "order": 6,
       "title": "Module Six: Tools, Downloads, Templates",
       "slug": "module-six-tools-downloads-templates",
+      "workbook": {
+        "title": "Complete Workbook",
+        "description": "File size / description",
+        "url": "https://static.showit.co/file/B5wpr2O-QMWfqRkQk9xQrQ/72755/build-a-brand_workbook_complete.pdf"
+      },
+      "bonus_downloads": [
+        {
+          "title": "20 Video Prompts & 100 Caption Starters",
+          "description": "File size / description",
+          "url": "https://static.showit.co/file/FPYER_NNTbG-lTokGRm3uA/72755/100_content_ideas_with_video_prompts.pdf"
+        },
+        {
+          "title": "Weekly Content Calendar",
+          "description": "File size / description",
+          "url": "https://static.showit.co/file/MxEbESdVSCGR2FjJxWL2dg/72755/weekly_planner.pdf"
+        },
+        {
+          "title": "Complete Implementation Checklists",
+          "description": "File size / description",
+          "url": "https://static.showit.co/file/ZGxEkvgHTFiIqsYH6eZNRA/72755/implementation_checklists-_build-a-brand.pdf"
+        },
+        {
+          "title": "Monthly Content Calendar",
+          "description": "File size / description",
+          "url": "https://static.showit.co/file/o4yvkjG2QaCTilQM6vEa4g/72755/monthly_content_calendar_1.pdf"
+        },
+        {
+          "title": "Content Pillars",
+          "description": "File size / description",
+          "url": "https://static.showit.co/file/xUdKgAjZT8OALzNPdx_vDw/72755/content_breakdown.pdf"
+        }
+      ],
       "lessons": [
         {
           "order": 1,
           "title": "Everything You Need!",
           "slug": "everything-you-need",
           "video_ids": [],
+          "downloads": [
+            {
+              "title": "Complete Workbook",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/B5wpr2O-QMWfqRkQk9xQrQ/72755/build-a-brand_workbook_complete.pdf"
+            },
+            {
+              "title": "Complete Implementation Checklists",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/ZGxEkvgHTFiIqsYH6eZNRA/72755/implementation_checklists-_build-a-brand.pdf"
+            },
+            {
+              "title": "20 Video Prompts & 100 Caption Starters",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/FPYER_NNTbG-lTokGRm3uA/72755/100_content_ideas_with_video_prompts.pdf"
+            },
+            {
+              "title": "Weekly Content Calendar",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/MxEbESdVSCGR2FjJxWL2dg/72755/weekly_planner.pdf"
+            },
+            {
+              "title": "Monthly Content Calendar",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/o4yvkjG2QaCTilQM6vEa4g/72755/monthly_content_calendar_1.pdf"
+            },
+            {
+              "title": "Content Pillars",
+              "description": "File size / description",
+              "url": "https://static.showit.co/file/xUdKgAjZT8OALzNPdx_vDw/72755/content_breakdown.pdf"
+            }
+          ],
           "body_md": "Module 6- Tools, Downloads and Templates\n\nEverything You Need!\n\nFor those of you who like to skip to the end of a book and read the last page....this is for you. Here are all of the downloads, templates, tools, assets and bonuses that are included in this course. They are also included in the corresponding lessons, but you can use this to access everything quickly and easily!\n\nFAQ's\n\n* What if I have a question?\n\n  If you have any questions or problems, email lisa@photolilo.com. You will receive an answer in 1-2 business days.\n* What if I want to learn more about social media?\n\n  I have a mini course called \"Showing Up on Social\" and you can snag it for the discounted price of $47! Or if you want to harness the power of AI to create content, get the custom prompt creator for $37.\n\nDownloads\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Complete Workbook\n\n##### File size / description\n\n###### DOWNLOAD\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fthrive-cart-thumbnails-1708393544.jpg)\n\n### Complete Implementation Checklists\n\n##### File size / description\n\n###### DOWNLOAD\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2F100-content-ideas-with-video-prompts-1712934490.jpg)\n\n### 20 Video Prompts & 100 Caption Starters\n\n##### File size / description\n\n###### DOWNLOAD\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fvision-checklist-1712934508.jpg)\n\n### Weekly Content Calendar\n\n##### File size / description\n\n###### DOWNLOAD\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fvision-checklist-1712934508.jpg)\n\n### Monthly Content Calendar\n\n##### File size / description\n\n###### DOWNLOAD\n\n![](https://spark.thrivecart.com/500x0/user_assets%2FHDODZOLD%2Fuploads%2Fimages%2Fvision-checklist-1712934508.jpg)\n\n### Content Pillars\n\n##### File size / description\n\n###### DOWNLOAD\n\nTemplates\n\n30 Days of Social Media Content (Canva Template) Click here...\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)\n\nVisual Storyboard (Canva Template) Click here...\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)\n\nAccess all of the custom GPT's Here:\n\n[**Vision GPT**](https://chatgpt.com/g/g-67f820199c8c8191aa849db1d80848a2-vision)\n\n[**Value GPT**](https://chatgpt.com/g/g-67fe78a9ebc881918486d0218ea14e53-build-a-brand-value)\n\n[**Voice**](https://chatgpt.com/g/g-68028a355fc481919567245a3eb0437e-build-a-brand-voice)\n\n[**Visuals**](https://chatgpt.com/g/g-68029a9697c88191a8a0c3593a5d85a3-build-a-brand-visuals)\n\n[**Visibility**](https://chatgpt.com/g/g-6802bd06b6d08191b04a227b2e7d0530-build-a-brand-visibility)\n\n[**Website Report Card**](https://chatgpt.com/g/g-67e5e354e0fc8191ade48d465988b20d-website-report-card)\n\nIf you want to go deeper or if you need expert help here are some options for you:\n\n[**1 Hour Coaching Call**](https://lilophotography.hbportal.co/public/65b18b48878c310023041698)\n\n[**1:1- 30 day Coaching**](https://photolilo.com/1-1-coaching)\n\n[**VIP Day**](https://photolilo.com/vip-day)\n\nGrab the [**custom content prompt creator**](https://lilophotographyandbranding.thrivecart.com/content-creation-prompt/)**[.](https://lilophotographyandbranding.thrivecart.com/content-creation-prompt/)** This will help you create a prompt that will help you create custom content for your business week after week and month after month. Only $37.\n\n[**Showing Up on Social**](https://lilophotographyandbranding.thrivecart.com/showing-up-on-social/?coupon=HALFOFF)- A mini course about social media and how to start showing up more confidently and consistently.\n\nComplete course\n\nBuild A Brand\n\nContinue\n\n![](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)"
         }
       ]
