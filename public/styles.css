@@ -961,3 +961,18 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
 .bg-bonus__name { display: block; font-family: var(--serif); font-size: 16px; }
 .bg-bonus__desc { display: block; font-size: 12px; color: var(--ink-mute); margin-top: 2px; }
 .bg-bonus__cta { font-size: 12px; color: var(--gold-d); font-weight: 600; white-space: nowrap; }
+
+/* Admin shortcut in footer — only rendered server-side for is_admin users. */
+.footer__admin {
+  margin-left: var(--space-3);
+  padding: 4px 12px;
+  background: var(--ink);
+  color: var(--cream) !important;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none !important;
+  letter-spacing: 0.04em;
+  display: inline-block;
+}
+.footer__admin:hover { background: var(--terracotta); }

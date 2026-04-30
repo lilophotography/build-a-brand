@@ -82,14 +82,16 @@ const DEFAULTS = {
     signup_button: 'Create Account',
   },
   settings: {
+    // Used internally by api.js as fallback values when a config row is missing.
+    // Not surfaced in the admin UI — change via code deploy if you need to.
     model: 'claude-sonnet-4-6',
     max_tokens: 2048,
     max_history: 30,
   },
-  stripe: {
-    public_key: '',
-    pricing_table_id: '',
-  },
+  // No `stripe` category. Stripe configuration is Worker-secret-only:
+  //   wrangler secret put STRIPE_SECRET_KEY
+  //   wrangler secret put STRIPE_WEBHOOK_SECRET
+  // Price IDs live in wrangler.toml [vars]. Pricing tables are not used here.
 };
 
 // ============================================

@@ -128,7 +128,20 @@ export async function authenticate(request, env) {
             stripe_customer_id, onboarded, welcomed, created_at
        FROM users WHERE id = ?`
   ).bind(userId).first();
-  return user || null;
+  if (!user) return null;
+  // Cross-check: if this user's email also exists in admin_users, set is_admin
+  // so the footer can render an admin shortcut (visible only to admins).
+  // Cheap query — admin_users is tiny. Wrapped in try/catch so missing table
+  // (pre-migration) just leaves is_admin falsy.
+  try {
+    const adminRow = await env.DB.prepare(
+      'SELECT id FROM admin_users WHERE email = ?'
+    ).bind(user.email).first();
+    user.is_admin = !!adminRow;
+  } catch {
+    user.is_admin = false;
+  }
+  return user;
 }
 
 // ---------- Public handlers ----------

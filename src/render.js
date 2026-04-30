@@ -104,8 +104,14 @@ export function appNav(currentPath, user) {
 </nav>`;
 }
 
-export function publicFooter() {
+// `user` is optional. When the caller passes a logged-in user with `is_admin`
+// true, we render an explicit "Admin" link in the footer. Non-admins (and
+// logged-out visitors) see no admin entry point in the markup at all.
+export function publicFooter(user) {
   const year = new Date().getUTCFullYear();
+  const adminLink = user && user.is_admin
+    ? `<a href="/admin" class="footer__admin">Admin →</a>`
+    : '';
   return `<footer class="footer">
   <div class="footer__inner">
     <div class="footer__col">
@@ -126,7 +132,7 @@ export function publicFooter() {
     </div>
   </div>
   <div class="footer__bottom">
-    <p>© ${year} <a href="/admin" style="color:inherit;text-decoration:none">LiLo Photography &amp; Branding</a>. All rights reserved.</p>
+    <p>© ${year} LiLo Photography &amp; Branding. All rights reserved.${adminLink ? ' ' + adminLink : ''}</p>
   </div>
 </footer>`;
 }

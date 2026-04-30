@@ -1,7 +1,13 @@
 // ============================================
-// Config Admin API + Secrets Status
+// Config Admin API
 // All routes require admin auth.
 // Includes audit logging for all changes.
+//
+// Note: there is intentionally NO /admin/api/secrets/status route and no
+// admin UI surface for Stripe/Anthropic keys. Worker secrets are configured
+// exclusively via `wrangler secret put`. Surfacing them in any form (even as
+// status dots) creates a UX path that invites operators to paste keys into
+// a browser. Removed 2026-04-30.
 // ============================================
 
 import { authenticateAdmin, auditLog } from './admin-auth.js';
@@ -17,13 +23,6 @@ export async function handlePublicConfig(env) {
 }
 
 export async function handleConfigAPI(request, env, url) {
-  // Secrets status — admin auth required
-  if (url.pathname === '/admin/api/secrets/status' && request.method === 'GET') {
-    const admin = await authenticateAdmin(request, env);
-    if (!admin) return json({ error: 'Unauthorized' }, 401);
-    return getSecretsStatus(env);
-  }
-
   // All config routes require admin auth
   const admin = await authenticateAdmin(request, env);
   if (!admin) {
@@ -39,15 +38,6 @@ export async function handleConfigAPI(request, env, url) {
   if (path === '/admin/api/config/defaults' && method === 'GET') return getDefaultValues();
 
   return json({ error: 'Not found' }, 404);
-}
-
-// GET /admin/api/secrets/status
-function getSecretsStatus(env) {
-  return json({
-    stripe_key: !!env.STRIPE_SECRET_KEY,
-    webhook_secret: !!env.STRIPE_WEBHOOK_SECRET,
-    anthropic_key: !!env.ANTHROPIC_API_KEY,
-  });
 }
 
 async function ensureTable(env) {
@@ -106,7 +96,7 @@ async function upsertConfig(request, env, admin) {
     return json({ error: 'items array is required' }, 400);
   }
 
-  const validCategories = ['prompts', 'branding', 'copy', 'settings', 'stripe'];
+  const validCategories = ['prompts', 'branding', 'copy', 'settings'];
   for (const item of items) {
     if (!item.category || !item.key || item.value === undefined) {
       return json({ error: 'Each item needs category, key, and value' }, 400);

@@ -38,7 +38,7 @@ export default {
       if (path.startsWith('/admin/api/auth')) {
         return await handleAdminAuth(request, env, url);
       }
-      if (path === '/admin/api/secrets/status' || path.startsWith('/admin/api/config')) {
+      if (path.startsWith('/admin/api/config')) {
         return await handleConfigAPI(request, env, url);
       }
       if (path.startsWith('/admin/api/')) {

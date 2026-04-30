@@ -212,7 +212,6 @@
     <a href="#" onclick="showView('revenue')" data-view="revenue">Revenue</a>
     <a href="#" onclick="showView('activity')" data-view="activity">Activity</a>
     <a href="#" onclick="showView('settings')" data-view="settings">Settings</a>
-    <a href="#" onclick="showView('payments')" data-view="payments">AI &amp; Payments</a>
     <div class="spacer"></div>
     <button class="logout-btn" onclick="doLogout()">Log Out</button>
   </nav>
@@ -371,55 +370,6 @@
       </div>
     </div>
 
-    <!-- AI & Payments View -->
-    <div id="view-payments" class="view" style="display:none">
-      <h2 style="margin-bottom:1rem">AI &amp; Payments</h2>
-      <div class="detail-card" style="margin-bottom:1rem">
-        <h4 style="margin-bottom:1rem">AI Model</h4>
-        <div class="field-group"><label>Model</label>
-          <select id="settings-model" data-cat="settings" data-key="model">
-            <option value="claude-haiku-4-5-20251001">Haiku 4.5</option>
-            <option value="claude-sonnet-4-20250514">Sonnet 4</option>
-            <option value="claude-opus-4-20250514">Opus 4</option>
-          </select></div>
-        <div class="field-group"><label>Max Tokens</label><input type="number" id="settings-max_tokens" data-cat="settings" data-key="max_tokens" min="256" max="8192" step="256"><p class="helper">Maximum length of AI responses (256-8192)</p></div>
-        <div class="field-group"><label>Conversation History Length</label><input type="number" id="settings-max_history" data-cat="settings" data-key="max_history" min="2" max="50" step="2"><p class="helper">Number of previous messages included for context (2-50)</p></div>
-        <div class="btn-row"><button class="btn-reset" onclick="resetCategory('settings')">Reset to Default</button><button class="btn-save" onclick="saveAISettings()">Save AI Settings</button></div>
-      </div>
-      <div class="detail-card" style="margin-bottom:1rem">
-        <h4 style="margin-bottom:1rem">Stripe Config</h4>
-        <p class="helper" style="margin-bottom:1rem">Connect Stripe to accept payments. Secret keys are set as Worker secrets and never stored in the database.</p>
-        <div class="field-group"><label>Publishable Key</label><input type="text" id="stripe-public_key" data-cat="stripe" data-key="public_key" placeholder="pk_test_... or pk_live_..."><p class="helper">Find this in Stripe Dashboard &gt; Developers &gt; API Keys</p></div>
-        <div class="field-group"><label>Pricing Table ID</label><input type="text" id="stripe-pricing_table_id" data-cat="stripe" data-key="pricing_table_id" placeholder="prctbl_..."><p class="helper">Create a Pricing Table in Stripe Dashboard &gt; More &gt; Pricing Tables</p></div>
-        <div class="btn-row"><button class="btn-save" onclick="saveStripe()">Save Stripe Config</button></div>
-      </div>
-      <div class="detail-card" style="margin-bottom:1rem">
-        <h4 style="margin-bottom:1rem">Secrets Status</h4>
-        <p class="helper" style="margin-bottom:1rem">Set via CLI (<code>wrangler secret put KEY_NAME</code>). Cannot be changed here.</p>
-        <div style="display:flex; flex-direction:column; gap:.75rem;">
-          <div class="status-item"><span class="status-dot missing" id="dot-secret-key"></span><span>Secret Key</span></div>
-          <div class="status-item"><span class="status-dot missing" id="dot-webhook-secret"></span><span>Webhook Secret</span></div>
-          <div class="status-item"><span class="status-dot missing" id="dot-anthropic-key"></span><span>Anthropic API Key</span></div>
-        </div>
-      </div>
-      <div class="detail-card" style="margin-bottom:1rem">
-        <h4 style="margin-bottom:1rem">Webhook Setup</h4>
-        <p class="helper" style="margin-bottom:.75rem">Add this URL as a webhook endpoint in Stripe Dashboard:</p>
-        <div style="background:#f8fafc; padding:.6rem .8rem; border-radius:var(--radius); font-family:monospace; font-size:.85rem; word-break:break-all; border:1px solid var(--border);" id="webhook-url"></div>
-        <p class="helper" style="margin-top:.75rem">Subscribe to these events:</p>
-        <ul style="font-size:.8rem; color:var(--text-light); margin-top:.35rem; padding-left:1.25rem;">
-          <li><code>checkout.session.completed</code></li>
-          <li><code>customer.subscription.updated</code></li>
-          <li><code>customer.subscription.deleted</code></li>
-          <li><code>invoice.payment_succeeded</code></li>
-          <li><code>invoice.payment_failed</code></li>
-        </ul>
-      </div>
-      <div class="detail-card" style="margin-bottom:1rem">
-        <h4 style="margin-bottom:.75rem">Customer Portal</h4>
-        <p class="helper">Enable in Stripe Dashboard &gt; Settings &gt; Billing &gt; Customer Portal. Lets members change plans, update payment methods, and cancel from their profile page.</p>
-      </div>
-    </div>
     <!-- Footer -->
     <div class="footer">
       Created by <a href="https://steinsolutions.ai" target="_blank">Stein Solutions</a>
@@ -536,7 +486,6 @@ function showView(view) {
   if (view === 'revenue') loadRevenue();
   if (view === 'activity') loadActivity();
   if (view === 'settings') loadSettings();
-  if (view === 'payments') loadPayments();
 }
 
 // ============================================
@@ -947,49 +896,6 @@ function renderCopy() {
   } else { container.innerHTML = ''; }
 }
 
-async function loadPayments() {
-  await loadConfig();
-  renderAISettings();
-  renderStripeConfig();
-  checkSecretsStatus();
-}
-
-function renderAISettings() {
-  var sd = configDefaults.settings || {};
-  var so = currentConfig.settings || {};
-  var model = (so.model && so.model.value) || sd.model || 'claude-sonnet-4-20250514';
-  var el = document.getElementById('settings-model');
-  if (el) el.value = model;
-  setFieldValue('settings-max_tokens', so, sd, 'max_tokens');
-  setFieldValue('settings-max_history', so, sd, 'max_history');
-}
-
-function renderStripeConfig() {
-  var sd = configDefaults.stripe || {};
-  var so = currentConfig.stripe || {};
-  setFieldValue('stripe-public_key', so, sd, 'public_key');
-  setFieldValue('stripe-pricing_table_id', so, sd, 'pricing_table_id');
-  var wh = document.getElementById('webhook-url');
-  if (wh) wh.textContent = location.origin + '/admin/api/stripe/webhook';
-}
-
-async function checkSecretsStatus() {
-  try {
-    var res = await api('/secrets/status');
-    var dk = document.getElementById('dot-secret-key');
-    var dw = document.getElementById('dot-webhook-secret');
-    var da = document.getElementById('dot-anthropic-key');
-    if (dk) dk.className = 'status-dot ' + (res.stripe_key ? 'active' : 'missing');
-    if (dw) dw.className = 'status-dot ' + (res.webhook_secret ? 'active' : 'missing');
-    if (da) da.className = 'status-dot ' + (res.anthropic_key ? 'active' : 'missing');
-  } catch(e) {
-    ['dot-secret-key','dot-webhook-secret','dot-anthropic-key'].forEach(function(id) {
-      var el = document.getElementById(id);
-      if (el) el.className = 'status-dot missing';
-    });
-  }
-}
-
 async function savePrompt(key) {
   var el = document.getElementById('prompt-' + key);
   if (!el) return;
@@ -1016,24 +922,6 @@ async function saveCopy() {
   await saveItems(items);
 }
 
-async function saveAISettings() {
-  var items = [];
-  document.querySelectorAll('#view-payments [data-cat="settings"]').forEach(function(el) {
-    var val = el.value;
-    if (el.type === 'number') val = parseInt(val) || 0;
-    items.push({ category: 'settings', key: el.dataset.key, value: val });
-  });
-  await saveItems(items);
-}
-
-async function saveStripe() {
-  var items = [];
-  document.querySelectorAll('#view-payments [data-cat="stripe"]').forEach(function(el) {
-    items.push({ category: 'stripe', key: el.dataset.key, value: el.value.trim() });
-  });
-  await saveItems(items);
-}
-
 async function saveItems(items) {
   try {
     var res = await api('/config', { method: 'PUT', body: JSON.stringify({ items: items }) });
@@ -1047,7 +935,7 @@ async function resetKey(category, key) {
   try {
     var res = await api('/config/reset', { method: 'POST', body: JSON.stringify({ category: category, key: key }) });
     if (res.error) { toast(res.error, true); }
-    else { toast(res.message); if (currentView === 'settings') loadSettings(); if (currentView === 'payments') loadPayments(); }
+    else { toast(res.message); if (currentView === 'settings') loadSettings(); }
   } catch(e) { toast('Reset failed', true); }
 }
 
@@ -1056,7 +944,7 @@ async function resetCategory(category) {
   try {
     var res = await api('/config/reset', { method: 'POST', body: JSON.stringify({ category: category, key: '*' }) });
     if (res.error) { toast(res.error, true); }
-    else { toast(res.message); if (currentView === 'settings') loadSettings(); if (currentView === 'payments') loadPayments(); }
+    else { toast(res.message); if (currentView === 'settings') loadSettings(); }
   } catch(e) { toast('Reset failed', true); }
 }
 

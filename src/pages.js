@@ -170,7 +170,7 @@ export function renderLanding(user) {
   return htmlResponse(page({
     title: 'Build a Brand · LiLo Photography & Branding',
     nav: publicNav(user),
-    main: main + publicFooter(),
+    main: main + publicFooter(user),
     bodyClass: 'page-landing',
   }));
 }
