@@ -2,6 +2,7 @@
 
 import { esc, page, publicNav, appNav, publicFooter, htmlResponse } from './render.js';
 import { TOOL_META, TOOL_ORDER, TOOL_INTROS } from './prompts.js';
+import { getVData, getCourseWelcomeLesson, getBonusModule, renderLessonBody } from './course.js';
 
 // ============================================================
 // PUBLIC: Landing page
@@ -274,8 +275,10 @@ export function renderLisaLetter(user) {
       <p>What you're about to do isn't a course. It's a conversation. Five of them, actually. One for each pillar your brand needs to feel real and bring in the right people.</p>
       <p>You'll move through Vision, Value, Voice, Visuals, and Visibility with my AI brand strategist. She's trained on the same questions I'd ask if we were sitting across a coffee table. Take your time. Skip what doesn't fit. Go deep where it does. There's no wrong way to do this.</p>
       <p>By the end you'll have a Brand Guide PDF you can use as your north star for every decision. Pages, posts, photos, hires, prices. All of it gets easier when you know what your brand actually stands for.</p>
-      <p>Let's build something you're proud of.</p>
+      <p>Watch the quick orientation below, then we dive in.</p>
     </div>
+
+    ${renderWelcomeVideoCard({ inline: true })}
 
     <p class="lisa-letter__sign">Lisa</p>
 
@@ -352,7 +355,8 @@ export function renderDashboard(user, progressRows) {
   const isCoachingTier = user.tier === 'coaching' || user.has_call_credit;
   const rightRail = isCoachingTier ? coachingCard(user, completedCount) : upsellCard(completedCount);
 
-  // The path / map of 5 V's
+  // The path / map of 5 V's — each station now surfaces multi-step progress
+  // (videos watched · workbook · chat · summary) on top of the headline state.
   const stations = TOOL_ORDER.map((tool, i) => {
     const meta = TOOL_META[tool];
     const row = progressByTool[tool];
@@ -367,6 +371,8 @@ export function renderDashboard(user, progressRows) {
       ? `<a href="/brand-builder/${tool}" class="station__action station__action--ghost">Revisit →</a>`
       : `<a href="/brand-builder/${tool}" class="station__action">${inProgress ? 'Continue →' : 'Start →'}</a>`;
 
+    const stepChips = locked ? '' : renderStepChips(tool, row);
+
     return `<article class="station ${state}">
       <div class="station__marker">
         ${done
@@ -378,11 +384,35 @@ export function renderDashboard(user, progressRows) {
           <h3 class="station__title">${esc(meta.label)}</h3>
           <p class="station__tag">${esc(meta.tagline)}</p>
         </header>
+        ${stepChips}
         ${row?.summary ? `<p class="station__preview">${esc(stripWhitespace(row.summary).slice(0, 180))}${row.summary.length > 180 ? '…' : ''}</p>` : ''}
       </div>
       <div class="station__action-wrap">${action}</div>
     </article>`;
   }).join('');
+
+  // 6th station — the Brand Guide finale. Locked until all 5 V's are saved.
+  const guideUnlocked = completedCount === 5;
+  const guideStation = `<article class="station station--guide ${guideUnlocked ? 'is-active' : 'is-locked'}">
+    <div class="station__marker"><span>★</span></div>
+    <div class="station__body">
+      <header>
+        <h3 class="station__title">Your Brand Guide</h3>
+        <p class="station__tag">The polished PDF compilation of all 5 V's.</p>
+      </header>
+      ${guideUnlocked
+        ? `<p class="station__preview">All 5 sessions saved. Time to bring it home.</p>`
+        : `<p class="station__preview">Unlocks when all 5 sessions are locked in.</p>`}
+    </div>
+    <div class="station__action-wrap">
+      ${guideUnlocked
+        ? `<a href="/brand-guide" class="station__action">Download your Brand Guide →</a>`
+        : `<span class="station__lock">${5 - completedCount} session${completedCount === 4 ? '' : 's'} to go</span>`}
+    </div>
+  </article>`;
+
+  // Welcome video at the very top (course-wide intro lesson).
+  const welcomeVideo = renderWelcomeVideoCard();
 
   const main = `
 <section class="dash">
@@ -399,6 +429,8 @@ export function renderDashboard(user, progressRows) {
     </div>
   </header>
 
+  ${welcomeVideo}
+
   <div class="dash__hero">
     <div class="hero-card">
       <p class="hero-card__eyebrow">${nextDoneOrInProgress ? 'Pick up where you left off' : 'Up next'}</p>
@@ -411,12 +443,63 @@ export function renderDashboard(user, progressRows) {
 
   <section class="path">
     <p class="eyebrow eyebrow--small">The path</p>
-    <h2 class="path__title">All five sessions</h2>
-    <div class="path__stations">${stations}</div>
+    <h2 class="path__title">All five sessions, then your Brand Guide</h2>
+    <div class="path__stations">${stations}${guideStation}</div>
   </section>
 </section>
 `;
   return htmlResponse(page({ title: 'Your Brand Journey', nav: appNav('/dashboard', user), main, bodyClass: 'page-dashboard' }));
+}
+
+// Multi-step progress chips for a V station card on the dashboard.
+// Surfaces {videos watched · workbook · chat · summary} compactly.
+function renderStepChips(tool, row) {
+  const vData = getVData(tool);
+  const totalVideos = (vData?.lessons || []).filter(l => l.video_ids && l.video_ids.length > 0).length;
+  let sp = {};
+  try { sp = typeof row?.step_progress === 'string' ? JSON.parse(row.step_progress) : (row?.step_progress || {}); } catch {}
+  const watched = Array.isArray(sp.videos_watched) ? sp.videos_watched.length : 0;
+  const watchedCapped = Math.min(watched, totalVideos);
+  const workbook = !!sp.workbook_downloaded_at;
+  const chatStarted = !!sp.chat_started_at || (Array.isArray(safeJSONParse(row?.messages, [])) && safeJSONParse(row?.messages, []).length > 0);
+  const summary = !!row?.completed;
+
+  const chip = (filled, label) =>
+    `<span class="step-chip ${filled ? 'is-done' : ''}"><span class="step-chip__dot" aria-hidden="true">${filled ? '✓' : '○'}</span>${label}</span>`;
+
+  return `<div class="step-chips">
+    ${totalVideos > 0
+      ? `<span class="step-chip ${watchedCapped === totalVideos ? 'is-done' : watchedCapped > 0 ? 'is-progress' : ''}"><span class="step-chip__dot" aria-hidden="true">${watchedCapped === totalVideos ? '✓' : '▶'}</span>${watchedCapped}/${totalVideos} videos</span>`
+      : ''}
+    ${chip(workbook, 'workbook')}
+    ${chip(chatStarted, 'chat')}
+    ${chip(summary, 'summary')}
+  </div>`;
+}
+
+// Course-wide welcome video block. Used at the top of the dashboard and
+// inside the Lisa letter page. Same source video, replayable any time.
+// `inline: true` skips the surrounding card chrome (used inside the letter).
+function renderWelcomeVideoCard(opts = {}) {
+  const lesson = getCourseWelcomeLesson();
+  const videoId = lesson?.video_ids?.[0];
+  if (!videoId) return '';
+  const iframe = `<div class="welcome-video__frame">
+    <iframe src="https://www.youtube.com/embed/${esc(videoId)}?rel=0"
+      title="Welcome from Lisa"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      referrerpolicy="strict-origin-when-cross-origin"
+      allowfullscreen></iframe>
+  </div>`;
+  if (opts.inline) return `<div class="welcome-video welcome-video--inline">${iframe}</div>`;
+  return `<aside class="welcome-video">
+    <div class="welcome-video__body">
+      <p class="eyebrow">A note from Lisa</p>
+      <h2 class="welcome-video__title">Watch first. Build second.</h2>
+      <p class="welcome-video__lede">A 90-second orientation on how to make this course work for you. Replay any time.</p>
+    </div>
+    ${iframe}
+  </aside>`;
 }
 
 function coachingCard(user, completedCount) {
@@ -461,15 +544,17 @@ function upsellCard(completedCount) {
 // APP: Brand Builder (chat)
 // ============================================================
 
-export function renderBrandBuilder(user, tool, progressRow) {
+export function renderBrandBuilder(user, tool, progressRow, vData, stepProgress) {
   const meta = TOOL_META[tool];
   const intro = TOOL_INTROS[tool];
   const idx = TOOL_ORDER.indexOf(tool);
   const nextTool = TOOL_ORDER[idx + 1] || null;
   const prevTool = TOOL_ORDER[idx - 1] || null;
   const completed = !!progressRow?.completed;
+  const summary = progressRow?.summary || '';
+  const watched = new Set((stepProgress?.videos_watched) || []);
+  const workbookDownloaded = !!stepProgress?.workbook_downloaded_at;
 
-  // We hydrate the chat state into a JSON blob the client app reads on load.
   const initialState = {
     tool,
     meta,
@@ -480,20 +565,142 @@ export function renderBrandBuilder(user, tool, progressRow) {
     messages: progressRow?.messages ? safeJSONParse(progressRow.messages, []) : [],
   };
 
+  const stepNav = TOOL_ORDER.map(t => {
+    const m = TOOL_META[t];
+    const cls = t === tool ? 'v-stepnav__step is-current' : 'v-stepnav__step';
+    return `<a href="/brand-builder/${t}" class="${cls}"><span class="v-stepnav__num">${m.num}</span><span class="v-stepnav__label">${esc(m.label)}</span></a>`;
+  }).join('');
+
+  const watchSection = renderVWatch(tool, vData?.lessons || [], watched);
+  const workbookSection = renderVWorkbook(tool, vData?.workbook, workbookDownloaded);
+  const buildSection = renderVBuild(initialState, meta);
+  const lockSection = renderVLockIn(meta, summary, nextTool, completed);
+
   const main = `
-<div class="builder">
-  <header class="builder__header">
-    <div>
-      <p class="eyebrow"><span class="eyebrow__num">${meta.num}</span> ${esc(meta.label)}</p>
-      <h1 class="builder__title">${esc(meta.tagline)}</h1>
-    </div>
-    <div class="builder__nav">
-      ${prevTool ? `<a class="link-quiet" href="/brand-builder/${prevTool}">← ${esc(TOOL_META[prevTool].label)}</a>` : ''}
-      ${nextTool ? `<a class="link-quiet" href="/brand-builder/${nextTool}">${esc(TOOL_META[nextTool].label)} →</a>` : ''}
-    </div>
+<nav class="v-stepnav">
+  <div class="v-stepnav__inner">${stepNav}</div>
+</nav>
+
+<div class="v-page" data-tool="${esc(tool)}">
+
+  <header class="v-hero">
+    <p class="eyebrow eyebrow--gold">Module ${meta.num} · ${esc(meta.label)}</p>
+    <h1 class="v-hero__title">${esc(meta.tagline)}</h1>
+    <p class="v-hero__lede">${esc(vDescription(tool))}</p>
   </header>
 
-  <div class="builder__shell">
+  ${watchSection}
+  ${workbookSection}
+  ${buildSection}
+  ${lockSection}
+
+  <nav class="v-page__nav">
+    ${prevTool ? `<a class="link-quiet" href="/brand-builder/${prevTool}">← ${esc(TOOL_META[prevTool].label)}</a>` : '<span></span>'}
+    ${nextTool ? `<a class="link-quiet" href="/brand-builder/${nextTool}">${esc(TOOL_META[nextTool].label)} →</a>` : '<a class="link-quiet" href="/brand-guide">Your Brand Guide →</a>'}
+  </nav>
+</div>
+`;
+  return htmlResponse(page({
+    title: `${meta.label} · Build a Brand`,
+    nav: appNav(`/brand-builder/${tool}`, user),
+    main,
+    bodyClass: 'page-builder page-v',
+  }));
+}
+
+// What we'll do here — one sentence per V, written like a course teacher.
+function vDescription(tool) {
+  return ({
+    vision: "Watch Lisa walk through Mission, Vision, and Values. Then sit down with your AI strategist and lock yours in.",
+    value: "Discover what makes you irreplaceable and write a portrait of the person who needs exactly what you offer.",
+    voice: 'Find the words that sound like you. Build "I Help" statements, common language, and an About Me that converts.',
+    visuals: "Vibe, color palette, logo, fonts. Walk out with a visual identity that finally matches what you've built.",
+    visibility: "Choose where to show up, what content to make, and exactly what photos you need to attract your people.",
+  })[tool] || '';
+}
+
+// V page — Section 1: Watch
+// Featured video player with chip-rail underneath. Each chip swaps the player.
+// Public/app.js wires the click handler + POSTs /api/progress/step.
+function renderVWatch(tool, lessons, watchedSet) {
+  if (!lessons || lessons.length === 0) {
+    return ''; // No videos for this V — section hides entirely.
+  }
+  // First-with-video becomes the initial featured lesson.
+  const firstVideo = lessons.find(l => l.video_ids && l.video_ids.length > 0) || lessons[0];
+  const featuredId = firstVideo.video_ids?.[0] || '';
+  const chips = lessons.map((l, i) => {
+    const vid = l.video_ids?.[0] || '';
+    if (!vid) return ''; // Skip text-only lessons
+    const watched = watchedSet.has(vid);
+    const cls = `v-chip ${watched ? 'is-watched' : ''} ${l.slug === firstVideo.slug ? 'is-current' : ''}`.trim();
+    return `<button type="button" class="${cls}" data-lesson-slug="${esc(l.slug)}" data-video-id="${esc(vid)}">
+      <span class="v-chip__num">${String(i + 1).padStart(2, '0')}</span>
+      <span class="v-chip__title">${esc(l.title)}</span>
+      <span class="v-chip__check" aria-hidden="true">✓</span>
+    </button>`;
+  }).join('');
+
+  return `
+<section class="v-watch" data-section="watch">
+  <header class="v-section__head">
+    <p class="v-section__num">01</p>
+    <h2 class="v-section__title">Watch</h2>
+    <p class="v-section__lede">${esc(lessons.length)} video${lessons.length === 1 ? '' : 's'} from Lisa. Watch in any order.</p>
+  </header>
+  <div class="v-watch__player">
+    <div class="v-watch__frame">
+      <iframe data-video-frame
+        src="https://www.youtube.com/embed/${esc(featuredId)}?rel=0"
+        title="${esc(firstVideo.title)}"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allowfullscreen></iframe>
+    </div>
+    <p class="v-watch__caption" data-video-caption>${esc(firstVideo.title)}</p>
+  </div>
+  <div class="v-chip-rail" role="tablist" aria-label="${esc(TOOL_META[tool].label)} videos">${chips}</div>
+</section>`;
+}
+
+// V page — Section 2: Workbook
+function renderVWorkbook(tool, workbook, alreadyDownloaded) {
+  if (!workbook || !workbook.url) return '';
+  return `
+<section class="v-workbook" data-section="workbook">
+  <header class="v-section__head">
+    <p class="v-section__num">02</p>
+    <h2 class="v-section__title">Workbook</h2>
+    <p class="v-section__lede">Download Lisa's PDF workbook. Fill it as you watch — or print and write by hand.</p>
+  </header>
+  <a class="v-workbook__card ${alreadyDownloaded ? 'is-done' : ''}"
+     href="${esc(workbook.url)}"
+     target="_blank"
+     rel="noopener"
+     data-workbook-link>
+    <div class="v-workbook__icon" aria-hidden="true">📓</div>
+    <div class="v-workbook__body">
+      <p class="v-workbook__title">${esc(workbook.title || 'Module Workbook')}</p>
+      <p class="v-workbook__desc">${esc(workbook.description || 'PDF — fillable and printable')}</p>
+    </div>
+    <div class="v-workbook__cta">
+      <span class="v-workbook__cta-text">${alreadyDownloaded ? 'Downloaded — open again' : 'Download PDF'}</span>
+      <span aria-hidden="true">↓</span>
+    </div>
+  </a>
+</section>`;
+}
+
+// V page — Section 3: Build (the AI chat — preserved exactly from prior renderBrandBuilder)
+function renderVBuild(initialState, meta) {
+  return `
+<section class="v-build" data-section="build">
+  <header class="v-section__head">
+    <p class="v-section__num">03</p>
+    <h2 class="v-section__title">Build with your strategist</h2>
+    <p class="v-section__lede">Now sit down with Lisa's AI brand strategist. Answer her questions, take your time. Your work saves as you go.</p>
+  </header>
+  <div class="v-build__shell">
     <div id="chat" class="chat" data-state='${esc(JSON.stringify(initialState))}'>
       <div class="chat__transcript" data-transcript></div>
 
@@ -512,14 +719,24 @@ export function renderBrandBuilder(user, tool, progressRow) {
       </div>
     </div>
   </div>
-</div>
-`;
-  return htmlResponse(page({
-    title: `${meta.label} · Build a Brand`,
-    nav: appNav(`/brand-builder/${tool}`, user),
-    main,
-    bodyClass: 'page-builder',
-  }));
+</section>`;
+}
+
+// V page — Section 4: Lock it in (only renders when summary exists)
+function renderVLockIn(meta, summary, nextTool, completed) {
+  if (!completed && !summary) return '';
+  const nextHref = nextTool ? `/brand-builder/${nextTool}` : '/brand-guide';
+  const nextLabel = nextTool ? `Continue to ${TOOL_META[nextTool].label}` : 'See your Brand Guide';
+  return `
+<section class="v-lock-in" data-section="lock-in">
+  <header class="v-section__head">
+    <p class="v-section__num">04</p>
+    <h2 class="v-section__title">${esc(meta.label)} — locked in</h2>
+    <p class="v-section__lede">Save this. It's the foundation for what comes next.</p>
+  </header>
+  ${summary ? `<div class="v-lock-in__summary">${esc(summary).replace(/\n\n/g, '</p><p>').replace(/^/, '<p>').replace(/$/, '</p>')}</div>` : ''}
+  <a href="${nextHref}" class="btn btn--gold v-lock-in__next">${esc(nextLabel)} →</a>
+</section>`;
 }
 
 // ============================================================
@@ -543,16 +760,43 @@ export function renderBrandGuide(user, progressRows) {
           <h3 class="bg-section__title">${esc(m.label)}</h3>
           <p class="bg-section__tag">${esc(m.tagline)}</p>
         </div>
-        <div class="bg-section__state">${done ? '✓ Complete' : `<a href="/brand-builder/${t}" class="link-quiet">Start →</a>`}</div>
+        <div class="bg-section__state">${done ? '✓ Complete' : `<a href="/brand-builder/${t}" class="link-quiet">Continue ${esc(m.label)} →</a>`}</div>
       </header>
       <div class="bg-section__body">
         ${summary
           ? `<p class="bg-section__summary">${esc(summary)}</p>
              <a href="/brand-builder/${t}" class="link-quiet">Edit in session →</a>`
-          : `<p class="bg-section__pending">Complete this session to see your ${esc(m.label)} summary here.</p>`}
+          : `<p class="bg-section__pending">Open <a href="/brand-builder/${t}">${esc(m.label)}</a> to watch the videos, do the workbook, and lock in your summary.</p>`}
       </div>
     </section>`;
   }).join('');
+
+  // Bonus section — Module 6 of the ThriveCart course (Tools, Downloads, Templates).
+  // Built from the manifest's bonus module: lists the workbook + every bonus
+  // download Lisa packed in. Always visible (not gated) so users can grab the
+  // resources even mid-journey.
+  const bonusModule = getBonusModule();
+  const bonusDownloads = bonusModule
+    ? [bonusModule.workbook, ...(bonusModule.bonus_downloads || [])].filter(Boolean)
+    : [];
+  const bonusSection = bonusDownloads.length === 0 ? '' : `
+<section class="bg-bonus">
+  <header class="bg-bonus__header">
+    <p class="eyebrow eyebrow--gold">Bonus</p>
+    <h2 class="bg-bonus__title">${esc(bonusModule?.title || 'Tools, Downloads, Templates')}</h2>
+    <p class="bg-bonus__lede">Everything Lisa packs into the course — workbooks, content templates, planners, implementation checklists. Yours forever.</p>
+  </header>
+  <div class="bg-bonus__grid">
+    ${bonusDownloads.map(d => `<a class="bg-bonus__card" href="${esc(d.url)}" target="_blank" rel="noopener">
+      <span class="bg-bonus__icon" aria-hidden="true">📓</span>
+      <span class="bg-bonus__body">
+        <span class="bg-bonus__name">${esc(d.title || 'Download')}</span>
+        <span class="bg-bonus__desc">${esc(d.description || 'PDF download')}</span>
+      </span>
+      <span class="bg-bonus__cta">Download ↓</span>
+    </a>`).join('')}
+  </div>
+</section>`;
 
   const main = `
 <section class="brand-guide">
@@ -583,6 +827,8 @@ export function renderBrandGuide(user, progressRows) {
   </div>
 
   <div class="brand-guide__sections">${sections}</div>
+
+  ${bonusSection}
 </section>
 `;
   return htmlResponse(page({

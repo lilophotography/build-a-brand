@@ -527,3 +527,437 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
 .vcomplete__summary-body { color: var(--ink); font-size: 15px; line-height: 1.7; white-space: pre-wrap; }
 .vcomplete__line { color: var(--ink-soft); font-style: italic; margin: 0 auto 36px; max-width: 480px; font-size: 17px; }
 .vcomplete__actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+/* =============================================================
+   V Page (the unified V journey) — Phase 2 of the UX overhaul.
+   Composed sections: Hero · Watch · Workbook · Build · Lock-in
+   Vertically stacked, editorial luxury feel, brand tokens already
+   defined in :root above.
+   ============================================================= */
+
+.v-stepnav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(250, 247, 242, 0.92);
+  backdrop-filter: saturate(140%) blur(10px);
+  border-bottom: 1px solid var(--cream-line);
+}
+.v-stepnav__inner {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 12px var(--space-5);
+  display: flex;
+  gap: var(--space-3);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.v-stepnav__inner::-webkit-scrollbar { display: none; }
+.v-stepnav__step {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 8px 14px;
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--ink-soft);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  transition: color .15s ease, background .15s ease, border-color .15s ease;
+}
+.v-stepnav__step:hover { color: var(--ink); background: var(--cream-deep); }
+.v-stepnav__step.is-current {
+  color: var(--terracotta);
+  background: var(--terracotta-l);
+  border-color: rgba(175, 73, 59, 0.18);
+}
+.v-stepnav__num {
+  display: inline-flex;
+  width: 22px; height: 22px;
+  align-items: center; justify-content: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-family: var(--serif);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+
+.v-page {
+  max-width: var(--container-narrow);
+  margin: 0 auto;
+  padding: var(--space-7) var(--space-5) var(--space-9);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+.v-page__nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--cream-line);
+}
+
+.v-hero {
+  text-align: center;
+  padding-bottom: var(--space-3);
+}
+.v-hero__title {
+  font-family: var(--serif);
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 400;
+  color: var(--ink);
+  margin: var(--space-3) 0 var(--space-4);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+.v-hero__lede {
+  font-size: 17px;
+  color: var(--ink-soft);
+  max-width: 540px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.v-section__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--cream-line);
+}
+.v-section__num {
+  font-family: var(--serif);
+  font-size: 28px;
+  color: var(--gold);
+  margin: 0;
+  line-height: 1;
+}
+.v-section__title {
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 400;
+  color: var(--ink);
+  margin: 0;
+}
+.v-section__lede {
+  margin: 0 0 0 auto;
+  font-size: 14px;
+  color: var(--ink-soft);
+  max-width: 360px;
+  text-align: right;
+}
+@media (max-width: 600px) {
+  .v-section__lede { margin-left: 0; text-align: left; max-width: none; }
+}
+
+/* Watch */
+.v-watch__player { margin-bottom: var(--space-5); }
+.v-watch__frame {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--ink);
+  box-shadow: var(--shadow-lg);
+}
+.v-watch__frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.v-watch__caption {
+  margin: var(--space-4) 0 0;
+  font-family: var(--serif);
+  font-size: 18px;
+  color: var(--ink);
+  text-align: center;
+}
+.v-chip-rail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+.v-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--cream);
+  border: 1px solid var(--cream-line);
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--ink-soft);
+  transition: all .15s ease;
+}
+.v-chip:hover { border-color: var(--gold); color: var(--ink); }
+.v-chip.is-current {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--cream);
+}
+.v-chip__num { font-family: var(--serif); font-size: 12px; opacity: 0.7; }
+.v-chip__title { font-weight: 500; }
+.v-chip__check {
+  display: none;
+  color: var(--gold);
+  font-weight: 700;
+}
+.v-chip.is-watched .v-chip__check { display: inline; }
+
+/* Workbook */
+.v-workbook__card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-5) var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--cream-deep);
+  border: 1px solid var(--cream-line);
+  text-decoration: none;
+  color: inherit;
+  transition: all .15s ease;
+}
+.v-workbook__card:hover {
+  border-color: var(--terracotta);
+  box-shadow: var(--shadow);
+  transform: translateY(-1px);
+}
+.v-workbook__icon { font-size: 32px; }
+.v-workbook__title {
+  font-family: var(--serif);
+  font-size: 20px;
+  margin: 0 0 4px;
+  color: var(--ink);
+}
+.v-workbook__desc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.v-workbook__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: var(--terracotta);
+  color: var(--cream);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.v-workbook__card.is-done .v-workbook__cta {
+  background: var(--gold);
+  color: var(--ink);
+}
+@media (max-width: 600px) {
+  .v-workbook__card { grid-template-columns: 1fr; text-align: center; }
+  .v-workbook__cta { justify-content: center; }
+}
+
+/* Build (chat) — let the existing .chat styles drive layout, just give the
+   section a little chrome so it sits well with Watch/Workbook. */
+.v-build__shell {
+  background: var(--white);
+  border: 1px solid var(--cream-line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Lock-in */
+.v-lock-in {
+  background: var(--ink);
+  color: var(--cream);
+  padding: var(--space-7);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+.v-lock-in .v-section__head { border-bottom-color: rgba(250, 247, 242, 0.15); justify-content: center; }
+.v-lock-in .v-section__num { color: var(--gold); }
+.v-lock-in .v-section__title { color: var(--cream); }
+.v-lock-in .v-section__lede { color: rgba(250, 247, 242, 0.7); margin: 0 auto; }
+.v-lock-in__summary {
+  background: rgba(250, 247, 242, 0.06);
+  border-left: 3px solid var(--gold);
+  padding: var(--space-5);
+  margin: var(--space-5) auto;
+  text-align: left;
+  border-radius: var(--radius);
+  max-width: 560px;
+  font-family: var(--serif);
+  font-size: 15px;
+  line-height: 1.7;
+  color: rgba(250, 247, 242, 0.92);
+}
+.v-lock-in__summary p { margin: 0 0 var(--space-3); }
+.v-lock-in__summary p:last-child { margin-bottom: 0; }
+.v-lock-in__next {
+  margin-top: var(--space-3);
+}
+
+/* =============================================================
+   Dashboard — Welcome video block, multi-step progress chips,
+   and the 6th Brand Guide station. Phase 3.
+   ============================================================= */
+
+.welcome-video {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: var(--space-6);
+  align-items: center;
+  margin: var(--space-6) 0 var(--space-7);
+  padding: var(--space-6);
+  background: var(--white);
+  border: 1px solid var(--cream-line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.welcome-video__title {
+  font-family: var(--serif);
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--ink);
+  margin: var(--space-2) 0 var(--space-3);
+  line-height: 1.2;
+}
+.welcome-video__lede {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.welcome-video__frame {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--ink);
+}
+.welcome-video__frame iframe {
+  position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
+}
+.welcome-video--inline {
+  margin: var(--space-5) 0;
+  display: block;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+}
+.welcome-video--inline .welcome-video__frame {
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+@media (max-width: 760px) {
+  .welcome-video { grid-template-columns: 1fr; }
+}
+
+/* Step chips on V stations */
+.step-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin-top: var(--space-3);
+}
+.step-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--cream-deep);
+  border: 1px solid var(--cream-line);
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  color: var(--ink-mute);
+  font-family: var(--sans);
+}
+.step-chip__dot { font-size: 10px; opacity: 0.7; }
+.step-chip.is-progress {
+  color: var(--terracotta);
+  background: var(--terracotta-l);
+  border-color: rgba(175, 73, 59, 0.18);
+}
+.step-chip.is-done {
+  color: var(--ink);
+  background: var(--gold-l);
+  border-color: rgba(201, 169, 110, 0.3);
+}
+.step-chip.is-done .step-chip__dot { color: var(--gold-d); opacity: 1; }
+
+/* Brand Guide station — distinct gold accent */
+.station--guide.is-active {
+  background: linear-gradient(180deg, var(--cream) 0%, var(--gold-l) 100%);
+  border-color: var(--gold);
+}
+.station--guide.is-active .station__marker {
+  background: var(--gold);
+  color: var(--ink);
+}
+.station--guide.is-locked .station__marker {
+  background: var(--cream-deep);
+  color: var(--ink-mute);
+}
+
+/* Brand Guide bonus section — Module 6 aggregate */
+.bg-bonus {
+  margin-top: var(--space-8);
+  padding-top: var(--space-7);
+  border-top: 1px dashed var(--cream-line);
+}
+.bg-bonus__header { text-align: center; margin-bottom: var(--space-6); }
+.bg-bonus__title {
+  font-family: var(--serif);
+  font-size: 32px;
+  font-weight: 400;
+  color: var(--ink);
+  margin: var(--space-2) 0 var(--space-3);
+}
+.bg-bonus__lede {
+  color: var(--ink-soft);
+  max-width: 540px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+.bg-bonus__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-4);
+}
+.bg-bonus__card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-4) var(--space-5);
+  background: var(--white);
+  border: 1px solid var(--cream-line);
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--ink);
+  transition: all .15s ease;
+}
+.bg-bonus__card:hover {
+  border-color: var(--gold);
+  box-shadow: var(--shadow);
+  transform: translateY(-1px);
+}
+.bg-bonus__icon { font-size: 24px; }
+.bg-bonus__name { display: block; font-family: var(--serif); font-size: 16px; }
+.bg-bonus__desc { display: block; font-size: 12px; color: var(--ink-mute); margin-top: 2px; }
+.bg-bonus__cta { font-size: 12px; color: var(--gold-d); font-weight: 600; white-space: nowrap; }

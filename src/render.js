@@ -91,7 +91,6 @@ export function appNav(currentPath, user) {
     </a>
     <div class="appnav__steps">${links}</div>
     <div class="appnav__right">
-      <a href="/learn" class="appnav__guide ${currentPath.startsWith('/learn') ? 'is-active' : ''}">Course</a>
       <a href="/brand-guide" class="appnav__guide">Brand Guide</a>
       <form method="POST" action="/api/auth/signout" data-signout class="appnav__signout">
         <button type="submit" class="appnav__signout-btn" title="Sign out">

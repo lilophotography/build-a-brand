@@ -391,3 +391,67 @@
     render();
   }
 })();
+
+// ============================================================
+// V Page: chip-rail video swap + workbook click tracking.
+// Independent of the chat IIFE — runs on /brand-builder/<v> pages.
+// ============================================================
+(function () {
+  const page = document.querySelector('.v-page');
+  if (!page) return;
+  const tool = page.getAttribute('data-tool');
+  if (!tool) return;
+
+  // ---- Section 1: Watch (chip-rail swap) ----
+  const frame = page.querySelector('[data-video-frame]');
+  const caption = page.querySelector('[data-video-caption]');
+  const chips = page.querySelectorAll('.v-chip');
+
+  function postStep(payload) {
+    fetch('/api/progress/step', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tool, ...payload }),
+    }).catch(() => {});
+  }
+
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      const videoId = chip.getAttribute('data-video-id');
+      const title = chip.querySelector('.v-chip__title')?.textContent || '';
+      if (!videoId || !frame) return;
+      frame.src = 'https://www.youtube.com/embed/' + encodeURIComponent(videoId) + '?rel=0&autoplay=1';
+      if (caption) caption.textContent = title;
+      // Swap "current" chip
+      chips.forEach(c => c.classList.remove('is-current'));
+      chip.classList.add('is-current');
+      // Mark watched
+      chip.classList.add('is-watched');
+      postStep({ op: 'video', value: videoId });
+    });
+  });
+
+  // Auto-select chip from #lesson=<slug> hash (legacy /learn/<slug> redirects).
+  function applyHash() {
+    const m = location.hash.match(/lesson=([^&]+)/);
+    if (!m) return;
+    const slug = decodeURIComponent(m[1]);
+    const target = page.querySelector('.v-chip[data-lesson-slug="' + CSS.escape(slug) + '"]');
+    if (target) {
+      target.click();
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+  if (location.hash.includes('lesson=')) applyHash();
+  window.addEventListener('hashchange', applyHash);
+
+  // ---- Section 2: Workbook click tracking ----
+  const workbookLink = page.querySelector('[data-workbook-link]');
+  if (workbookLink) {
+    workbookLink.addEventListener('click', () => {
+      // Don't preventDefault — we WANT the link to navigate to the PDF.
+      workbookLink.classList.add('is-done');
+      postStep({ op: 'workbook' });
+    });
+  }
+})();

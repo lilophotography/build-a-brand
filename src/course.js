@@ -1,124 +1,88 @@
-// Course library — renders the imported ThriveCart "Build A Brand" lessons
-// inside Lisa's app. Bundled at build time via tools/build_course_bundle.py.
+// Course data + lesson-body rendering for the V journey.
 //
-// Routes:
-//   /learn               -> index of all modules + lessons
-//   /learn/<slug>        -> a single lesson (markdown body + YouTube embeds)
+// The ThriveCart "Build A Brand" course is bundled at build time via
+// tools/build_course_bundle.py into ./course-content.js. This module exposes
+// small, opinionated helpers the V page (renderBrandBuilder in pages.js)
+// composes against.
 //
-// Both are gated to paid users (called from index.js after authenticate()).
-//
-// The lesson body is markdown with `[VIDEO:<embed-url>]` placeholders for
-// YouTube iframes. We convert the markdown to HTML with `marked` and replace
-// the VIDEO markers with a responsive iframe wrapper.
+// V → ThriveCart module mapping is fixed (Lisa's framework: Vision, Value,
+// Voice, Visuals, Visibility). Module 6 is the bonus aggregate and lives on
+// the Brand Guide finale, not in any V.
 
 import { marked } from 'marked';
 import { COURSE } from './course-content.js';
-import { esc, page, appNav, htmlResponse } from './render.js';
+import { esc } from './render.js';
 
-// Build a flat lesson lookup keyed by slug — for /learn/<slug>.
-const LESSONS_BY_SLUG = (() => {
-  const map = new Map();
-  for (const m of COURSE.modules) {
-    for (const l of m.lessons) {
-      map.set(l.slug, { ...l, module: m });
-    }
+// V tool → ThriveCart module.order (Module 1 = Vision, etc.)
+const V_TO_MODULE_ORDER = {
+  vision: 1,
+  value: 2,
+  voice: 3,
+  visuals: 4,
+  visibility: 5,
+};
+
+// The course's first lesson is a course-wide "Welcome" (3 YouTube videos
+// covering the framework, custom GPTs, and how to use the AI tools). It
+// belongs on /lisa + /dashboard as orientation, NOT inside the Vision V page.
+const COURSE_WIDE_WELCOME_SLUG = 'welcome';
+
+// ---------------- Public helpers ----------------
+
+// Per-V data: the module's lessons (minus the course-wide welcome on Vision),
+// the canonical workbook PDF, and any per-module bonus downloads.
+export function getVData(tool) {
+  const order = V_TO_MODULE_ORDER[tool];
+  if (!order) return null;
+  const module = COURSE.modules.find(m => m.order === order);
+  if (!module) return null;
+  const lessons = (tool === 'vision')
+    ? module.lessons.filter(l => l.slug !== COURSE_WIDE_WELCOME_SLUG)
+    : module.lessons;
+  return {
+    moduleTitle: module.title,
+    moduleSlug: module.slug,
+    workbook: module.workbook || null,
+    bonusDownloads: module.bonus_downloads || [],
+    lessons,
+  };
+}
+
+// The course-wide Welcome lesson (3 YouTube videos). Used on /lisa + /dashboard.
+export function getCourseWelcomeLesson() {
+  const m1 = COURSE.modules.find(m => m.order === 1);
+  return m1?.lessons.find(l => l.slug === COURSE_WIDE_WELCOME_SLUG) || null;
+}
+
+// Module 6 — the bonus aggregate (Complete Workbook, content templates,
+// implementation checklists). Used by the Brand Guide finale.
+export function getBonusModule() {
+  return COURSE.modules.find(m => m.order === 6) || null;
+}
+
+// Which V does this lesson slug belong to? Used by the /learn/<slug> redirect
+// in Phase 4 to send legacy URLs into the V page with a #lesson= hash.
+export function findVForLessonSlug(slug) {
+  for (const [tool, order] of Object.entries(V_TO_MODULE_ORDER)) {
+    const module = COURSE.modules.find(m => m.order === order);
+    if (module?.lessons.some(l => l.slug === slug)) return tool;
   }
-  return map;
-})();
+  return null;
+}
 
-// Replace [VIDEO:url] markers (with possibly markdown-escaped underscores)
-// with a responsive iframe block. Done before marked() so they render outside
-// of <p> wrappers cleanly.
-function expandVideoMarkers(md) {
-  // Markdown processing escapes '_' as '\_'; restore those inside VIDEO markers.
-  return md.replace(/\[VIDEO:([^\]]+)\]/g, (_, url) => {
+// Render a lesson's markdown body to safe HTML. [VIDEO:url] markers become
+// responsive iframe wrappers. Used by the Brand Guide bonus section + as a
+// utility if any V section ever wants to embed a lesson's full body.
+export function renderLessonBody(md) {
+  const expanded = (md || '').replace(/\[VIDEO:([^\]]+)\]/g, (_, url) => {
     const clean = url.replace(/\\_/g, '_');
     return `\n\n<div class="lesson-video"><iframe src="${esc(clean)}" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe></div>\n\n`;
   });
-}
-
-function renderLessonBody(md) {
-  const expanded = expandVideoMarkers(md);
   return marked.parse(expanded, { gfm: true, breaks: false });
 }
 
-// ============================================================
-// /learn — module + lesson index
-// ============================================================
-export function renderCourseIndex(user) {
-  const moduleHtml = COURSE.modules.map(m => {
-    const lessons = m.lessons.map(l => {
-      const videoBadge = l.video_ids.length > 0 ? `<span class="learn-lesson__icon" aria-hidden="true">▶</span>` : '';
-      return `<a href="/learn/${esc(l.slug)}" class="learn-lesson">
-        ${videoBadge}
-        <span class="learn-lesson__title">${esc(l.title)}</span>
-      </a>`;
-    }).join('');
-    return `<section class="learn-module">
-      <header class="learn-module__head">
-        <span class="learn-module__num">${String(m.order).padStart(2, '0')}</span>
-        <h2 class="learn-module__title">${esc(m.title)}</h2>
-      </header>
-      <div class="learn-module__lessons">${lessons}</div>
-    </section>`;
-  }).join('');
-
-  const main = `
-<div class="learn-page">
-  <header class="learn-hero">
-    <p class="eyebrow">Course Library</p>
-    <h1 class="learn-hero__title">${esc(COURSE.course.title)}</h1>
-    <p class="learn-hero__lede">${COURSE.modules.length} modules. ${LESSONS_BY_SLUG.size} lessons. Watch in any order, return any time.</p>
-  </header>
-  <div class="learn-modules">${moduleHtml}</div>
-</div>
-`;
-  return htmlResponse(page({
-    title: 'Course Library · Build a Brand',
-    nav: appNav('/learn', user),
-    main,
-    bodyClass: 'page-learn',
-  }));
-}
-
-// ============================================================
-// /learn/<slug> — single lesson
-// ============================================================
-export function renderCourseLesson(user, slug) {
-  const lesson = LESSONS_BY_SLUG.get(slug);
-  if (!lesson) return null;
-
-  const moduleLessons = lesson.module.lessons;
-  const idx = moduleLessons.findIndex(l => l.slug === slug);
-  const prev = idx > 0 ? moduleLessons[idx - 1] : null;
-  const next = idx >= 0 && idx < moduleLessons.length - 1 ? moduleLessons[idx + 1] : null;
-
-  const bodyHtml = renderLessonBody(lesson.body_md);
-
-  const navPrev = prev
-    ? `<a href="/learn/${esc(prev.slug)}" class="lesson-nav__link lesson-nav__link--prev">← ${esc(prev.title)}</a>`
-    : `<a href="/learn" class="lesson-nav__link lesson-nav__link--prev">← Back to library</a>`;
-  const navNext = next
-    ? `<a href="/learn/${esc(next.slug)}" class="lesson-nav__link lesson-nav__link--next">${esc(next.title)} →</a>`
-    : `<a href="/learn" class="lesson-nav__link lesson-nav__link--next">Library →</a>`;
-
-  const main = `
-<article class="lesson">
-  <header class="lesson__head">
-    <p class="eyebrow"><a href="/learn" class="lesson__module-link">${esc(lesson.module.title)}</a></p>
-    <h1 class="lesson__title">${esc(lesson.title)}</h1>
-  </header>
-  <div class="lesson__body">${bodyHtml}</div>
-  <nav class="lesson-nav">
-    ${navPrev}
-    ${navNext}
-  </nav>
-</article>
-`;
-  return htmlResponse(page({
-    title: `${lesson.title} · Build a Brand`,
-    nav: appNav('/learn', user),
-    main,
-    bodyClass: 'page-lesson',
-  }));
+// Build a YouTube embed URL from a video ID (with the same params we always
+// use). Used by the V page Watch section.
+export function youtubeEmbedUrl(videoId) {
+  return `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?rel=0`;
 }

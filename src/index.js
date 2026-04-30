@@ -11,7 +11,7 @@ import {
   renderLisaLetter, renderOnboarding, renderDashboard, renderBrandBuilder,
   renderBrandGuide, renderBrandGuidePrint, renderCoaching, renderVComplete,
 } from './pages.js';
-import { renderCourseIndex, renderCourseLesson } from './course.js';
+import { getVData, findVForLessonSlug } from './course.js';
 import { TOOL_ORDER } from './prompts.js';
 import { redirect, htmlResponse } from './render.js';
 
@@ -117,7 +117,7 @@ export default {
         if (path === '/onboarding') return renderOnboarding(user);
         if (path === '/dashboard') {
           const { results } = await env.DB.prepare(
-            'SELECT tool, completed, summary FROM brand_progress WHERE user_id = ?'
+            'SELECT tool, completed, summary, messages, step_progress FROM brand_progress WHERE user_id = ?'
           ).bind(user.id).all();
           return renderDashboard(user, results || []);
         }
@@ -132,9 +132,12 @@ export default {
           const tool = path.slice('/brand-builder/'.length);
           if (!TOOL_ORDER.includes(tool)) return redirect('/dashboard');
           const row = await env.DB.prepare(
-            'SELECT tool, completed, summary, messages FROM brand_progress WHERE user_id = ? AND tool = ?'
+            'SELECT tool, completed, summary, messages, step_progress FROM brand_progress WHERE user_id = ? AND tool = ?'
           ).bind(user.id, tool).first();
-          return renderBrandBuilder(user, tool, row);
+          let stepProgress = {};
+          try { stepProgress = JSON.parse(row?.step_progress || '{}') || {}; } catch {}
+          const vData = getVData(tool);
+          return renderBrandBuilder(user, tool, row, vData, stepProgress);
         }
         if (path.startsWith('/v-complete/')) {
           const tool = path.slice('/v-complete/'.length);
@@ -144,12 +147,14 @@ export default {
           ).bind(user.id, tool).first();
           return renderVComplete(user, tool, row?.summary || null);
         }
-        if (path === '/learn') return renderCourseIndex(user);
+        // Legacy /learn routes — the library is gone. Redirect to the V page
+        // a slug belongs to (with #lesson hash so the chip rail can auto-select).
+        // Bare /learn just bounces to dashboard.
+        if (path === '/learn') return redirect('/dashboard', 301);
         if (path.startsWith('/learn/')) {
           const slug = path.slice('/learn/'.length).replace(/\/$/, '');
-          const response = renderCourseLesson(user, slug);
-          if (!response) return redirect('/learn');
-          return response;
+          const v = findVForLessonSlug(slug);
+          return redirect(v ? `/brand-builder/${v}#lesson=${encodeURIComponent(slug)}` : '/dashboard', 301);
         }
       }
 

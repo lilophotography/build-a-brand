@@ -12,10 +12,60 @@ export async function handleAPI(request, env, url, user) {
   if (path === '/api/chat' && method === 'POST') return chat(request, env, user);
   if (path === '/api/progress' && method === 'GET')  return progressGet(env, user);
   if (path === '/api/progress' && method === 'POST') return progressPost(request, env, user);
+  if (path === '/api/progress/step' && method === 'POST') return progressStep(request, env, user);
   if (path === '/api/profile' && method === 'POST') return profileUpdate(request, env, user);
   if (path === '/api/brand-guide' && method === 'GET') return brandGuide(env, user);
 
   return json({ error: 'Not found' }, 404);
+}
+
+// ---------- /api/progress/step ----------
+// Records a single step event for a (user, tool) pair into brand_progress.step_progress
+// (a JSON column). Idempotent per video; first-write wins for timestamps.
+//
+// Accepted payloads:
+//   { tool: 'vision', op: 'video', value: 'xyz123' }    → adds 'xyz123' to step_progress.videos_watched
+//   { tool: 'vision', op: 'workbook' }                  → sets step_progress.workbook_downloaded_at = now
+//   { tool: 'vision', op: 'chat_started' }              → sets step_progress.chat_started_at = now (if unset)
+async function progressStep(request, env, user) {
+  if (!user.has_access) return json({ error: 'No active access' }, 402);
+  const body = await request.json().catch(() => ({}));
+  const { tool, op, value } = body || {};
+  const VALID_TOOLS = ['vision', 'value', 'voice', 'visuals', 'visibility'];
+  if (!VALID_TOOLS.includes(tool)) return json({ error: 'Invalid tool' }, 400);
+  if (!['video', 'workbook', 'chat_started'].includes(op)) return json({ error: 'Invalid op' }, 400);
+
+  // Read existing row (or absent → {}). Auto-create the brand_progress row if missing.
+  const row = await env.DB.prepare(
+    'SELECT step_progress FROM brand_progress WHERE user_id = ? AND tool = ?'
+  ).bind(user.id, tool).first();
+
+  let progress = {};
+  try { progress = JSON.parse(row?.step_progress || '{}') || {}; } catch { progress = {}; }
+  if (!Array.isArray(progress.videos_watched)) progress.videos_watched = [];
+
+  const now = new Date().toISOString();
+  if (op === 'video') {
+    if (!value || typeof value !== 'string') return json({ error: 'video op needs a string value' }, 400);
+    if (!progress.videos_watched.includes(value)) progress.videos_watched.push(value);
+  } else if (op === 'workbook') {
+    if (!progress.workbook_downloaded_at) progress.workbook_downloaded_at = now;
+  } else if (op === 'chat_started') {
+    if (!progress.chat_started_at) progress.chat_started_at = now;
+  }
+
+  const stepJson = JSON.stringify(progress);
+  if (row) {
+    await env.DB.prepare(
+      "UPDATE brand_progress SET step_progress = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE user_id = ? AND tool = ?"
+    ).bind(stepJson, user.id, tool).run();
+  } else {
+    await env.DB.prepare(
+      "INSERT INTO brand_progress (user_id, tool, completed, messages, summary, step_progress) VALUES (?, ?, 0, '[]', NULL, ?)"
+    ).bind(user.id, tool, stepJson).run();
+  }
+
+  return json({ ok: true, step_progress: progress });
 }
 
 // ---------- /api/chat ----------
@@ -121,9 +171,15 @@ async function pipeAnthropicSSEToText(sourceStream, writableStream) {
 
 async function progressGet(env, user) {
   const { results } = await env.DB.prepare(
-    'SELECT tool, completed, summary, messages, updated_at FROM brand_progress WHERE user_id = ?'
+    'SELECT tool, completed, summary, messages, step_progress, updated_at FROM brand_progress WHERE user_id = ?'
   ).bind(user.id).all();
-  return json(results || []);
+  // Parse step_progress JSON for client convenience.
+  const out = (results || []).map(r => {
+    let sp = {};
+    try { sp = JSON.parse(r.step_progress || '{}') || {}; } catch {}
+    return { ...r, step_progress: sp };
+  });
+  return json(out);
 }
 
 async function progressPost(request, env, user) {
