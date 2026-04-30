@@ -107,6 +107,11 @@
           setBusy(submitBtn, false);
           return;
         }
+        // Unified login: server returns admin_token when the user is also an admin.
+        // Stash it so /admin opens without a second login.
+        if (data && data.admin_token) {
+          try { localStorage.setItem('admin_token', data.admin_token); } catch {}
+        }
         // Decide where to send them next. The server cookie is now set.
         // Hit /api/auth/me, then route based on user state.
         const r = await fetch('/api/auth/me', { credentials: 'same-origin' });

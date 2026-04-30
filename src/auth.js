@@ -203,7 +203,32 @@ async function signin(request, env) {
   }
 
   const token = await createSession(env, row.id);
-  return json({ ok: true }, 200, { 'Set-Cookie': sessionCookie(token) });
+
+  // Unified login: if this user's email also has an admin_users row, mint an
+  // admin session token and return it. The sign-in page writes it into
+  // localStorage.admin_token so /admin works without a second login.
+  let adminToken = null;
+  try {
+    const adminRow = await env.DB.prepare(
+      'SELECT id FROM admin_users WHERE email = ?'
+    ).bind(email).first();
+    if (adminRow) {
+      adminToken = await mintAdminSession(env, adminRow.id);
+    }
+  } catch {}
+
+  return json({ ok: true, ...(adminToken ? { admin_token: adminToken } : {}) }, 200, { 'Set-Cookie': sessionCookie(token) });
+}
+
+async function mintAdminSession(env, adminId) {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  const token = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  await env.DB.prepare(
+    'INSERT INTO admin_sessions (admin_id, token, expires_at) VALUES (?, ?, ?)'
+  ).bind(adminId, token, expiresAt).run();
+  return token;
 }
 
 async function signout(request, env) {
