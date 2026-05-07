@@ -1,24 +1,30 @@
 /* =============================================================
-   Build a Brand — Lisa Lord / LiLo Photography & Branding
-   Brand tokens pulled from photolilo.com:
-     Headlines: Gilda Display (her actual website serif)
+   Build a Brand — Lisa Lord / LiLo Brand Studio
+   Official LiLo palette: red, black, white, yellow (sparingly), gray.
+   Token names are kept (cream, ink, terracotta, gold) so existing
+   selectors keep working. The values are the official brand colors.
+     Headlines: Gilda Display
      Body:      Montserrat
-     Voice:     warm, confident, revenue-focused
+     Voice:     gutsy, direct
    ============================================================= */
 
 :root {
-  --cream:        #FAF7F2;
-  --cream-deep:   #F0EBE3;
-  --cream-line:   #E8E0D6;
-  --ink:          #2B2B2B;
-  --ink-soft:     #6B6560;
-  --ink-mute:     rgba(43, 43, 43, 0.45);
+  /* "cream" tokens now resolve to white-on-light surfaces */
+  --cream:        #FFFFFF;
+  --cream-deep:   #F5F5F5;
+  --cream-line:   #D4D4D4;
+  /* "ink" tokens now resolve to black + official gray */
+  --ink:          #000000;
+  --ink-soft:     #747474;
+  --ink-mute:     rgba(0, 0, 0, 0.45);
+  /* terracotta is already on-brand red */
   --terracotta:   #AF493B;
   --terracotta-d: #9D4134;
   --terracotta-l: rgba(175, 73, 59, 0.08);
-  --gold:         #C9A96E;
-  --gold-d:       #B89555;
-  --gold-l:       rgba(201, 169, 110, 0.10);
+  /* "gold" tokens now resolve to official yellow (use sparingly) */
+  --gold:         #E8BB5C;
+  --gold-d:       #D9A640;
+  --gold-l:       rgba(232, 187, 92, 0.12);
   --white:        #FFFFFF;
 
   --serif: 'Gilda Display', Georgia, 'Times New Roman', serif;
@@ -136,11 +142,28 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
   justify-content: space-between;
 }
 .brandmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink);
+  font-weight: 500;
+}
+.brandmark__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #000000;
+  color: #FFFFFF;
+  border-radius: 6px;
+  padding: 6px 8px;
+  flex-shrink: 0;
+}
+.brandmark__icon .logo-mark { display: block; }
+.brandmark__text {
   font-size: 11px;
   letter-spacing: 0.32em;
   text-transform: uppercase;
   color: var(--terracotta);
-  font-weight: 500;
 }
 .nav__right { display: flex; gap: 24px; align-items: center; }
 .nav-link { color: var(--ink); font-size: 13px; }
@@ -149,7 +172,10 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
 /* In-app nav */
 .appnav { background: var(--ink); color: var(--white); position: sticky; top: 0; z-index: 50; border-bottom: 1px solid #3a3a3a; }
 .appnav__inner { max-width: var(--container); margin: 0 auto; padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.appnav__home { display: flex; align-items: center; gap: 10px; color: var(--white); font-family: var(--sans); }
+.appnav__home { display: flex; align-items: center; gap: 12px; color: var(--white); font-family: var(--sans); }
+.appnav__brand-icon { display: inline-flex; align-items: center; color: var(--white); flex-shrink: 0; }
+.appnav__brand-icon .logo-mark { display: block; }
+/* Legacy classes kept in case any other page still references them */
 .appnav__brand { color: var(--gold); font-size: 11px; letter-spacing: 0.32em; font-weight: 500; }
 .appnav__sep { color: rgba(255,255,255,0.3); }
 .appnav__title { color: rgba(255,255,255,0.7); font-size: 13px; }

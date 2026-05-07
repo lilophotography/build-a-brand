@@ -163,7 +163,7 @@ export default {
 
     } catch (err) {
       console.error('Worker error:', err.message, err.stack);
-      return htmlResponse(`<!doctype html><html><body style="font-family: system-ui; padding: 4rem; color: #2B2B2B;"><h1>Something went sideways</h1><p>We hit an unexpected error. Try again, or sign in fresh.</p></body></html>`, 500);
+      return htmlResponse(`<!doctype html><html><body style="font-family: system-ui; padding: 4rem; color: #000000;"><h1>Something went sideways</h1><p>We hit an unexpected error. Try again, or sign in fresh.</p></body></html>`, 500);
     }
   },
 };

@@ -31,14 +31,15 @@ const DEFAULTS = {
     tagline: 'A brand with purpose is a brand with power.',
     // LiLo palette — keys map to CSS custom property names in styles.css :root.
     // The landing page config loader sets `--{key}` from these values.
-    cream: '#FAF7F2',
-    cream_deep: '#F0EBE3',
-    ink: '#2B2B2B',
-    ink_soft: '#6B6560',
+    // Token names kept; values are now LiLo official palette (red, black, white, yellow, gray)
+    cream: '#FFFFFF',
+    cream_deep: '#F5F5F5',
+    ink: '#000000',
+    ink_soft: '#747474',
     terracotta: '#AF493B',
     terracotta_d: '#9D4134',
-    gold: '#C9A96E',
-    gold_d: '#B89555',
+    gold: '#E8BB5C',
+    gold_d: '#D9A640',
     serif: "'Gilda Display', Georgia, 'Times New Roman', serif",
     sans: "'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     logo_url: '',

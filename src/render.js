@@ -54,6 +54,18 @@ export function head(title, opts = {}) {
 <link rel="stylesheet" href="/styles.css">`;
 }
 
+// LiLo logo mark. Two outer bars + short red middle bar + red dot.
+// White bars use currentColor so it adapts to nav text color.
+// Red bars/dot are hardcoded brand red.
+export function logoMark({ size = 28, label = 'LiLo' } = {}) {
+  return `<svg class="logo-mark" width="${size * 1.27}" height="${size}" viewBox="0 0 280 220" aria-label="${esc(label)}" role="img">
+    <rect x="40" y="20" width="40" height="180" fill="currentColor"/>
+    <rect x="120" y="105" width="40" height="95" fill="#AF493B"/>
+    <rect x="200" y="20" width="40" height="180" fill="currentColor"/>
+    <circle cx="265" cy="190" r="11" fill="#AF493B"/>
+  </svg>`;
+}
+
 // Public marketing nav (landing only). For the in-app nav we use AppNav.
 export function publicNav(currentUser) {
   const right = currentUser
@@ -61,7 +73,10 @@ export function publicNav(currentUser) {
     : `<a href="/sign-in" class="nav-link">Sign in</a>`;
   return `<nav class="nav nav--public">
   <div class="nav__inner">
-    <a href="/" class="brandmark">LiLo Photography &amp; Branding</a>
+    <a href="/" class="brandmark">
+      <span class="brandmark__icon">${logoMark({ size: 24 })}</span>
+      <span class="brandmark__text">LiLo Photography &amp; Branding</span>
+    </a>
     <div class="nav__right">${right}</div>
   </div>
 </nav>`;
@@ -85,8 +100,7 @@ export function appNav(currentPath, user) {
   return `<nav class="appnav">
   <div class="appnav__inner">
     <a href="/dashboard" class="appnav__home">
-      <span class="appnav__brand">LILO</span>
-      <span class="appnav__sep">·</span>
+      <span class="appnav__brand-icon">${logoMark({ size: 22 })}</span>
       <span class="appnav__title">Build a Brand</span>
     </a>
     <div class="appnav__steps">${links}</div>
