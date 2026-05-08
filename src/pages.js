@@ -622,19 +622,11 @@ export function renderJourney(user, tool, slug, journeyResponses) {
   const pct = journeyProgressPct(tool, journeyResponses || {});
   const savedResponse = (journeyResponses && journeyResponses[step.id]) || null;
 
-  const stepNav = TOOL_ORDER.map(t => {
-    const m = TOOL_META[t];
-    const cls = t === tool ? 'v-stepnav__step is-current' : 'v-stepnav__step';
-    return `<a href="/brand-builder/${t}" class="${cls}"><span class="v-stepnav__num">${m.num}</span><span class="v-stepnav__label">${esc(m.label)}</span></a>`;
-  }).join('');
-
   const body = renderJourneyStepBody(tool, step, savedResponse, responses);
 
+  // The black appNav at the top already has the 5 V's as pill links, so the
+  // separate cream v-stepnav was a duplicate. Removed by Lisa's request.
   const main = `
-<nav class="v-stepnav">
-  <div class="v-stepnav__inner">${stepNav}</div>
-</nav>
-
 <div class="journey" data-tool="${esc(tool)}" data-step-id="${esc(step.id)}">
 
   <header class="journey__header">
@@ -697,22 +689,14 @@ export function renderBrandBuilder(user, tool, progressRow, vData, stepProgress)
     messages: progressRow?.messages ? safeJSONParse(progressRow.messages, []) : [],
   };
 
-  const stepNav = TOOL_ORDER.map(t => {
-    const m = TOOL_META[t];
-    const cls = t === tool ? 'v-stepnav__step is-current' : 'v-stepnav__step';
-    return `<a href="/brand-builder/${t}" class="${cls}"><span class="v-stepnav__num">${m.num}</span><span class="v-stepnav__label">${esc(m.label)}</span></a>`;
-  }).join('');
-
   const watchSection = renderVWatch(tool, vData?.lessons || [], watched);
   const workbookSection = renderVWorkbook(tool, vData?.workbook, workbookDownloaded);
   const buildSection = renderVBuild(initialState, meta);
   const lockSection = renderVLockIn(meta, summary, nextTool, completed);
 
+  // The black appNav at the top already has the 5 V's as pill links. The
+  // separate cream v-stepnav was a duplicate. Removed by Lisa's request.
   const main = `
-<nav class="v-stepnav">
-  <div class="v-stepnav__inner">${stepNav}</div>
-</nav>
-
 <div class="v-page" data-tool="${esc(tool)}">
 
   <header class="v-hero">
