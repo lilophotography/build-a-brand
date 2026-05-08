@@ -171,33 +171,134 @@ const VISION_TEMPLATES = [
 // ---------------------------------------------------------------------------
 
 export const VISION_STEPS = [
-  // ===== Reflection warmup (Lisa's GPT prompt opens with these) =====
+  // ===== Personal warmup =====
+  // The whole reason they're here is because they don't know their brand yet.
+  // Asking them about their brand on Step 1 presupposes the answer. We start
+  // with THEM: their story, their goals, what's standing in their way. The
+  // brand falls out of those answers later. (Per Lisa's direction.)
   {
-    id: 'reflection-warmup',
+    id: 'warmup-origin',
     kind: 'fillblank',
-    section: 'Warmup',
-    title: 'Before we start, a few softening questions.',
-    subtitle: "Skip any that don't land. Free-write, no wrong answers. We'll come back to these threads.",
+    section: 'Get to know you',
+    title: "First, let's talk about you.",
+    subtitle: "No wrong answers. Skip any that don't land. We're not here to extract a brand from you yet, just to listen.",
+    estimatedMinutes: 6,
+    fields: [
+      {
+        id: 'why_started',
+        label: 'Why did you start this business?',
+        helpText: 'The moment, the pull, the thing that pushed you. You can be specific or scenic.',
+        placeholder: "I was burned out at my agency job and realized the people I loved working with most were the small business owners no one took seriously.",
+        rows: 4,
+      },
+      {
+        id: 'before',
+        label: 'What were you doing before this?',
+        helpText: "Where this work fits in your life. The backstory.",
+        placeholder: 'Twelve years as a wedding photographer. A degree in marketing I never used. Two kids and a stack of half-finished branding for friends.',
+        rows: 3,
+      },
+    ],
+  },
+  {
+    id: 'warmup-goals',
+    kind: 'fillblank',
+    section: 'Get to know you',
+    title: 'Now your goals.',
+    subtitle: 'Short-term, long-term, and what your life looks like when this is working. We come back to these threads everywhere.',
+    estimatedMinutes: 8,
+    fields: [
+      {
+        id: 'short_term',
+        label: 'What are your short-term goals? (Next 6 to 12 months.)',
+        helpText: 'The thing you\'re trying to make happen right now.',
+        placeholder: 'Book 10 brand clients at $5k+ this year. Stop saying yes to wedding work.',
+        rows: 3,
+      },
+      {
+        id: 'long_term',
+        label: 'What are your long-term goals? (3 to 5 years out.)',
+        helpText: "Where do you want this to go? Don't be modest, be specific.",
+        placeholder: 'A studio with two photographers and a brand strategist. Run a yearly retreat. Be the photography brand creatives quietly compete to work with.',
+        rows: 3,
+      },
+      {
+        id: 'life',
+        label: 'What does your life look like when this is working?',
+        helpText: "Beyond the numbers. The actual rhythm of your day.",
+        placeholder: 'I work three days, take Friday for my own art, and I never have to dread a Monday again.',
+        rows: 3,
+      },
+    ],
+  },
+  {
+    id: 'warmup-stuck',
+    kind: 'fillblank',
+    section: 'Get to know you',
+    title: "What's standing in your way?",
+    subtitle: "The obstacle, the fear, the thing you keep bumping into. We pay attention to this.",
+    estimatedMinutes: 5,
+    fields: [
+      {
+        id: 'obstacle',
+        label: 'What\'s the thing you keep bumping into that you can\'t seem to solve?',
+        helpText: "Be honest. This stays between you and the page.",
+        placeholder: "I don't know how to talk about my work without sounding like everyone else.",
+        rows: 3,
+      },
+      {
+        id: 'gap',
+        label: "What do you wish you knew, or what feels just out of reach?",
+        helpText: 'The skill, the framework, the clarity, the permission. Something is missing.',
+        placeholder: 'I want to know what makes me different in plain language so I can stop apologizing for my prices.',
+        rows: 3,
+      },
+    ],
+  },
+  {
+    id: 'warmup-mirror',
+    kind: 'mirror',
+    section: 'Get to know you',
+    title: 'Here\'s what I\'m hearing about you so far.',
+    subtitle: 'Read it slowly. If anything\'s off, hit Back. Otherwise, we go pull a brand out of all of this.',
+    estimatedMinutes: 2,
+    mirror: {
+      template: [
+        { label: 'Why you started:', from: 'warmup-origin.fields.why_started' },
+        { label: 'Where this fits in your life:', from: 'warmup-origin.fields.before' },
+        { label: 'Short-term goal:', from: 'warmup-goals.fields.short_term' },
+        { label: 'Long-term goal:', from: 'warmup-goals.fields.long_term' },
+        { label: 'What life looks like when this works:', from: 'warmup-goals.fields.life' },
+        { label: 'The thing in your way:', from: 'warmup-stuck.fields.obstacle' },
+      ],
+    },
+  },
+  {
+    id: 'brand-reflection',
+    kind: 'fillblank',
+    section: 'Brand reflection',
+    title: "Now a few softer questions, to bridge into the brand work.",
+    subtitle: "Skip any that don't land. The brand will fall out of these answers, you don't have to know them perfectly.",
     estimatedMinutes: 6,
     fields: [
       {
         id: 'personality',
-        label: "How would you describe your brand's personality?",
-        helpText: 'If your brand walked into a room, what would people feel?',
-        placeholder: 'Warm but no-nonsense. Friend who tells you the truth.',
+        label: "If your business were a person, how would you describe their personality?",
+        helpText: "If they walked into a room, what would people feel?",
+        placeholder: 'Warm but no-nonsense. The friend who tells you the truth and helps you fix it.',
         rows: 2,
       },
       {
         id: 'memory',
-        label: 'What do you want your customers to remember most about your brand?',
-        helpText: 'The one thing you want them to walk away saying.',
-        placeholder: 'That she actually got me, not just my project.',
+        label: 'What do you want your customers to remember most after working with you?',
+        helpText: "The one thing you want them to walk away saying about you.",
+        placeholder: "That she actually got me, not just my project.",
         rows: 2,
       },
       {
         id: 'role-models',
-        label: "Who are your brand's role models or inspirations?",
-        helpText: 'Brands you admire. They can be in your industry or completely outside it.',
+        label: "Who are some businesses or people you admire?",
+        helpText: 'Inside or outside your industry. Doesn\'t have to be famous.',
         placeholder: 'Glossier for warmth, Patagonia for guts, my grandmother for taste.',
         rows: 2,
       },
@@ -209,22 +310,15 @@ export const VISION_STEPS = [
     id: 'mission-discovery',
     kind: 'fillblank',
     section: 'Mission',
-    title: 'The heartbeat of your brand.',
-    subtitle: "Four short answers. We'll use them to build your mission statement together.",
-    estimatedMinutes: 10,
+    title: 'Now the work itself.',
+    subtitle: "Three short answers about what you do. We've already covered the why, so this is about the what, who, and how.",
+    estimatedMinutes: 8,
     fields: [
       {
         id: 'what',
         label: 'What problem do you solve, or what do you do?',
         helpText: 'The verb. Skip the adjectives. Be specific.',
         placeholder: 'I help photographers turn their craft into a confident brand.',
-        rows: 2,
-      },
-      {
-        id: 'why',
-        label: 'Why did you choose this work?',
-        helpText: "The deeper purpose. What's underneath the work.",
-        placeholder: 'Because I watched too many talented people quit before they found their voice.',
         rows: 2,
       },
       {
@@ -258,7 +352,6 @@ export const VISION_STEPS = [
       sourceStep: 'mission-discovery',
       template: [
         { label: 'You do this:', from: 'fields.what' },
-        { label: 'And the deeper why:', from: 'fields.why' },
         { label: 'For these people:', from: 'fields.who' },
         { label: 'And this is how they change:', from: 'fields.how' },
       ],
@@ -302,30 +395,16 @@ export const VISION_STEPS = [
     id: 'vision-discovery',
     kind: 'fillblank',
     section: 'Vision',
-    title: 'Now zoom out. Three questions to surface your why.',
-    subtitle: "Big-picture. Long-term. The world you want to help build.",
-    estimatedMinutes: 10,
+    title: 'Now zoom out. The impact you want to have.',
+    subtitle: "We've already talked about your goals and what life looks like when this works. Now the bigger why: the world you want to help build.",
+    estimatedMinutes: 6,
     fields: [
       {
         id: 'impact',
         label: 'What impact do you want to have on customers, community, or the world?',
         helpText: 'It can be lofty. It should inspire YOU first.',
         placeholder: 'For every photographer to feel as confident in their identity as they are in their craft.',
-        rows: 3,
-      },
-      {
-        id: 'longterm',
-        label: 'What is your long-term goal or aspiration for your brand?',
-        helpText: '5 years, 50 years, doesn\'t matter. Where is this headed?',
-        placeholder: 'A studio that becomes the standard for brand photography in our region.',
-        rows: 3,
-      },
-      {
-        id: 'personal',
-        label: 'What will success look like for you personally?',
-        helpText: 'Not the business metric. The personal one. What does YOUR life look like when this is working?',
-        placeholder: 'I work three days a week, take Fridays for my own art, and my clients refer everyone.',
-        rows: 3,
+        rows: 4,
       },
     ],
     inspiration: {
