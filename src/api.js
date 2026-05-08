@@ -24,16 +24,17 @@ export async function handleAPI(request, env, url, user) {
 // (a JSON column). Idempotent per video; first-write wins for timestamps.
 //
 // Accepted payloads:
-//   { tool: 'vision', op: 'video', value: 'xyz123' }    → adds 'xyz123' to step_progress.videos_watched
-//   { tool: 'vision', op: 'workbook' }                  → sets step_progress.workbook_downloaded_at = now
-//   { tool: 'vision', op: 'chat_started' }              → sets step_progress.chat_started_at = now (if unset)
+//   { tool: 'vision', op: 'video', value: 'xyz123' }                              → adds 'xyz123' to step_progress.videos_watched
+//   { tool: 'vision', op: 'workbook' }                                            → sets step_progress.workbook_downloaded_at = now
+//   { tool: 'vision', op: 'chat_started' }                                        → sets step_progress.chat_started_at = now (if unset)
+//   { tool: 'vision', op: 'journey_response', value: { step_id, response } }      → sets step_progress.journey_responses[step_id] = response
 async function progressStep(request, env, user) {
   if (!user.has_access) return json({ error: 'No active access' }, 402);
   const body = await request.json().catch(() => ({}));
   const { tool, op, value } = body || {};
   const VALID_TOOLS = ['vision', 'value', 'voice', 'visuals', 'visibility'];
   if (!VALID_TOOLS.includes(tool)) return json({ error: 'Invalid tool' }, 400);
-  if (!['video', 'workbook', 'chat_started'].includes(op)) return json({ error: 'Invalid op' }, 400);
+  if (!['video', 'workbook', 'chat_started', 'journey_response'].includes(op)) return json({ error: 'Invalid op' }, 400);
 
   // Read existing row (or absent → {}). Auto-create the brand_progress row if missing.
   const row = await env.DB.prepare(
@@ -43,6 +44,7 @@ async function progressStep(request, env, user) {
   let progress = {};
   try { progress = JSON.parse(row?.step_progress || '{}') || {}; } catch { progress = {}; }
   if (!Array.isArray(progress.videos_watched)) progress.videos_watched = [];
+  if (!progress.journey_responses || typeof progress.journey_responses !== 'object') progress.journey_responses = {};
 
   const now = new Date().toISOString();
   if (op === 'video') {
@@ -52,20 +54,39 @@ async function progressStep(request, env, user) {
     if (!progress.workbook_downloaded_at) progress.workbook_downloaded_at = now;
   } else if (op === 'chat_started') {
     if (!progress.chat_started_at) progress.chat_started_at = now;
+  } else if (op === 'journey_response') {
+    if (!value || typeof value !== 'object') return json({ error: 'journey_response op needs object value' }, 400);
+    const { step_id, response } = value;
+    if (!step_id || typeof step_id !== 'string') return json({ error: 'journey_response needs step_id' }, 400);
+    progress.journey_responses[step_id] = response || {};
+    progress.journey_last_step_id = step_id;
+    progress.journey_updated_at = now;
   }
 
   const stepJson = JSON.stringify(progress);
+
+  // If the summary step of a journey was just saved, also flip completed=1
+  // so the dashboard, Brand Guide unlock, and coaching unlock all see this V
+  // as done. The summary step id is exactly 'summary' in current journey configs.
+  const flipComplete = op === 'journey_response' && value?.step_id === 'summary';
+
   if (row) {
-    await env.DB.prepare(
-      "UPDATE brand_progress SET step_progress = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE user_id = ? AND tool = ?"
-    ).bind(stepJson, user.id, tool).run();
+    if (flipComplete) {
+      await env.DB.prepare(
+        "UPDATE brand_progress SET step_progress = ?, completed = 1, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE user_id = ? AND tool = ?"
+      ).bind(stepJson, user.id, tool).run();
+    } else {
+      await env.DB.prepare(
+        "UPDATE brand_progress SET step_progress = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE user_id = ? AND tool = ?"
+      ).bind(stepJson, user.id, tool).run();
+    }
   } else {
     await env.DB.prepare(
-      "INSERT INTO brand_progress (user_id, tool, completed, messages, summary, step_progress) VALUES (?, ?, 0, '[]', NULL, ?)"
-    ).bind(user.id, tool, stepJson).run();
+      "INSERT INTO brand_progress (user_id, tool, completed, messages, summary, step_progress) VALUES (?, ?, ?, '[]', NULL, ?)"
+    ).bind(user.id, tool, flipComplete ? 1 : 0, stepJson).run();
   }
 
-  return json({ ok: true, step_progress: progress });
+  return json({ ok: true, step_progress: progress, completed: flipComplete });
 }
 
 // ---------- /api/chat ----------

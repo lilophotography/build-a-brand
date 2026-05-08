@@ -3,6 +3,14 @@
 import { esc, page, publicNav, appNav, publicFooter, htmlResponse } from './render.js';
 import { TOOL_META, TOOL_ORDER, TOOL_INTROS } from './prompts.js';
 import { getVData, getCourseWelcomeLesson, getBonusModule, renderLessonBody } from './course.js';
+import {
+  getJourneySteps,
+  getJourneyStep,
+  nextJourneyStep,
+  prevJourneyStep,
+  journeyProgressPct,
+  renderJourneyStepBody,
+} from './journey.js';
 
 // ============================================================
 // PUBLIC: Landing page
@@ -331,124 +339,138 @@ export function renderDashboard(user, progressRows) {
   const completedCount = TOOL_ORDER.filter(t => progressByTool[t]?.completed).length;
   const pct = Math.round((completedCount / 5) * 100);
 
-  // Find the next V they should work on.
-  const next = TOOL_ORDER.find(t => !progressByTool[t]?.completed) || 'visibility';
-  const nextMeta = TOOL_META[next];
-  const nextDoneOrInProgress = !!progressByTool[next];
-  const nextButtonLabel = nextDoneOrInProgress ? `Continue: ${nextMeta.label} →` : `Begin: ${nextMeta.label} →`;
-  const nextDesc = {
-    vision: "We'll uncover your mission, vision, and the values that anchor every decision.",
-    value: "We'll surface what makes you irreplaceable, and define your ideal client.",
-    voice: "We'll build messaging that sounds like you and lands with the people you're meant to reach.",
-    visuals: "We'll lock in your brand vibe, color palette, logo direction, and fonts.",
-    visibility: "We'll choose your platforms, content type, and the photos you actually need.",
-  }[next];
+  // For each V, count how many journey steps are saved (if it has a journey).
+  // For V's without a journey yet, fall back to the completed flag.
+  const sectionStatus = TOOL_ORDER.map((tool) => {
+    const row = progressByTool[tool];
+    let sp = {};
+    try { sp = typeof row?.step_progress === 'string' ? JSON.parse(row.step_progress) : (row?.step_progress || {}); } catch {}
+    const journey = getJourneySteps(tool);
+    const responses = sp.journey_responses || {};
+    if (journey) {
+      const done = journey.filter(s => responses[s.id]).length;
+      const total = journey.length;
+      const isComplete = !!row?.completed || done >= total;
+      const inProgress = done > 0 && !isComplete;
+      return {
+        tool,
+        meta: TOOL_META[tool],
+        done, total,
+        isComplete, inProgress,
+        hasJourney: true,
+      };
+    }
+    return {
+      tool,
+      meta: TOOL_META[tool],
+      done: row?.completed ? 1 : 0,
+      total: 1,
+      isComplete: !!row?.completed,
+      inProgress: !!row && !row.completed,
+      hasJourney: false,
+    };
+  });
 
+  // Find the resume target. First V that has a journey and isn't complete,
+  // else first V that isn't complete (legacy), else /brand-guide if all done.
+  const resumeTarget = sectionStatus.find(s => !s.isComplete) || null;
   const greeting = user.first_name ? `Welcome back, ${esc(user.first_name)}` : 'Welcome back';
-  const subline = completedCount === 0
-    ? "You're at the starting line. Let's build something great."
-    : completedCount === 5
-    ? "Your brand foundation is complete. Time to bring it to life."
-    : `${completedCount} of 5 sessions done. Keep going. Momentum is everything.`;
+  const headline = pct === 0
+    ? "Let's pull your brand out of you."
+    : pct === 100
+    ? "Your brand foundation is locked in."
+    : `You're ${pct}% in.`;
+  const subline = pct === 0
+    ? "This isn't a course. It's a guided VIP day, in chunks you can come back to. We save your spot every step."
+    : pct === 100
+    ? "Time to download your Brand Guide and put it to work."
+    : resumeTarget
+      ? `Your next ~${estimateMinutesForResume(resumeTarget)} minutes: ${esc(resumeTarget.meta.label)}.`
+      : "Pick up where you left off below.";
 
-  // Tier-aware right-rail card
+  const resumeHref = resumeTarget ? `/brand-builder/${resumeTarget.tool}` : '/brand-guide';
+  const resumeLabel = pct === 0 ? 'Begin' : pct === 100 ? 'See your Brand Guide' : 'Resume';
+
   const isCoachingTier = user.tier === 'coaching' || user.has_call_credit;
   const rightRail = isCoachingTier ? coachingCard(user, completedCount) : upsellCard(completedCount);
 
-  // The path / map of 5 V's — each station now surfaces multi-step progress
-  // (videos watched · workbook · chat · summary) on top of the headline state.
-  const stations = TOOL_ORDER.map((tool, i) => {
-    const meta = TOOL_META[tool];
-    const row = progressByTool[tool];
-    const done = !!row?.completed;
-    const inProgress = !!row && !done;
-    const prevDone = i === 0 || progressByTool[TOOL_ORDER[i - 1]]?.completed;
-    const locked = !prevDone && !done && !inProgress;
-    const state = done ? 'is-done' : inProgress ? 'is-progress' : locked ? 'is-locked' : 'is-active';
-    const action = locked
-      ? `<span class="station__lock">Complete ${TOOL_META[TOOL_ORDER[i - 1]].label} to unlock</span>`
-      : done
-      ? `<a href="/brand-builder/${tool}" class="station__action station__action--ghost">Revisit →</a>`
-      : `<a href="/brand-builder/${tool}" class="station__action">${inProgress ? 'Continue →' : 'Start →'}</a>`;
-
-    const stepChips = locked ? '' : renderStepChips(tool, row);
-
-    return `<article class="station ${state}">
-      <div class="station__marker">
-        ${done
-          ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>`
-          : `<span>${meta.num}</span>`}
-      </div>
-      <div class="station__body">
-        <header>
-          <h3 class="station__title">${esc(meta.label)}</h3>
-          <p class="station__tag">${esc(meta.tagline)}</p>
-        </header>
-        ${stepChips}
-        ${row?.summary ? `<p class="station__preview">${esc(stripWhitespace(row.summary).slice(0, 180))}${row.summary.length > 180 ? '…' : ''}</p>` : ''}
-      </div>
-      <div class="station__action-wrap">${action}</div>
-    </article>`;
+  // Section overview list. Tight. No video chips. No workbook chips.
+  const sectionList = sectionStatus.map((s) => {
+    const stateLabel = s.isComplete
+      ? 'Complete'
+      : s.inProgress
+      ? `${s.done} of ${s.total} steps done`
+      : s.hasJourney ? `Not started · ${s.total} steps` : 'Not started';
+    const stateClass = s.isComplete ? 'is-done' : s.inProgress ? 'is-progress' : 'is-pending';
+    const ariaLabel = `${s.meta.label}: ${stateLabel}`;
+    return `<li class="dash-section ${stateClass}">
+      <a href="/brand-builder/${s.tool}" class="dash-section__link" aria-label="${esc(ariaLabel)}">
+        <span class="dash-section__num">${s.meta.num}</span>
+        <span class="dash-section__body">
+          <span class="dash-section__label">${esc(s.meta.label)}</span>
+          <span class="dash-section__state">${esc(stateLabel)}</span>
+        </span>
+        <span class="dash-section__chev" aria-hidden="true">${s.isComplete ? '✓' : '→'}</span>
+      </a>
+    </li>`;
   }).join('');
 
-  // 6th station — the Brand Guide finale. Locked until all 5 V's are saved.
   const guideUnlocked = completedCount === 5;
-  const guideStation = `<article class="station station--guide ${guideUnlocked ? 'is-active' : 'is-locked'}">
-    <div class="station__marker"><span>★</span></div>
-    <div class="station__body">
-      <header>
-        <h3 class="station__title">Your Brand Guide</h3>
-        <p class="station__tag">The polished PDF compilation of all 5 V's.</p>
-      </header>
-      ${guideUnlocked
-        ? `<p class="station__preview">All 5 sessions saved. Time to bring it home.</p>`
-        : `<p class="station__preview">Unlocks when all 5 sessions are locked in.</p>`}
-    </div>
-    <div class="station__action-wrap">
-      ${guideUnlocked
-        ? `<a href="/brand-guide" class="station__action">Download your Brand Guide →</a>`
-        : `<span class="station__lock">${5 - completedCount} session${completedCount === 4 ? '' : 's'} to go</span>`}
-    </div>
-  </article>`;
-
-  // Welcome video at the very top (course-wide intro lesson).
-  const welcomeVideo = renderWelcomeVideoCard();
+  const guideRow = `<li class="dash-section dash-section--guide ${guideUnlocked ? 'is-done' : 'is-pending'}">
+    <a href="${guideUnlocked ? '/brand-guide' : '#'}" class="dash-section__link" ${guideUnlocked ? '' : 'aria-disabled="true" tabindex="-1"'}>
+      <span class="dash-section__num">★</span>
+      <span class="dash-section__body">
+        <span class="dash-section__label">Your Brand Guide</span>
+        <span class="dash-section__state">${guideUnlocked ? 'Ready to download' : `Unlocks after all 5 sections (${5 - completedCount} to go)`}</span>
+      </span>
+      <span class="dash-section__chev" aria-hidden="true">${guideUnlocked ? '→' : '🔒'}</span>
+    </a>
+  </li>`;
 
   const main = `
-<section class="dash">
-  <header class="dash__header">
-    <p class="eyebrow">${greeting}</p>
-    <h1 class="dash__title">Your Brand Journey</h1>
-    <p class="dash__subline">${esc(subline)}</p>
+<section class="dash dash--welcome">
+  <div class="dash__welcome">
+    <p class="dash__eyebrow">${greeting}</p>
+    <h1 class="dash__headline">${esc(headline)}</h1>
+    <p class="dash__sub">${subline}</p>
 
     <div class="dash__progress">
-      <div class="progress">
-        <div class="progress__bar"><span style="width:${pct}%"></span></div>
-        <p class="progress__meta"><strong>${completedCount}</strong> of 5 · ${pct}%</p>
-      </div>
+      <div class="dash__progress-bar"><span style="width:${pct}%"></span></div>
     </div>
-  </header>
 
-  ${welcomeVideo}
-
-  <div class="dash__hero">
-    <div class="hero-card">
-      <p class="hero-card__eyebrow">${nextDoneOrInProgress ? 'Pick up where you left off' : 'Up next'}</p>
-      <h2 class="hero-card__title">${esc(nextMeta.label)}</h2>
-      <p class="hero-card__desc">${esc(nextDesc)}</p>
-      <a href="/brand-builder/${next}" class="btn btn--primary btn--lg">${nextButtonLabel}</a>
+    <div class="dash__cta-row">
+      <a href="${resumeHref}" class="btn btn--primary btn--lg">${resumeLabel} →</a>
+      ${pct > 0 && pct < 100 ? `<a href="/brand-guide" class="btn--quiet">Brand Guide so far →</a>` : ''}
     </div>
-    ${rightRail}
   </div>
 
-  <section class="path">
-    <p class="eyebrow eyebrow--small">The path</p>
-    <h2 class="path__title">All five sessions, then your Brand Guide</h2>
-    <div class="path__stations">${stations}${guideStation}</div>
-  </section>
+  <div class="dash__rail">${rightRail}</div>
+
+  <div class="dash__sections">
+    <p class="dash__sections-label">Sections</p>
+    <ul class="dash-sections">
+      ${sectionList}
+      ${guideRow}
+    </ul>
+  </div>
 </section>
 `;
   return htmlResponse(page({ title: 'Your Brand Journey', nav: appNav('/dashboard', user), main, bodyClass: 'page-dashboard' }));
+}
+
+// Rough minutes-remaining estimate for the resume target (uses the journey
+// step estimatedMinutes if available; falls back to a flat 20 for legacy V's).
+function estimateMinutesForResume(section) {
+  if (!section.hasJourney) return 20;
+  const journey = getJourneySteps(section.tool);
+  if (!journey) return 20;
+  // Sum estimated minutes for incomplete steps, capped at 25 so it doesn't scare them.
+  let total = 0;
+  for (const step of journey) {
+    total += step.estimatedMinutes || 5;
+    if (total >= 25) return 25;
+  }
+  return total;
 }
 
 // Multi-step progress chips for a V station card on the dashboard.
@@ -541,7 +563,81 @@ function upsellCard(completedCount) {
 }
 
 // ============================================================
-// APP: Brand Builder (chat)
+// APP: Journey (the new VIP-day step engine)
+// ============================================================
+// Replaces the watch + workbook + chat layout for tools that have a journey
+// definition. First ship: vision only. Other tools fall back to renderBrandBuilder.
+
+export function renderJourney(user, tool, slug, journeyResponses) {
+  const meta = TOOL_META[tool];
+  const steps = getJourneySteps(tool);
+  if (!steps) return null; // caller falls back to legacy
+  const responses = journeyResponses || {};
+  // If a slug was given and exists, render that step. Otherwise resume to the
+  // first step without a saved response (so /brand-builder/vision lands them
+  // wherever they left off).
+  let step = getJourneyStep(tool, slug);
+  if (!step) {
+    step = steps.find((s) => !responses[s.id]) || steps[steps.length - 1];
+  }
+  const next = nextJourneyStep(tool, step.id);
+  const prev = prevJourneyStep(tool, step.id);
+  const idx = steps.findIndex((s) => s.id === step.id);
+  const pct = journeyProgressPct(tool, journeyResponses || {});
+  const savedResponse = (journeyResponses && journeyResponses[step.id]) || null;
+
+  const stepNav = TOOL_ORDER.map(t => {
+    const m = TOOL_META[t];
+    const cls = t === tool ? 'v-stepnav__step is-current' : 'v-stepnav__step';
+    return `<a href="/brand-builder/${t}" class="${cls}"><span class="v-stepnav__num">${m.num}</span><span class="v-stepnav__label">${esc(m.label)}</span></a>`;
+  }).join('');
+
+  const body = renderJourneyStepBody(tool, step, savedResponse);
+
+  const main = `
+<nav class="v-stepnav">
+  <div class="v-stepnav__inner">${stepNav}</div>
+</nav>
+
+<div class="journey" data-tool="${esc(tool)}" data-step-id="${esc(step.id)}">
+
+  <header class="journey__header">
+    <div class="journey__crumbs">
+      <p class="journey__eyebrow">${esc(meta.label)}</p>
+      <p class="journey__progress-text">Step ${idx + 1} of ${steps.length} · ${pct}%</p>
+    </div>
+    <div class="journey__progress">
+      <div class="journey__progress-fill" style="width:${pct}%"></div>
+    </div>
+  </header>
+
+  <section class="journey__step">
+    <h1 class="journey__title">${esc(step.title)}</h1>
+    ${step.subtitle ? `<p class="journey__subtitle">${esc(step.subtitle)}</p>` : ''}
+    <div class="journey__body">${body}</div>
+  </section>
+
+  <footer class="journey__footer">
+    ${prev ? `<a class="journey__back" href="/brand-builder/${tool}?s=${esc(prev.id)}">← Back</a>` : '<span></span>'}
+    <button type="button" class="btn btn--primary journey__next" data-journey-next data-tool="${esc(tool)}" data-step-id="${esc(step.id)}" data-next-slug="${esc(next ? next.id : '')}">
+      ${next ? 'Save & continue →' : 'Save & finish →'}
+    </button>
+  </footer>
+
+  <p class="journey__exit-hint">You can come back any time. <a href="/dashboard">Save and exit</a> · <a href="/brand-builder/${tool}?legacy=1">Switch to legacy view</a></p>
+</div>
+`;
+
+  return htmlResponse(page({
+    title: `${meta.label} · ${step.title} · Build a Brand`,
+    nav: appNav(`/brand-builder/${tool}`, user),
+    main,
+    bodyClass: 'page-builder page-journey',
+  }));
+}
+
+// ============================================================
+// APP: Brand Builder (legacy: watch + workbook + chat)
 // ============================================================
 
 export function renderBrandBuilder(user, tool, progressRow, vData, stepProgress) {

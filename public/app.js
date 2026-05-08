@@ -460,3 +460,172 @@
     });
   }
 })();
+
+// ============================================================
+// Journey: client-side handlers for the new step engine
+// (wordcloud, fillblank, pick-3, rank, summary)
+// ============================================================
+(function journeyInit() {
+  const stepBody = document.querySelector('.step-body[data-step-id]');
+  const nextBtn = document.querySelector('[data-journey-next]');
+  if (!stepBody || !nextBtn) return;
+
+  const kind = stepBody.dataset.stepKind;
+  const stepId = stepBody.dataset.stepId;
+
+  // ---- Per-kind interaction wiring ----
+  if (kind === 'wordcloud') {
+    stepBody.addEventListener('click', (e) => {
+      const chip = e.target.closest('.word-chip');
+      if (!chip) return;
+      chip.classList.toggle('is-selected');
+      const count = stepBody.querySelectorAll('.word-chip.is-selected').length;
+      const el = stepBody.querySelector('[data-count]');
+      if (el) el.textContent = count + ' picked';
+    });
+  } else if (kind === 'pick-3') {
+    const max = parseInt(stepBody.dataset.maxPicks || '3', 10);
+    stepBody.addEventListener('click', (e) => {
+      const card = e.target.closest('.pick-card');
+      if (!card) return;
+      const wasSel = card.classList.contains('is-selected');
+      const selected = stepBody.querySelectorAll('.pick-card.is-selected');
+      if (wasSel) {
+        card.classList.remove('is-selected');
+      } else if (selected.length < max) {
+        card.classList.add('is-selected');
+      }
+      const count = stepBody.querySelectorAll('.pick-card.is-selected').length;
+      const el = stepBody.querySelector('[data-count]');
+      if (el) el.textContent = count + '/' + max;
+    });
+  } else if (kind === 'rank') {
+    wireRank(stepBody);
+  }
+  // fillblank: textareas are uncontrolled, just read on save
+  // summary: nothing to interact
+
+  // ---- Save & continue ----
+  nextBtn.addEventListener('click', async () => {
+    const tool = nextBtn.dataset.tool;
+    const nextSlug = nextBtn.dataset.nextSlug;
+    const response = readJourneyResponse(stepBody, kind);
+
+    nextBtn.disabled = true;
+    const originalLabel = nextBtn.textContent;
+    nextBtn.textContent = 'Saving...';
+
+    try {
+      const res = await fetch('/api/progress/step', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tool,
+          op: 'journey_response',
+          value: { step_id: stepId, response },
+        }),
+      });
+      if (!res.ok) throw new Error('save failed: ' + res.status);
+      const url = nextSlug ? '/brand-builder/' + tool + '?s=' + encodeURIComponent(nextSlug) : '/dashboard';
+      window.location.href = url;
+    } catch (err) {
+      console.error('Journey save failed:', err);
+      nextBtn.disabled = false;
+      nextBtn.textContent = originalLabel;
+      alert('Could not save right now. Please try again.');
+    }
+  });
+
+  function readJourneyResponse(body, kind) {
+    if (kind === 'wordcloud') {
+      return {
+        selected: Array.from(body.querySelectorAll('.word-chip.is-selected'))
+          .map((c) => c.dataset.wordId),
+      };
+    }
+    if (kind === 'pick-3') {
+      return {
+        selected: Array.from(body.querySelectorAll('.pick-card.is-selected'))
+          .map((c) => c.dataset.optionId),
+      };
+    }
+    if (kind === 'rank') {
+      return {
+        ranking: Array.from(body.querySelectorAll('.rank-item'))
+          .map((li) => li.dataset.itemId),
+      };
+    }
+    if (kind === 'fillblank') {
+      const fields = {};
+      body.querySelectorAll('.fill-field__input').forEach((t) => {
+        fields[t.dataset.fieldId] = t.value;
+      });
+      return { fields };
+    }
+    if (kind === 'summary') return { acknowledged: true };
+    return {};
+  }
+
+  function wireRank(body) {
+    const list = body.querySelector('[data-rank-list]');
+    if (!list) return;
+    let dragId = null;
+
+    list.addEventListener('dragstart', (e) => {
+      const li = e.target.closest('.rank-item');
+      if (!li) return;
+      dragId = li.dataset.itemId;
+      li.classList.add('is-dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    list.addEventListener('dragend', (e) => {
+      const li = e.target.closest('.rank-item');
+      if (li) li.classList.remove('is-dragging');
+      dragId = null;
+    });
+    list.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+    });
+    list.addEventListener('drop', (e) => {
+      e.preventDefault();
+      if (!dragId) return;
+      const dropTarget = e.target.closest('.rank-item');
+      if (!dropTarget) return;
+      const fromEl = list.querySelector('.rank-item[data-item-id="' + CSS.escape(dragId) + '"]');
+      if (!fromEl || fromEl === dropTarget) return;
+      // Insert fromEl before dropTarget. If fromEl is below dropTarget, this moves it up.
+      // If fromEl is above dropTarget, we want it to land after dropTarget. Use position comparison.
+      const items = Array.from(list.querySelectorAll('.rank-item'));
+      const fromIdx = items.indexOf(fromEl);
+      const toIdx = items.indexOf(dropTarget);
+      if (fromIdx < toIdx) {
+        list.insertBefore(fromEl, dropTarget.nextElementSibling);
+      } else {
+        list.insertBefore(fromEl, dropTarget);
+      }
+      renumberRank(list);
+    });
+
+    list.addEventListener('click', (e) => {
+      const upBtn = e.target.closest('[data-rank-up]');
+      const downBtn = e.target.closest('[data-rank-down]');
+      if (!upBtn && !downBtn) return;
+      const li = e.target.closest('.rank-item');
+      if (!li) return;
+      if (upBtn && li.previousElementSibling) {
+        list.insertBefore(li, li.previousElementSibling);
+      } else if (downBtn && li.nextElementSibling) {
+        list.insertBefore(li.nextElementSibling, li);
+      }
+      renumberRank(list);
+    });
+  }
+
+  function renumberRank(list) {
+    Array.from(list.querySelectorAll('.rank-item')).forEach((li, idx) => {
+      const numEl = li.querySelector('[data-rank-num]');
+      if (numEl) numEl.textContent = idx + 1;
+    });
+  }
+})();

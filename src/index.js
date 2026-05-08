@@ -9,8 +9,9 @@ import { handleConfigAPI, handlePublicConfig } from './config-api.js';
 import {
   renderLanding, renderSignIn, renderSignUp, renderWelcomeAfterStripe,
   renderLisaLetter, renderOnboarding, renderDashboard, renderBrandBuilder,
-  renderBrandGuide, renderBrandGuidePrint, renderCoaching, renderVComplete,
+  renderJourney, renderBrandGuide, renderBrandGuidePrint, renderCoaching, renderVComplete,
 } from './pages.js';
+import { getJourneySteps } from './journey.js';
 import { getVData, findVForLessonSlug } from './course.js';
 import { TOOL_ORDER } from './prompts.js';
 import { redirect, htmlResponse } from './render.js';
@@ -136,6 +137,18 @@ export default {
           ).bind(user.id, tool).first();
           let stepProgress = {};
           try { stepProgress = JSON.parse(row?.step_progress || '{}') || {}; } catch {}
+
+          // New: route to journey engine if this tool has a journey defined and
+          // the user didn't ask for legacy explicitly.
+          const wantLegacy = url.searchParams.get('legacy') === '1';
+          const hasJourney = !!getJourneySteps(tool);
+          if (hasJourney && !wantLegacy) {
+            const slug = url.searchParams.get('s') || '';
+            const journeyResponses = stepProgress.journey_responses || {};
+            const result = renderJourney(user, tool, slug, journeyResponses);
+            if (result) return result;
+          }
+
           const vData = getVData(tool);
           return renderBrandBuilder(user, tool, row, vData, stepProgress);
         }
