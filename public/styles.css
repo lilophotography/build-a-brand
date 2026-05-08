@@ -1400,3 +1400,143 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
   color: var(--ink);
   margin: 0;
 }
+
+/* ---- Mirror (read-back checkpoints between processes) ---- */
+.journey__eyebrow-sub {
+  color: var(--ink-soft);
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  margin-left: 4px;
+}
+.mirror-card {
+  background: var(--cream-deep);
+  border: 1px solid var(--cream-line);
+  border-left: 3px solid var(--terracotta);
+  padding: var(--space-5) var(--space-5);
+  border-radius: var(--radius);
+}
+.mirror-row {
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--cream-line);
+}
+.mirror-row:last-child { border-bottom: none; }
+.mirror-row__label {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 6px;
+  font-weight: 500;
+}
+.mirror-row__value {
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.5;
+  color: var(--ink);
+  margin: 0;
+}
+.mirror-row__value--muted { color: var(--ink-soft); font-style: italic; font-family: var(--sans); font-size: 14px; }
+
+.mirror-section {
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--cream-line);
+}
+.mirror-section:last-child { border-bottom: none; }
+.mirror-section__label {
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--terracotta);
+  margin: 0 0 var(--space-2);
+  font-weight: 500;
+}
+.mirror-section__value {
+  font-family: var(--serif);
+  font-size: 22px;
+  line-height: 1.45;
+  color: var(--ink);
+  margin: 0;
+}
+
+.mirror-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.mirror-chip {
+  display: inline-block;
+  padding: 4px 12px;
+  font-size: 13px;
+  background: var(--white);
+  border: 1px solid var(--cream-line);
+  border-radius: 999px;
+  color: var(--ink);
+}
+
+/* ---- Inspiration aside (Lisa's example below a fillblank) ---- */
+.step-inspiration {
+  margin-top: var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  background: var(--white);
+  border: 1px dashed var(--cream-line);
+  border-radius: var(--radius-sm);
+}
+.step-inspiration__label {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--terracotta);
+  margin: 0 0 var(--space-2);
+  font-weight: 500;
+}
+.step-inspiration__text {
+  font-family: var(--serif);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink);
+  font-style: italic;
+  margin: 0;
+}
+
+/* ---- Dashboard: "Your brand so far" panel ---- */
+.dash-deliverables {
+  background: var(--white);
+  border: 2px solid var(--cream-line);
+  border-radius: var(--radius);
+  padding: var(--space-5) var(--space-5);
+  margin-top: var(--space-6);
+}
+.dash-deliverables__label {
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--terracotta);
+  margin: 0 0 var(--space-4);
+  font-weight: 500;
+}
+.dash-deliverable {
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--cream-line);
+}
+.dash-deliverable:last-child { border-bottom: none; }
+.dash-deliverable__label {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 4px;
+  font-weight: 500;
+}
+.dash-deliverable__value {
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink);
+  margin: 0;
+}
+.dash-deliverable__value--pending {
+  color: var(--ink-soft);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-style: italic;
+}

@@ -10,6 +10,7 @@ import {
   prevJourneyStep,
   journeyProgressPct,
   renderJourneyStepBody,
+  visionDeliverables,
 } from './journey.js';
 
 // ============================================================
@@ -427,6 +428,39 @@ export function renderDashboard(user, progressRows) {
     </a>
   </li>`;
 
+  // Pull Vision deliverables (mission, vision, values) for the "Your brand so far" panel.
+  // Empty until the user finishes those steps. Once written, they show on every dashboard load.
+  const visionRow = progressByTool['vision'];
+  let visionResponses = {};
+  try {
+    visionResponses = typeof visionRow?.step_progress === 'string'
+      ? (JSON.parse(visionRow.step_progress)?.journey_responses || {})
+      : (visionRow?.step_progress?.journey_responses || {});
+  } catch {}
+  const deliverables = visionDeliverables(visionResponses);
+  const valuesRanking = visionResponses['values-rank']?.ranking || visionResponses['values-tap']?.selected || [];
+  const valuesDef = visionResponses['values-define']?.fields || {};
+  // Static value labels mirror VALUE_WORDS but kept light: derive label from id by replacing -.
+  const valueLabel = (id) => (id || '').replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
+  const topValues = valuesRanking.slice(0, 6);
+  const anyDeliverable = deliverables.some((d) => d.complete);
+  const deliverablesPanel = anyDeliverable ? `
+  <aside class="dash-deliverables">
+    <p class="dash-deliverables__label">Your brand so far</p>
+    ${deliverables[0].complete && deliverables[0].value ? `<div class="dash-deliverable">
+      <p class="dash-deliverable__label">${esc(deliverables[0].label)}</p>
+      <p class="dash-deliverable__value">${esc(deliverables[0].value)}</p>
+    </div>` : ''}
+    ${deliverables[1].complete && deliverables[1].value ? `<div class="dash-deliverable">
+      <p class="dash-deliverable__label">${esc(deliverables[1].label)}</p>
+      <p class="dash-deliverable__value">${esc(deliverables[1].value)}</p>
+    </div>` : ''}
+    ${deliverables[2].complete && topValues.length ? `<div class="dash-deliverable">
+      <p class="dash-deliverable__label">Core Values</p>
+      <p class="dash-deliverable__value">${topValues.map((id) => esc(valueLabel(id))).join(' · ')}</p>
+    </div>` : ''}
+  </aside>` : '';
+
   const main = `
 <section class="dash dash--welcome">
   <div class="dash__welcome">
@@ -442,6 +476,8 @@ export function renderDashboard(user, progressRows) {
       <a href="${resumeHref}" class="btn btn--primary btn--lg">${resumeLabel} →</a>
       ${pct > 0 && pct < 100 ? `<a href="/brand-guide" class="btn--quiet">Brand Guide so far →</a>` : ''}
     </div>
+
+    ${deliverablesPanel}
   </div>
 
   <div class="dash__rail">${rightRail}</div>
@@ -592,7 +628,7 @@ export function renderJourney(user, tool, slug, journeyResponses) {
     return `<a href="/brand-builder/${t}" class="${cls}"><span class="v-stepnav__num">${m.num}</span><span class="v-stepnav__label">${esc(m.label)}</span></a>`;
   }).join('');
 
-  const body = renderJourneyStepBody(tool, step, savedResponse);
+  const body = renderJourneyStepBody(tool, step, savedResponse, responses);
 
   const main = `
 <nav class="v-stepnav">
@@ -603,7 +639,7 @@ export function renderJourney(user, tool, slug, journeyResponses) {
 
   <header class="journey__header">
     <div class="journey__crumbs">
-      <p class="journey__eyebrow">${esc(meta.label)}</p>
+      <p class="journey__eyebrow">${esc(meta.label)}${step.section ? ` <span class="journey__eyebrow-sub">· ${esc(step.section)}</span>` : ''}</p>
       <p class="journey__progress-text">Step ${idx + 1} of ${steps.length} · ${pct}%</p>
     </div>
     <div class="journey__progress">

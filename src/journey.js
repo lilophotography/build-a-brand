@@ -1,143 +1,478 @@
 // Journey: the new VIP-day step engine that replaces the video+workbook+chat
-// model on the V pages. First ship: Vision only. Other V's still use the legacy
-// renderBrandBuilder until they're decomposed too.
+// model on the V pages.
 //
-// Storage: brand_progress.step_progress JSON. We add a `journey_responses`
-// object keyed by step id. /api/progress/step?op=journey_response writes to it.
+// Vision module (this file): Mission → Vision → Values, sourced from Lisa's
+// actual workbook content (build-a-brand_workbook-module_1_vision.pdf).
+// Three deliverables: a mission statement, a vision statement, and a defined
+// set of values. ~1 hour of focused work with mirror checkpoints and narrowing
+// rounds where each round's options are informed by prior answers.
+//
+// Storage: brand_progress.step_progress JSON. journey_responses[step_id] =
+// the per-step response. /api/progress/step?op=journey_response writes here.
 
 import { esc } from './render.js';
 import { TOOL_META } from './prompts.js';
 
 // ---------------------------------------------------------------------------
-// Step definitions per V. Each step has an id, kind, title, subtitle, and the
-// kind-specific options (words to tap, fields to fill, items to rank, etc.)
+// Helpers used by step body renderers
+// ---------------------------------------------------------------------------
+
+// Replace [TOKEN] placeholders in a string with values pulled from prior
+// journey responses. Tokens are looked up against `tokenMap`.
+function applyTokens(text, tokenMap) {
+  if (!text) return '';
+  return text.replace(/\[([A-Z0-9_]+)\]/g, (_, key) => {
+    const val = tokenMap[key];
+    return val && val.trim() ? val.trim() : `[${key.toLowerCase().replace(/_/g, ' ')}]`;
+  });
+}
+
+// Build a token map from journey_responses for the Vision module.
+function visionTokenMap(journeyResponses = {}) {
+  const r = journeyResponses;
+  const what = r['mission-discovery']?.fields?.what || '';
+  const who = r['mission-discovery']?.fields?.who || '';
+  const how = r['mission-discovery']?.fields?.how || '';
+  const visionImpact = r['vision-discovery']?.fields?.impact || '';
+  const archetypeId = (r['vision-archetype']?.selected || [])[0];
+  const archetype = VISION_ARCHETYPES.find((a) => a.id === archetypeId);
+  return {
+    WHAT: what,
+    WHO: who,
+    HOW: how,
+    IMPACT: visionImpact,
+    ARCHETYPE: archetype ? archetype.label.toLowerCase() : '',
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Static content used by Vision step definitions
+// ---------------------------------------------------------------------------
+
+const VISION_ARCHETYPES = [
+  { id: 'quiet-builder', label: 'The Quiet Builder', description: 'Steady, sustainable growth. Family first. Long game over short wins.' },
+  { id: 'movement-starter', label: 'The Movement Starter', description: 'Change the game. Raise the standard. Lift the people coming up behind you.' },
+  { id: 'pioneer', label: 'The Pioneer', description: 'First of its kind. Edge of the field. R&D for everyone else.' },
+  { id: 'master-craftsman', label: 'The Master Craftsman', description: 'The best at the thing. Depth over scale. Quality over quantity.' },
+  { id: 'translator', label: 'The Translator', description: 'Bridge experts and beginners. Make the hard thing accessible.' },
+  { id: 'liberator', label: 'The Liberator', description: 'Set people free from a stuck pattern. Permission and possibility.' },
+];
+
+const VISION_WORDS = [
+  // Stakes
+  { id: 'legacy', label: 'legacy', group: 'Stakes' },
+  { id: 'impact', label: 'impact', group: 'Stakes' },
+  { id: 'change', label: 'change', group: 'Stakes' },
+  { id: 'movement', label: 'movement', group: 'Stakes' },
+  { id: 'standard', label: 'standard', group: 'Stakes' },
+  // Reach
+  { id: 'every', label: 'every', group: 'Reach' },
+  { id: 'community', label: 'community', group: 'Reach' },
+  { id: 'industry', label: 'industry', group: 'Reach' },
+  { id: 'world', label: 'world', group: 'Reach' },
+  { id: 'tribe', label: 'tribe', group: 'Reach' },
+  // Depth
+  { id: 'mastery', label: 'mastery', group: 'Depth' },
+  { id: 'craft', label: 'craft', group: 'Depth' },
+  { id: 'depth', label: 'depth', group: 'Depth' },
+  { id: 'integrity', label: 'integrity', group: 'Depth' },
+  { id: 'truth', label: 'truth', group: 'Depth' },
+  // Care
+  { id: 'confidence', label: 'confidence', group: 'Care' },
+  { id: 'pride', label: 'pride', group: 'Care' },
+  { id: 'freedom', label: 'freedom', group: 'Care' },
+  { id: 'belonging', label: 'belonging', group: 'Care' },
+  { id: 'permission', label: 'permission', group: 'Care' },
+  { id: 'agency', label: 'agency', group: 'Care' },
+  { id: 'joy', label: 'joy', group: 'Care' },
+  { id: 'ease', label: 'ease', group: 'Care' },
+  { id: 'clarity', label: 'clarity', group: 'Care' },
+];
+
+const VALUE_WORDS = [
+  // Strength
+  { id: 'integrity', label: 'integrity', group: 'Strength' },
+  { id: 'honesty', label: 'honesty', group: 'Strength' },
+  { id: 'courage', label: 'courage', group: 'Strength' },
+  { id: 'resilience', label: 'resilience', group: 'Strength' },
+  { id: 'discipline', label: 'discipline', group: 'Strength' },
+  { id: 'rigor', label: 'rigor', group: 'Strength' },
+  { id: 'consistency', label: 'consistency', group: 'Strength' },
+  // Posture
+  { id: 'confidence', label: 'confidence', group: 'Posture' },
+  { id: 'humility', label: 'humility', group: 'Posture' },
+  { id: 'curiosity', label: 'curiosity', group: 'Posture' },
+  { id: 'openness', label: 'openness', group: 'Posture' },
+  { id: 'directness', label: 'directness', group: 'Posture' },
+  { id: 'patience', label: 'patience', group: 'Posture' },
+  { id: 'playfulness', label: 'playfulness', group: 'Posture' },
+  // Care
+  { id: 'kindness', label: 'kindness', group: 'Care' },
+  { id: 'warmth', label: 'warmth', group: 'Care' },
+  { id: 'generosity', label: 'generosity', group: 'Care' },
+  { id: 'service', label: 'service', group: 'Care' },
+  { id: 'encouragement', label: 'encouragement', group: 'Care' },
+  { id: 'empathy', label: 'empathy', group: 'Care' },
+  { id: 'inclusion', label: 'inclusion', group: 'Care' },
+  // Standards
+  { id: 'craft', label: 'craft', group: 'Standards' },
+  { id: 'creativity', label: 'creativity', group: 'Standards' },
+  { id: 'organization', label: 'organization', group: 'Standards' },
+  { id: 'precision', label: 'precision', group: 'Standards' },
+  { id: 'beauty', label: 'beauty', group: 'Standards' },
+  { id: 'simplicity', label: 'simplicity', group: 'Standards' },
+  { id: 'originality', label: 'originality', group: 'Standards' },
+  // Energy
+  { id: 'fun', label: 'fun', group: 'Energy' },
+  { id: 'excitement', label: 'excitement', group: 'Energy' },
+  { id: 'inspiration', label: 'inspiration', group: 'Energy' },
+  { id: 'momentum', label: 'momentum', group: 'Energy' },
+  { id: 'rest', label: 'rest', group: 'Energy' },
+  { id: 'flow', label: 'flow', group: 'Energy' },
+  // Stewardship
+  { id: 'freedom', label: 'freedom', group: 'Stewardship' },
+  { id: 'autonomy', label: 'autonomy', group: 'Stewardship' },
+  { id: 'sustainability', label: 'sustainability', group: 'Stewardship' },
+  { id: 'stewardship', label: 'stewardship', group: 'Stewardship' },
+  { id: 'community', label: 'community', group: 'Stewardship' },
+  { id: 'family', label: 'family', group: 'Stewardship' },
+  { id: 'faith', label: 'faith', group: 'Stewardship' },
+];
+
+const MISSION_TEMPLATES = [
+  { id: 'm1', text: 'I [WHAT] for [WHO] resulting in [HOW].', description: "Lisa's classic framing." },
+  { id: 'm2', text: 'I help [WHO] [HOW] without [PAIN].', description: 'Direct, deployable.' },
+  { id: 'm3', text: 'I partner with [WHO] to [WHAT] so they can [HOW].', description: 'Collaborative, premium.' },
+  { id: 'm4', text: '[WHAT] for [WHO] who refuse to settle.', description: 'Tribe-shaped.' },
+  { id: 'm5', text: 'I make [WHAT] feel doable for [WHO].', description: 'Permission framing.' },
+  { id: 'm6', text: 'I pull [HOW] out of [WHO] and translate it into [WHAT].', description: 'Process framing, very LiLo.' },
+  { id: 'm7', text: 'Helping [WHO] stop [PAIN] and start [HOW].', description: 'Pain-relief framing.' },
+  { id: 'm8', text: 'The [WHAT] that [WHO] wishes they had years ago.', description: 'Hindsight framing.' },
+  { id: 'm9', text: 'I work with [WHO] to build [HOW] on their own terms.', description: 'Autonomy framing.' },
+  { id: 'm10', text: 'For [WHO] who are ready to stop [PAIN] and finally [HOW].', description: 'Threshold framing.' },
+];
+
+const VISION_TEMPLATES = [
+  { id: 'v1', text: 'For every [WHO] to [IMPACT], with [WORD1] and [WORD2].', description: 'Lisa-shaped framing.' },
+  { id: 'v2', text: 'A world where [WHO] feel [WORD1] about [WORD2].', description: 'Movement framing.' },
+  { id: 'v3', text: 'To raise the standard of [WHAT] so [WHO] can [IMPACT].', description: 'Industry framing.' },
+  { id: 'v4', text: '[WHO] who [HOW], at scale.', description: 'Reach framing.' },
+  { id: 'v5', text: 'The [ARCHETYPE] of [WHAT]: [WORD1], [WORD2], [WORD3].', description: 'Archetype framing.' },
+  { id: 'v6', text: '[IMPACT]. That is the work.', description: 'Stripped down.' },
+  { id: 'v7', text: 'Building a world where [WHO] no longer have to [PAIN].', description: 'Liberation framing.' },
+  { id: 'v8', text: 'A future where [WORD1] is the rule, not the exception, for [WHO].', description: 'Standard-setting framing.' },
+  { id: 'v9', text: 'Every [WHO] equipped to [HOW] without losing themselves in the process.', description: 'Integrity framing.' },
+  { id: 'v10', text: 'The [ARCHETYPE] who shows [WHO] that [WORD1] and [WORD2] can coexist.', description: 'Personal-narrative framing.' },
+];
+
+// ---------------------------------------------------------------------------
+// Vision step definitions (Module One: Mission, Vision, Values)
+// Three sub-processes, mirror checkpoints, narrowing rounds.
 // ---------------------------------------------------------------------------
 
 export const VISION_STEPS = [
+  // ===== Reflection warmup (Lisa's GPT prompt opens with these) =====
   {
-    id: 'brand-personality',
-    kind: 'wordcloud',
-    title: 'Tap the words that feel like you.',
-    subtitle: 'Pick as many or as few as you want. No wrong answers.',
-    estimatedMinutes: 5,
-    words: [
-      { id: 'bold', label: 'bold', group: 'Energy' },
-      { id: 'calm', label: 'calm', group: 'Energy' },
-      { id: 'playful', label: 'playful', group: 'Energy' },
-      { id: 'magnetic', label: 'magnetic', group: 'Energy' },
-      { id: 'grounded', label: 'grounded', group: 'Energy' },
-      { id: 'fierce', label: 'fierce', group: 'Energy' },
-      { id: 'soft', label: 'soft', group: 'Energy' },
-      { id: 'electric', label: 'electric', group: 'Energy' },
-      { id: 'elegant', label: 'elegant', group: 'Style' },
-      { id: 'edgy', label: 'edgy', group: 'Style' },
-      { id: 'warm', label: 'warm', group: 'Style' },
-      { id: 'minimal', label: 'minimal', group: 'Style' },
-      { id: 'rich', label: 'rich', group: 'Style' },
-      { id: 'lived-in', label: 'lived-in', group: 'Style' },
-      { id: 'polished', label: 'polished', group: 'Style' },
-      { id: 'raw', label: 'raw', group: 'Style' },
-      { id: 'honest', label: 'honest', group: 'Voice' },
-      { id: 'witty', label: 'witty', group: 'Voice' },
-      { id: 'tender', label: 'tender', group: 'Voice' },
-      { id: 'direct', label: 'direct', group: 'Voice' },
-      { id: 'gutsy', label: 'gutsy', group: 'Voice' },
-      { id: 'nurturing', label: 'nurturing', group: 'Voice' },
-      { id: 'irreverent', label: 'irreverent', group: 'Voice' },
-      { id: 'thoughtful', label: 'thoughtful', group: 'Voice' },
-      { id: 'expert', label: 'expert', group: 'Posture' },
-      { id: 'guide', label: 'guide', group: 'Posture' },
-      { id: 'friend', label: 'friend', group: 'Posture' },
-      { id: 'rebel', label: 'rebel', group: 'Posture' },
-      { id: 'mentor', label: 'mentor', group: 'Posture' },
-      { id: 'sister', label: 'sister', group: 'Posture' },
+    id: 'reflection-warmup',
+    kind: 'fillblank',
+    section: 'Warmup',
+    title: 'Before we start, a few softening questions.',
+    subtitle: "Skip any that don't land. Free-write, no wrong answers. We'll come back to these threads.",
+    estimatedMinutes: 6,
+    fields: [
+      {
+        id: 'personality',
+        label: "How would you describe your brand's personality?",
+        helpText: 'If your brand walked into a room, what would people feel?',
+        placeholder: 'Warm but no-nonsense. Friend who tells you the truth.',
+        rows: 2,
+      },
+      {
+        id: 'memory',
+        label: 'What do you want your customers to remember most about your brand?',
+        helpText: 'The one thing you want them to walk away saying.',
+        placeholder: 'That she actually got me, not just my project.',
+        rows: 2,
+      },
+      {
+        id: 'role-models',
+        label: "Who are your brand's role models or inspirations?",
+        helpText: 'Brands you admire. They can be in your industry or completely outside it.',
+        placeholder: 'Glossier for warmth, Patagonia for guts, my grandmother for taste.',
+        rows: 2,
+      },
     ],
   },
+
+  // ===== Process A: Mission Statement =====
   {
-    id: 'mission-pieces',
+    id: 'mission-discovery',
     kind: 'fillblank',
-    title: 'Three short answers.',
-    subtitle: "What you do, who you do it for, how it changes them. One or two sentences each.",
+    section: 'Mission',
+    title: 'The heartbeat of your brand.',
+    subtitle: "Four short answers. We'll use them to build your mission statement together.",
     estimatedMinutes: 10,
     fields: [
       {
         id: 'what',
-        label: 'What you actually do.',
-        helpText: 'The verb. Skip the adjectives.',
-        placeholder: 'I help people build brands that feel like them.',
+        label: 'What problem do you solve, or what do you do?',
+        helpText: 'The verb. Skip the adjectives. Be specific.',
+        placeholder: 'I help photographers turn their craft into a confident brand.',
+        rows: 2,
+      },
+      {
+        id: 'why',
+        label: 'Why did you choose this work?',
+        helpText: "The deeper purpose. What's underneath the work.",
+        placeholder: 'Because I watched too many talented people quit before they found their voice.',
         rows: 2,
       },
       {
         id: 'who',
-        label: 'Who you do it for.',
-        helpText: 'Be specific. Who are they before they meet you?',
-        placeholder: 'Photographers and creatives stuck between hobby and business.',
+        label: 'Who do you help?',
+        helpText: "General overview is fine here, you'll get specific in the Value section later.",
+        placeholder: 'Photographers and creatives stuck between hobby and full-time business.',
         rows: 2,
       },
       {
         id: 'how',
-        label: 'How they\'re different after you.',
-        helpText: 'The transformation, not the deliverable.',
-        placeholder: 'They walk away with a brand that feels obvious in hindsight.',
-        rows: 3,
+        label: 'How are they different after you?',
+        helpText: 'The transformation, not the deliverable. The feeling, the change.',
+        placeholder: 'They walk away with a brand that feels obvious in hindsight, and a clear voice they can deploy anywhere.',
+        rows: 2,
       },
     ],
+    inspiration: {
+      label: "Lisa's example",
+      text: '"I partner with small business owners to create a compelling brand so they confidently stand out in the crowded world of online marketing without feeling overwhelmed."',
+    },
+  },
+  {
+    id: 'mission-mirror',
+    kind: 'mirror',
+    section: 'Mission',
+    title: "Here's what I'm hearing.",
+    subtitle: "Read it back. If anything's off, hit Back and edit. Otherwise let's pick a framing.",
+    estimatedMinutes: 2,
+    mirror: {
+      sourceStep: 'mission-discovery',
+      template: [
+        { label: 'You do this:', from: 'fields.what' },
+        { label: 'And the deeper why:', from: 'fields.why' },
+        { label: 'For these people:', from: 'fields.who' },
+        { label: 'And this is how they change:', from: 'fields.how' },
+      ],
+    },
   },
   {
     id: 'mission-pick',
     kind: 'pick-3',
-    title: 'Pick the mission framing that hits.',
-    subtitle: 'You can refine the wording later. Pick one for now, or write your own.',
-    estimatedMinutes: 5,
+    section: 'Mission',
+    title: 'Pick the framing that hits.',
+    subtitle: "Each one uses your own words. You'll edit the wording on the next step.",
+    estimatedMinutes: 4,
     maxPicks: 1,
-    options: [
-      { id: 'm1', label: 'I help [audience] build [outcome] without [pain].', description: 'Direct, deployable.' },
-      { id: 'm2', label: 'We make [transformation] feel inevitable for [audience].', description: 'Aspirational.' },
-      { id: 'm3', label: '[Brand] exists so [audience] can finally [outcome].', description: 'Mission-driven.' },
-      { id: 'm4', label: 'A [thing] for [audience] who want [outcome].', description: 'Product-shaped.' },
-      { id: 'm5', label: 'I pull [outcome] out of [audience] and translate it into [thing].', description: 'Process-shaped.' },
-      { id: 'm6', label: 'Helping [audience] stop [pain] and start [outcome].', description: 'Pain-relief.' },
-      { id: 'm7', label: 'The [thing] that [audience] wishes they had years ago.', description: 'Hindsight.' },
-      { id: 'm8', label: 'I make [hard thing] feel doable for [audience].', description: 'Permission.' },
-      { id: 'm9', label: 'Branding for [audience] who refuse to look like everyone else.', description: 'Tribe.' },
-      { id: 'm10', label: '[Outcome] starts with [thing], and [thing] starts here.', description: 'Sequence.' },
-      { id: 'm11', label: 'We don\'t do [common thing]. We do [your thing].', description: 'Contrast.' },
-      { id: 'm12', label: 'Write your own.', description: 'Pick this if none fit, refine later.' },
+    optionsFromTemplates: 'mission',
+  },
+  {
+    id: 'mission-refine',
+    kind: 'fillblank',
+    section: 'Mission',
+    title: 'Make it yours.',
+    subtitle: 'Replace the [brackets]. Move words around. It should sound like you, not a template.',
+    estimatedMinutes: 6,
+    fields: [
+      {
+        id: 'mission_statement',
+        label: 'Your mission statement.',
+        helpText: 'One or two sentences. Try saying it out loud. Does it sound like you?',
+        placeholder: '',
+        rows: 4,
+        prefillFrom: { tool: 'vision', step: 'mission-pick', kind: 'template' },
+      },
     ],
+    inspiration: {
+      label: "Lisa's mission",
+      text: '"I partner with small business owners to create a compelling brand so they confidently stand out in the crowded world of online marketing without feeling overwhelmed."',
+    },
+  },
+
+  // ===== Process B: Vision Statement =====
+  {
+    id: 'vision-discovery',
+    kind: 'fillblank',
+    section: 'Vision',
+    title: 'Now zoom out. Three questions to surface your why.',
+    subtitle: "Big-picture. Long-term. The world you want to help build.",
+    estimatedMinutes: 10,
+    fields: [
+      {
+        id: 'impact',
+        label: 'What impact do you want to have on customers, community, or the world?',
+        helpText: 'It can be lofty. It should inspire YOU first.',
+        placeholder: 'For every photographer to feel as confident in their identity as they are in their craft.',
+        rows: 3,
+      },
+      {
+        id: 'longterm',
+        label: 'What is your long-term goal or aspiration for your brand?',
+        helpText: '5 years, 50 years, doesn\'t matter. Where is this headed?',
+        placeholder: 'A studio that becomes the standard for brand photography in our region.',
+        rows: 3,
+      },
+      {
+        id: 'personal',
+        label: 'What will success look like for you personally?',
+        helpText: 'Not the business metric. The personal one. What does YOUR life look like when this is working?',
+        placeholder: 'I work three days a week, take Fridays for my own art, and my clients refer everyone.',
+        rows: 3,
+      },
+    ],
+    inspiration: {
+      label: "Lisa's vision",
+      text: '"For every small business owner to have a brand that they feel proud of and confident in, and to do so with encouragement and integrity."',
+    },
+  },
+  {
+    id: 'vision-archetype',
+    kind: 'pick-3',
+    section: 'Vision',
+    title: 'Which archetype is closest?',
+    subtitle: "Don't overthink it. Pick the one that feels most like you on a Tuesday morning.",
+    estimatedMinutes: 3,
+    maxPicks: 1,
+    options: VISION_ARCHETYPES.map((a) => ({
+      id: a.id, label: a.label, description: a.description,
+    })),
+  },
+  {
+    id: 'vision-words',
+    kind: 'wordcloud',
+    section: 'Vision',
+    title: 'Tap the words that orbit your vision.',
+    subtitle: "These shape the language we'll use to write it. Tap as many as resonate.",
+    estimatedMinutes: 4,
+    words: VISION_WORDS,
+  },
+  {
+    id: 'vision-pick',
+    kind: 'pick-3',
+    section: 'Vision',
+    title: 'Pick a framing for your vision.',
+    subtitle: 'Each one folds in your archetype, your words, and your mission.',
+    estimatedMinutes: 3,
+    maxPicks: 1,
+    optionsFromTemplates: 'vision',
+  },
+  {
+    id: 'vision-refine',
+    kind: 'fillblank',
+    section: 'Vision',
+    title: 'Make it yours.',
+    subtitle: 'Replace any [brackets]. Trust the bigger feel of it, not perfection.',
+    estimatedMinutes: 5,
+    fields: [
+      {
+        id: 'vision_statement',
+        label: 'Your vision statement.',
+        helpText: 'One sentence. Inspires YOU first, your audience second.',
+        placeholder: '',
+        rows: 4,
+        prefillFrom: { tool: 'vision', step: 'vision-pick', kind: 'template' },
+      },
+    ],
+  },
+  {
+    id: 'mission-vision-mirror',
+    kind: 'mirror',
+    section: 'Vision',
+    title: 'Mission and Vision, side by side.',
+    subtitle: "Read them. Do they sit well together? You can still go back and refine.",
+    estimatedMinutes: 2,
+    mirror: {
+      template: [
+        { label: 'Mission (the work):', from: 'mission-refine.fields.mission_statement' },
+        { label: 'Vision (the world you want):', from: 'vision-refine.fields.vision_statement' },
+      ],
+    },
+  },
+
+  // ===== Process C: Values =====
+  {
+    id: 'values-principles',
+    kind: 'fillblank',
+    section: 'Values',
+    title: 'Before we pick words, write the principles.',
+    subtitle: "What you actually believe, in plain language. We'll find words to match later.",
+    estimatedMinutes: 6,
+    fields: [
+      {
+        id: 'principles',
+        label: 'What personal principles guide your behavior in your business?',
+        helpText: "The non-negotiables. The things you'd lose a client over.",
+        placeholder: "I won't work with people who treat my team badly. I always tell the truth even when it costs me a sale. I never copy another brand's voice.",
+        rows: 5,
+      },
+    ],
+  },
+  {
+    id: 'values-tap',
+    kind: 'wordcloud',
+    section: 'Values',
+    title: 'Now tap every value word that resonates.',
+    subtitle: "Don't filter. Pick everything that feels even a little bit like you. We'll narrow.",
+    estimatedMinutes: 6,
+    words: VALUE_WORDS,
+  },
+  {
+    id: 'values-mirror',
+    kind: 'mirror',
+    section: 'Values',
+    title: "Here's what's resonating.",
+    subtitle: 'Does this list feel like you? Hit Back to add or remove. Otherwise pick your top values.',
+    estimatedMinutes: 2,
+    mirror: {
+      sourceStep: 'values-tap',
+      kind: 'wordcloud-list',
+    },
   },
   {
     id: 'values-rank',
     kind: 'rank',
-    title: 'Drag your top values to the top.',
-    subtitle: 'Drag to reorder. Use the arrows on phones.',
-    estimatedMinutes: 8,
-    items: [
-      { id: 'honesty', label: 'Honesty', description: "Saying the true thing even when it's awkward." },
-      { id: 'craft', label: 'Craft', description: "Caring how it's made, not just how it sells." },
-      { id: 'warmth', label: 'Warmth', description: 'Treating people like people.' },
-      { id: 'freedom', label: 'Freedom', description: 'Working on your own terms.' },
-      { id: 'courage', label: 'Courage', description: 'Doing the scary thing first.' },
-      { id: 'curiosity', label: 'Curiosity', description: 'Always learning, never bored.' },
-      { id: 'joy', label: 'Joy', description: "It's allowed to feel good." },
-      { id: 'service', label: 'Service', description: 'The work is for them.' },
-      { id: 'rest', label: 'Rest', description: 'Sustainability over speed.' },
-      { id: 'intention', label: 'Intention', description: 'Nothing accidental.' },
-      { id: 'play', label: 'Play', description: 'Lightness even at high stakes.' },
-      { id: 'rigor', label: 'Rigor', description: 'Hold the line on quality.' },
-    ],
+    section: 'Values',
+    title: 'Drag your top 6 to the top.',
+    subtitle: "Top of the list is most important. Lisa's GPT says 3 to 6 core values, top heavy.",
+    estimatedMinutes: 6,
+    itemsFrom: 'values-tap',
   },
   {
+    id: 'values-define',
+    kind: 'fillblank',
+    section: 'Values',
+    title: 'Define your top values.',
+    subtitle: "A value without a definition is a poster on a wall. Tell me what each one looks like in your daily business.",
+    estimatedMinutes: 14,
+    fieldsFrom: 'values-rank',
+    fieldHelp: 'How does this show up in a real moment? Examples of behavior, not vibes.',
+  },
+
+  // ===== Lock-in =====
+  {
     id: 'summary',
-    kind: 'summary',
-    title: 'Your Vision, in your words.',
-    subtitle: 'Saved. We\'ll fold it into your Brand Guide as you finish more sections.',
+    kind: 'mirror',
+    section: 'Vision module',
+    title: 'Your Vision module: locked in.',
+    subtitle: 'Mission. Vision. Values. The foundation for everything else.',
     estimatedMinutes: 2,
+    mirror: {
+      kind: 'vision-summary',
+    },
   },
 ];
 
 const STEPS_BY_TOOL = {
   vision: VISION_STEPS,
-  // value, voice, visuals, visibility: TODO in next session
+  // value, voice, visuals, visibility: TODO in Big Ship 2
 };
 
 // ---------------------------------------------------------------------------
@@ -177,20 +512,31 @@ export function journeyProgressPct(tool, journeyResponses) {
   return Math.round((done / steps.length) * 100);
 }
 
+// Per-deliverable progress for the dashboard breakdown.
+export function visionDeliverables(journeyResponses = {}) {
+  return [
+    { key: 'mission', label: 'Mission Statement', value: journeyResponses['mission-refine']?.fields?.mission_statement || '', complete: !!journeyResponses['mission-refine'] },
+    { key: 'vision', label: 'Vision Statement', value: journeyResponses['vision-refine']?.fields?.vision_statement || '', complete: !!journeyResponses['vision-refine'] },
+    { key: 'values', label: 'Core Values', value: '', complete: !!journeyResponses['values-define'] },
+  ];
+}
+
 // ---------------------------------------------------------------------------
-// Renderer for a single journey step page
+// Renderer for a single journey step body
 // ---------------------------------------------------------------------------
 
-export function renderJourneyStepBody(tool, step, savedResponse) {
+export function renderJourneyStepBody(tool, step, savedResponse, journeyResponses = {}) {
   switch (step.kind) {
     case 'wordcloud':
       return renderWordCloud(step, savedResponse);
     case 'fillblank':
-      return renderFillBlank(step, savedResponse);
+      return renderFillBlank(step, savedResponse, journeyResponses);
     case 'pick-3':
-      return renderPick3(step, savedResponse);
+      return renderPick3(step, savedResponse, journeyResponses);
     case 'rank':
-      return renderRank(step, savedResponse);
+      return renderRank(step, savedResponse, journeyResponses);
+    case 'mirror':
+      return renderMirror(step, journeyResponses);
     case 'summary':
       return renderSummaryStep(tool, step);
     default:
@@ -219,26 +565,90 @@ function renderWordCloud(step, saved) {
   </div>`;
 }
 
-function renderFillBlank(step, saved) {
-  const fields = (saved && saved.fields) ? saved.fields : {};
+function renderFillBlank(step, saved, journeyResponses) {
+  const fieldVals = (saved && saved.fields) ? saved.fields : {};
+  const tokens = visionTokenMap(journeyResponses);
+
+  // Compose fields. Either static (step.fields) or derived from a prior step
+  // (step.fieldsFrom = a prior step id whose ranked items become fields).
+  let fields = step.fields || [];
+  if (step.fieldsFrom) {
+    // Pull top 5 ranked items from `values-rank` and turn them into fields.
+    const priorRank = journeyResponses[step.fieldsFrom]?.ranking || [];
+    const priorTap = journeyResponses['values-tap']?.selected || [];
+    const valuesById = Object.fromEntries(VALUE_WORDS.map((w) => [w.id, w.label]));
+    const ranked = priorRank.length ? priorRank : priorTap;
+    fields = ranked.slice(0, 6).map((id) => ({
+      id: 'def_' + id,
+      label: capitalize(valuesById[id] || id),
+      helpText: step.fieldHelp || 'Define what this looks like in your work.',
+      placeholder: '',
+      rows: 2,
+    }));
+  }
+
+  const inspiration = step.inspiration ? `<aside class="step-inspiration">
+    <p class="step-inspiration__label">${esc(step.inspiration.label)}</p>
+    <p class="step-inspiration__text">${esc(step.inspiration.text)}</p>
+  </aside>` : '';
+
+  const fieldsHtml = fields.map((f) => {
+    let initial = fieldVals[f.id] || '';
+    // Pre-fill from a prior pick (e.g., the chosen mission template with [tokens] applied).
+    if (!initial && f.prefillFrom) {
+      const pf = f.prefillFrom;
+      const pfStep = journeyResponses[pf.step];
+      if (pf.kind === 'template' && pfStep) {
+        const pickedId = (pfStep.selected || [])[0];
+        if (pickedId) {
+          const tmpl = (pf.step === 'mission-pick') ? MISSION_TEMPLATES.find((t) => t.id === pickedId)
+                     : (pf.step === 'vision-pick')  ? VISION_TEMPLATES.find((t) => t.id === pickedId)
+                     : null;
+          if (tmpl) {
+            // Inject extra vision-pick tokens (PAIN, WORD1-3) loosely when not present.
+            initial = applyTokens(applyVisionExtraTokens(tmpl.text, journeyResponses), tokens);
+          }
+        }
+      }
+    }
+    return `<div class="fill-field">
+      <label class="fill-field__label" for="ff-${esc(f.id)}">${esc(f.label)}</label>
+      ${f.helpText ? `<p class="fill-field__help">${esc(f.helpText)}</p>` : ''}
+      <textarea id="ff-${esc(f.id)}" class="fill-field__input" data-field-id="${esc(f.id)}" rows="${f.rows || 3}" placeholder="${esc(f.placeholder || '')}">${esc(initial)}</textarea>
+    </div>`;
+  }).join('');
+
   return `<div class="step-body step-body--fillblank" data-step-kind="fillblank" data-step-id="${esc(step.id)}">
-    ${step.fields.map((f) => `
-      <div class="fill-field">
-        <label class="fill-field__label" for="ff-${esc(f.id)}">${esc(f.label)}</label>
-        ${f.helpText ? `<p class="fill-field__help">${esc(f.helpText)}</p>` : ''}
-        <textarea id="ff-${esc(f.id)}" class="fill-field__input" data-field-id="${esc(f.id)}" rows="${f.rows || 3}" placeholder="${esc(f.placeholder || '')}">${esc(fields[f.id] || '')}</textarea>
-      </div>
-    `).join('')}
+    ${fieldsHtml}
+    ${inspiration}
   </div>`;
 }
 
-function renderPick3(step, saved) {
+function renderPick3(step, saved, journeyResponses) {
   const selected = (saved && Array.isArray(saved.selected)) ? saved.selected : [];
   const max = step.maxPicks || 3;
+  const tokens = visionTokenMap(journeyResponses);
+
+  // Compose options. Static or derived from a template family.
+  let options = step.options || [];
+  if (step.optionsFromTemplates === 'mission') {
+    options = MISSION_TEMPLATES.map((t) => ({
+      id: t.id,
+      label: applyTokens(t.text, tokens),
+      description: t.description,
+    }));
+  } else if (step.optionsFromTemplates === 'vision') {
+    options = VISION_TEMPLATES.map((t) => ({
+      id: t.id,
+      label: applyTokens(applyVisionExtraTokens(t.text, journeyResponses), tokens),
+      description: t.description,
+    }));
+  }
+
   return `<div class="step-body step-body--pick3" data-step-kind="pick-3" data-step-id="${esc(step.id)}" data-max-picks="${max}">
     <p class="step-body__hint">Pick ${max}. <span class="step-body__count" data-count>${selected.length}/${max}</span></p>
     <div class="pick-grid">
-      ${step.options.map((opt) => `
+      ${options.map((opt) => `
         <button type="button" class="pick-card ${selected.includes(opt.id) ? 'is-selected' : ''}" data-option-id="${esc(opt.id)}">
           <span class="pick-card__label">${esc(opt.label)}</span>
           ${opt.description ? `<span class="pick-card__desc">${esc(opt.description)}</span>` : ''}
@@ -249,9 +659,41 @@ function renderPick3(step, saved) {
   </div>`;
 }
 
-function renderRank(step, saved) {
-  const order = (saved && Array.isArray(saved.ranking)) ? saved.ranking : step.items.map((i) => i.id);
-  const itemById = Object.fromEntries(step.items.map((i) => [i.id, i]));
+// Vision-specific tokens (WORD1, WORD2, WORD3, PAIN) pulled from prior steps.
+function applyVisionExtraTokens(text, journeyResponses = {}) {
+  if (!text) return '';
+  const visionWords = (journeyResponses['vision-words']?.selected || [])
+    .map((id) => VISION_WORDS.find((w) => w.id === id)?.label || '')
+    .filter(Boolean);
+  const map = {
+    WORD1: visionWords[0] || 'meaning',
+    WORD2: visionWords[1] || 'integrity',
+    WORD3: visionWords[2] || 'craft',
+    PAIN: 'overwhelm',
+  };
+  return text.replace(/\[(WORD1|WORD2|WORD3|PAIN)\]/g, (_, k) => map[k]);
+}
+
+function renderRank(step, saved, journeyResponses) {
+  // Items can be static or pulled from a prior wordcloud's selections.
+  let items = step.items;
+  if (!items && step.itemsFrom) {
+    const priorSel = journeyResponses[step.itemsFrom]?.selected || [];
+    const valuesById = Object.fromEntries(VALUE_WORDS.map((w) => [w.id, w.label]));
+    items = priorSel.map((id) => ({
+      id,
+      label: capitalize(valuesById[id] || id),
+      description: '',
+    }));
+    // If nothing was picked, fall back to a sane default set so the step still renders.
+    if (!items.length) {
+      items = VALUE_WORDS.slice(0, 8).map((w) => ({ id: w.id, label: capitalize(w.label) }));
+    }
+  }
+  items = items || [];
+
+  const order = (saved && Array.isArray(saved.ranking)) ? saved.ranking : items.map((i) => i.id);
+  const itemById = Object.fromEntries(items.map((i) => [i.id, i]));
   return `<div class="step-body step-body--rank" data-step-kind="rank" data-step-id="${esc(step.id)}">
     <p class="step-body__hint">Drag to reorder. Top of the list is your top pick.</p>
     <ul class="rank-list" data-rank-list>
@@ -274,12 +716,96 @@ function renderRank(step, saved) {
   </div>`;
 }
 
+// Mirror: read-only step that reflects prior answers back to the user with a
+// continue button. Multiple shapes:
+//   - template: list of { label, from } pulling from prior steps
+//   - kind: 'wordcloud-list' rendering selections from one prior step as chips
+//   - kind: 'vision-summary' rendering mission, vision, and values together
+function renderMirror(step, journeyResponses = {}) {
+  const m = step.mirror || {};
+  let bodyHtml = '';
+
+  if (m.template) {
+    bodyHtml = m.template.map((row) => {
+      const value = readByPath(row.from, step, journeyResponses);
+      return `<div class="mirror-row">
+        <p class="mirror-row__label">${esc(row.label)}</p>
+        <p class="mirror-row__value">${esc(value || '(blank — go back to fill this in)')}</p>
+      </div>`;
+    }).join('');
+  } else if (m.kind === 'wordcloud-list') {
+    const src = m.sourceStep ? journeyResponses[m.sourceStep] : null;
+    const ids = (src?.selected || []);
+    const labels = ids.map((id) => {
+      const w = VALUE_WORDS.find((x) => x.id === id) || VISION_WORDS.find((x) => x.id === id);
+      return w?.label || id;
+    });
+    bodyHtml = labels.length
+      ? `<div class="mirror-chips">${labels.map((l) => `<span class="mirror-chip">${esc(l)}</span>`).join('')}</div>`
+      : `<p class="mirror-row__value">(nothing tapped yet — go back and tap some words)</p>`;
+  } else if (m.kind === 'vision-summary') {
+    const mission = journeyResponses['mission-refine']?.fields?.mission_statement || '';
+    const vision = journeyResponses['vision-refine']?.fields?.vision_statement || '';
+    const definitions = journeyResponses['values-define']?.fields || {};
+    const ranking = journeyResponses['values-rank']?.ranking || journeyResponses['values-tap']?.selected || [];
+    const valuesById = Object.fromEntries(VALUE_WORDS.map((w) => [w.id, w.label]));
+    const topValues = ranking.slice(0, 6);
+    const valueRows = topValues.map((id) => {
+      const def = definitions['def_' + id] || '';
+      return `<div class="mirror-row">
+        <p class="mirror-row__label">${esc(capitalize(valuesById[id] || id))}</p>
+        ${def ? `<p class="mirror-row__value">${esc(def)}</p>` : `<p class="mirror-row__value mirror-row__value--muted">(no definition yet)</p>`}
+      </div>`;
+    }).join('');
+    bodyHtml = `
+      <div class="mirror-section">
+        <p class="mirror-section__label">Mission Statement</p>
+        <p class="mirror-section__value">${esc(mission || '(blank)')}</p>
+      </div>
+      <div class="mirror-section">
+        <p class="mirror-section__label">Vision Statement</p>
+        <p class="mirror-section__value">${esc(vision || '(blank)')}</p>
+      </div>
+      <div class="mirror-section">
+        <p class="mirror-section__label">Core Values</p>
+        ${valueRows || '<p class="mirror-row__value mirror-row__value--muted">(no values defined yet)</p>'}
+      </div>
+    `;
+  }
+
+  return `<div class="step-body step-body--mirror" data-step-kind="mirror" data-step-id="${esc(step.id)}">
+    <div class="mirror-card">
+      ${bodyHtml}
+    </div>
+  </div>`;
+}
+
 function renderSummaryStep(tool, step) {
   const meta = TOOL_META[tool] || { label: tool };
   return `<div class="step-body step-body--summary" data-step-kind="summary" data-step-id="${esc(step.id)}">
     <div class="summary-card">
       <p class="summary-card__eyebrow">${esc(meta.label)} saved</p>
-      <p class="summary-card__body">Your answers are stored and will compile into your Brand Guide PDF as you finish more sections. You can come back and refine any answer any time.</p>
+      <p class="summary-card__body">Your answers compile into your Brand Guide as you finish more sections.</p>
     </div>
   </div>`;
+}
+
+// Read a value from journey_responses by dotted path.
+// Path format: "<step_id>.<field>.<sub>". The first segment is the step id.
+function readByPath(path, step, journeyResponses) {
+  if (!path) return '';
+  const parts = path.split('.');
+  const stepId = parts.length > 1 ? parts[0] : (step.mirror?.sourceStep || step.id);
+  const tail = parts.length > 1 ? parts.slice(1) : parts;
+  let cur = journeyResponses[stepId] || {};
+  for (const k of tail) {
+    if (cur == null) return '';
+    cur = cur[k];
+  }
+  return typeof cur === 'string' ? cur : '';
+}
+
+function capitalize(s) {
+  if (!s) return '';
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }

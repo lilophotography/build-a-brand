@@ -563,6 +563,7 @@
       return { fields };
     }
     if (kind === 'summary') return { acknowledged: true };
+    if (kind === 'mirror') return { acknowledged: true };
     return {};
   }
 
