@@ -734,31 +734,21 @@ export const VALUE_STEPS = [
     },
   },
   {
-    id: 'unique-value-pick',
-    kind: 'pick-3',
+    id: 'brag-bank-craft',
+    kind: 'ai-craft',
     section: 'Your value',
-    title: 'Pick the framing that sounds most like you.',
-    subtitle: 'Each one uses your own words. You can edit on the next step.',
-    estimatedMinutes: 5,
-    maxPicks: 1,
-    optionsFromTemplates: 'unique-value',
-  },
-  {
-    id: 'unique-value-refine',
-    kind: 'fillblank',
-    section: 'Your value',
-    title: 'Make your unique value statement yours.',
-    subtitle: 'Replace any [brackets]. Move words around. Add a second sentence if you need.',
-    estimatedMinutes: 6,
-    fields: [
-      {
-        id: 'unique_value',
-        label: 'Your unique value statement.',
-        helpText: 'One or two sentences. Should make you feel a little uncomfortable saying it out loud, in a good way.',
-        placeholder: '',
-        rows: 4,
-        prefillFrom: { tool: 'value', step: 'unique-value-pick', kind: 'template' },
-      },
+    title: 'Your brag bank.',
+    subtitle: "I'll take everything you just told me and craft 8 polished, copy-ready phrases for you. Pick the 6 that feel most like you. Paste them in bios, sales pages, sales conversations.",
+    estimatedMinutes: 10,
+    maxPicks: 6,
+    generateLabel: 'Craft my brag bank',
+    generateHint: '~15 to 30 seconds. I distill your raw answers into 8 polished phrases.',
+    sourceFields: [
+      { label: 'What you secretly know you are great at:', from: 'value-prep.fields.opener' },
+      { label: 'Life experiences that shaped you:', from: 'value-background.fields.life' },
+      { label: 'Specific skills:', from: 'value-strengths.fields.strengths' },
+      { label: 'What people compliment you on:', from: 'value-strengths.fields.compliments' },
+      { label: 'Real outcomes:', from: 'value-results.fields.results' },
     ],
   },
 
@@ -882,35 +872,82 @@ export const VALUE_STEPS = [
     },
   },
   {
-    id: 'portrait-pick',
-    kind: 'pick-3',
+    id: 'portrait-craft',
+    kind: 'ai-craft',
     section: 'Dream customer',
-    title: 'Pick a portrait frame.',
-    subtitle: "These pull from your own answers. Pick one and we'll let you rewrite it.",
-    estimatedMinutes: 4,
+    title: 'Your ideal client portrait.',
+    subtitle: "I'll craft 4 portrait versions from your dream-customer answers. Pick the one that feels most like the real person you have in mind. You can refine on the next step.",
+    estimatedMinutes: 6,
     maxPicks: 1,
-    optionsFromTemplates: 'portrait',
+    generateLabel: 'Craft my portrait options',
+    generateHint: '~15 to 20 seconds. I weave your demographics, beliefs, and problem answers into 4 portrait drafts.',
+    sourceFields: [
+      { label: 'Who excites you:', from: 'dream-intro.fields.excites' },
+      { label: 'Demographics (age + stage + location):', from: 'dream-demographics.fields.stage' },
+      { label: 'Their beliefs:', from: 'dream-beliefs.fields.beliefs' },
+      { label: 'External problem:', from: 'dream-external.fields.external' },
+      { label: 'Internal problem:', from: 'dream-internal.fields.internal' },
+      { label: 'Where you find them:', from: 'dream-where.fields.spaces' },
+    ],
   },
   {
     id: 'portrait-refine',
     kind: 'fillblank',
     section: 'Dream customer',
-    title: 'Now write your ideal client portrait.',
-    subtitle: 'Three to five sentences. A real person, named or unnamed.',
-    estimatedMinutes: 8,
+    title: 'Now make the portrait yours.',
+    subtitle: 'Edit the wording. Add a sentence if you need.',
+    estimatedMinutes: 6,
     fields: [
       {
         id: 'portrait',
         label: 'Your ideal client portrait.',
-        helpText: "Imagine her, sit with her for a minute, and write what you see.",
+        helpText: "Imagine her, sit with her for a minute, and adjust until she feels real.",
         placeholder: '',
         rows: 8,
-        prefillFrom: { tool: 'value', step: 'portrait-pick', kind: 'template' },
+        prefillFrom: { tool: 'value', step: 'portrait-craft', kind: 'ai-selected' },
       },
     ],
   },
 
-  // ----- Process C: Customer Transformation -----
+  // ----- Process C: USP (Unique Selling Proposition) -----
+  {
+    id: 'usp-craft',
+    kind: 'ai-craft',
+    section: 'Your USP',
+    title: 'Your USP candidates.',
+    subtitle: "I'll write 5 unique-selling-proposition candidates from your mission, brag bank, and ideal client. Pick the one that hits hardest. You refine the wording next.",
+    estimatedMinutes: 5,
+    maxPicks: 1,
+    generateLabel: 'Write my USP options',
+    generateHint: '~20 seconds. Five different angles, one tight directional sentence each.',
+    sourceFields: [
+      { label: 'What you do:', from: 'mission-discovery.fields.what' },
+      { label: 'Who you help:', from: 'mission-discovery.fields.who' },
+      { label: 'How they change:', from: 'mission-discovery.fields.how' },
+      { label: 'The client that excites you:', from: 'dream-intro.fields.excites' },
+      { label: "Their internal struggle:", from: 'dream-internal.fields.internal' },
+    ],
+  },
+  {
+    id: 'usp-refine',
+    kind: 'fillblank',
+    section: 'Your USP',
+    title: 'Make your USP yours.',
+    subtitle: 'Edit the wording. This goes on your homepage, your bio, and your sales calls.',
+    estimatedMinutes: 5,
+    fields: [
+      {
+        id: 'usp',
+        label: 'Your Unique Selling Proposition.',
+        helpText: 'One sentence, under 22 words. Lead with the assertion. Active voice. No hedges.',
+        placeholder: '',
+        rows: 4,
+        prefillFrom: { tool: 'value', step: 'usp-craft', kind: 'ai-selected' },
+      },
+    ],
+  },
+
+  // ----- Process D: Customer Transformation -----
   {
     id: 'transformation',
     kind: 'fillblank',
@@ -1015,9 +1052,13 @@ export function visionDeliverables(journeyResponses = {}) {
 }
 
 export function valueDeliverables(journeyResponses = {}) {
+  const bragSel = journeyResponses['brag-bank-craft']?.selected || [];
+  const bragOpts = journeyResponses['brag-bank-craft']?.ai_options || [];
+  const bragPicked = bragSel.map((id) => bragOpts.find((o) => o.id === id)?.text).filter(Boolean);
   return [
-    { key: 'unique_value', label: 'Unique Value Statement', value: journeyResponses['unique-value-refine']?.fields?.unique_value || '', complete: !!journeyResponses['unique-value-refine'] },
+    { key: 'brag_bank', label: 'Brag Bank', value: bragPicked.join(' · '), complete: !!journeyResponses['brag-bank-craft'] && bragSel.length > 0, items: bragPicked },
     { key: 'portrait', label: 'Ideal Client Portrait', value: journeyResponses['portrait-refine']?.fields?.portrait || '', complete: !!journeyResponses['portrait-refine'] },
+    { key: 'usp', label: 'Unique Selling Proposition', value: journeyResponses['usp-refine']?.fields?.usp || '', complete: !!journeyResponses['usp-refine'] },
     { key: 'transformation', label: 'Customer Transformation', value: '', complete: !!journeyResponses['transformation'] },
   ];
 }
@@ -1038,11 +1079,67 @@ export function renderJourneyStepBody(tool, step, savedResponse, journeyResponse
       return renderRank(step, savedResponse, journeyResponses);
     case 'mirror':
       return renderMirror(step, journeyResponses);
+    case 'ai-craft':
+      return renderAiCraft(step, savedResponse, journeyResponses);
     case 'summary':
       return renderSummaryStep(tool, step);
     default:
       return `<p class="journey-error">Unknown step kind: ${esc(step.kind)}</p>`;
   }
+}
+
+// ---------------------------------------------------------------------------
+// ai-craft: shows the user's raw source answers, a "Generate options" button,
+// and once generated, the AI-crafted options as pickable cards. The generation
+// happens server-side via /api/journey/craft and the options cache in
+// journey_responses[step_id].ai_options so they don't regenerate on reload.
+// ---------------------------------------------------------------------------
+
+function renderAiCraft(step, saved, journeyResponses) {
+  const cached = saved?.ai_options || [];
+  const selected = saved?.selected || [];
+  const maxPicks = step.maxPicks || 6;
+
+  // Build a short read-back of the source answers so the user sees what we're working from.
+  const sourceFields = (step.sourceFields || []).map((s) => {
+    const path = s.from.split('.');
+    let cur = journeyResponses[path[0]] || {};
+    for (const k of path.slice(1)) cur = cur ? cur[k] : null;
+    const val = typeof cur === 'string' ? cur : '';
+    return `<div class="ai-craft-source">
+      <p class="ai-craft-source__label">${esc(s.label)}</p>
+      <p class="ai-craft-source__value">${esc(val || '(blank)')}</p>
+    </div>`;
+  }).join('');
+
+  const optionsHtml = cached.length ? cached.map((o) => `
+    <button type="button" class="ai-option ${selected.includes(o.id) ? 'is-selected' : ''}" data-option-id="${esc(o.id)}">
+      <span class="ai-option__text">${esc(o.text)}</span>
+      <span class="ai-option__check" aria-hidden="true">✓</span>
+    </button>
+  `).join('') : '';
+
+  return `<div class="step-body step-body--ai-craft" data-step-kind="ai-craft" data-step-id="${esc(step.id)}" data-max-picks="${maxPicks}">
+    <div class="ai-craft__sources">
+      <p class="ai-craft__sources-label">What I'm working from</p>
+      <details class="ai-craft__details">
+        <summary>Show your raw answers</summary>
+        ${sourceFields}
+      </details>
+    </div>
+
+    <div class="ai-craft__action">
+      ${cached.length ? `
+        <p class="ai-craft__hint"><span class="step-body__count" data-count>${selected.length}/${maxPicks}</span> picked. Pick ${maxPicks} that feel like you. Tap one to toggle.</p>
+        <div class="ai-options" data-ai-options>${optionsHtml}</div>
+        <button type="button" class="btn--quiet ai-craft__regen" data-ai-generate>Regenerate options</button>
+      ` : `
+        <button type="button" class="btn btn--primary btn--lg ai-craft__generate" data-ai-generate>${esc(step.generateLabel || 'Craft these for me')}</button>
+        <p class="ai-craft__hint">${esc(step.generateHint || 'This takes 15 to 30 seconds. I will pull from your answers above and craft polished options for you to pick from.')}</p>
+        <div class="ai-options" data-ai-options></div>
+      `}
+    </div>
+  </div>`;
 }
 
 function renderWordCloud(step, saved) {
@@ -1105,13 +1202,17 @@ function renderFillBlank(step, saved, journeyResponses) {
           let tmpl = null;
           if (pf.step === 'mission-pick') tmpl = MISSION_TEMPLATES.find((t) => t.id === pickedId);
           else if (pf.step === 'vision-pick') tmpl = VISION_TEMPLATES.find((t) => t.id === pickedId);
-          else if (pf.step === 'unique-value-pick') tmpl = VALUE_TEMPLATES.find((t) => t.id === pickedId);
-          else if (pf.step === 'portrait-pick') tmpl = PORTRAIT_TEMPLATES.find((t) => t.id === pickedId);
           if (tmpl) {
             // Inject extra vision-pick tokens (PAIN, WORD1-3) loosely when not present.
             initial = applyTokens(applyVisionExtraTokens(tmpl.text, journeyResponses), tokens);
           }
         }
+      } else if (pf.kind === 'ai-selected' && pfStep) {
+        // Pre-fill with the user's selected AI-crafted option text.
+        const pickedId = (pfStep.selected || [])[0];
+        const options = pfStep.ai_options || [];
+        const picked = options.find((o) => o.id === pickedId);
+        if (picked) initial = picked.text;
       }
     }
     return `<div class="fill-field">
@@ -1305,13 +1406,20 @@ function renderMirror(step, journeyResponses = {}) {
       </div>
     `;
   } else if (m.kind === 'value-summary') {
-    const uniqueValue = journeyResponses['unique-value-refine']?.fields?.unique_value || '';
+    const bragSel = journeyResponses['brag-bank-craft']?.selected || [];
+    const bragOpts = journeyResponses['brag-bank-craft']?.ai_options || [];
+    const bragPicked = bragSel.map((id) => bragOpts.find((o) => o.id === id)?.text).filter(Boolean);
     const portrait = journeyResponses['portrait-refine']?.fields?.portrait || '';
+    const usp = journeyResponses['usp-refine']?.fields?.usp || '';
     const t = journeyResponses['transformation']?.fields || {};
     bodyHtml = `
       <div class="mirror-section">
-        <p class="mirror-section__label">Unique Value Statement</p>
-        <p class="mirror-section__value">${esc(uniqueValue || '(blank)')}</p>
+        <p class="mirror-section__label">Your USP</p>
+        <p class="mirror-section__value">${esc(usp || '(blank)')}</p>
+      </div>
+      <div class="mirror-section">
+        <p class="mirror-section__label">Brag Bank</p>
+        ${bragPicked.length ? `<ul class="mirror-list">${bragPicked.map((b) => `<li class="mirror-list__item">${esc(b)}</li>`).join('')}</ul>` : '<p class="mirror-row__value mirror-row__value--muted">(no phrases picked yet)</p>'}
       </div>
       <div class="mirror-section">
         <p class="mirror-section__label">Ideal Client Portrait</p>

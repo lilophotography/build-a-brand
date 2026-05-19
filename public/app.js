@@ -501,6 +501,8 @@
     });
   } else if (kind === 'rank') {
     wireRank(stepBody);
+  } else if (kind === 'ai-craft') {
+    wireAiCraft(stepBody);
   }
   // fillblank: textareas are uncontrolled, just read on save
   // summary: nothing to interact
@@ -561,6 +563,14 @@
         fields[t.dataset.fieldId] = t.value;
       });
       return { fields };
+    }
+    if (kind === 'ai-craft') {
+      // Selected option IDs. The ai_options array is already persisted server-side
+      // by /api/journey/craft, so we don't echo it back here.
+      return {
+        selected: Array.from(body.querySelectorAll('.ai-option.is-selected'))
+          .map((c) => c.dataset.optionId),
+      };
     }
     if (kind === 'summary') return { acknowledged: true };
     if (kind === 'mirror') return { acknowledged: true };
@@ -628,5 +638,92 @@
       const numEl = li.querySelector('[data-rank-num]');
       if (numEl) numEl.textContent = idx + 1;
     });
+  }
+
+  // ---- ai-craft: Generate + Regenerate + Pick ----
+  function wireAiCraft(body) {
+    const tool = nextBtn.dataset.tool;
+    const stepIdLocal = body.dataset.stepId;
+    const max = parseInt(body.dataset.maxPicks || '1', 10);
+    const generateBtn = body.querySelector('[data-ai-generate]');
+    const optionsContainer = body.querySelector('[data-ai-options]');
+
+    if (generateBtn) {
+      generateBtn.addEventListener('click', async () => {
+        const isRegen = generateBtn.classList.contains('ai-craft__regen');
+        const originalLabel = generateBtn.textContent;
+        generateBtn.disabled = true;
+        generateBtn.textContent = isRegen ? 'Re-crafting...' : 'Crafting (this takes ~20s)...';
+        try {
+          const res = await fetch('/api/journey/craft', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tool, step_id: stepIdLocal, regenerate: isRegen }),
+          });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.error || ('Craft failed: ' + res.status));
+          }
+          const data = await res.json();
+          renderCraftedOptions(optionsContainer, data.options || []);
+          // After first generation, swap the prominent button into a quiet "Regenerate".
+          if (!isRegen) {
+            generateBtn.classList.remove('btn', 'btn--primary', 'btn--lg', 'ai-craft__generate');
+            generateBtn.classList.add('btn--quiet', 'ai-craft__regen');
+            generateBtn.textContent = 'Regenerate options';
+            // Update the hint copy too if present.
+            const hint = body.querySelector('.ai-craft__hint');
+            if (hint) hint.innerHTML = '<span class="step-body__count" data-count>0/' + max + '</span> picked. Pick ' + max + ' that feel like you. Tap one to toggle.';
+          } else {
+            generateBtn.textContent = originalLabel;
+          }
+        } catch (err) {
+          console.error('AI craft failed', err);
+          alert('Could not craft options right now. Try again in a moment.');
+          generateBtn.textContent = originalLabel;
+        } finally {
+          generateBtn.disabled = false;
+        }
+      });
+    }
+
+    // Delegated click for option selection (works both on initial render and after regen).
+    body.addEventListener('click', (e) => {
+      const opt = e.target.closest('.ai-option');
+      if (!opt) return;
+      const wasSel = opt.classList.contains('is-selected');
+      const selected = body.querySelectorAll('.ai-option.is-selected');
+      if (wasSel) {
+        opt.classList.remove('is-selected');
+      } else if (selected.length < max) {
+        opt.classList.add('is-selected');
+      }
+      updateAiCraftCount(body, max);
+    });
+  }
+
+  function renderCraftedOptions(container, options) {
+    if (!container) return;
+    container.innerHTML = options.map((o) => `
+      <button type="button" class="ai-option" data-option-id="${o.id}">
+        <span class="ai-option__text">${escapeHtml(o.text)}</span>
+        <span class="ai-option__check" aria-hidden="true">✓</span>
+      </button>
+    `).join('');
+  }
+
+  function updateAiCraftCount(body, max) {
+    const count = body.querySelectorAll('.ai-option.is-selected').length;
+    const el = body.querySelector('[data-count]');
+    if (el) el.textContent = count + '/' + max;
+  }
+
+  function escapeHtml(s) {
+    return String(s ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 })();

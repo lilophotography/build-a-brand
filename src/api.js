@@ -13,11 +13,265 @@ export async function handleAPI(request, env, url, user) {
   if (path === '/api/progress' && method === 'GET')  return progressGet(env, user);
   if (path === '/api/progress' && method === 'POST') return progressPost(request, env, user);
   if (path === '/api/progress/step' && method === 'POST') return progressStep(request, env, user);
+  if (path === '/api/journey/craft' && method === 'POST') return journeyCraft(request, env, user);
   if (path === '/api/profile' && method === 'POST') return profileUpdate(request, env, user);
   if (path === '/api/brand-guide' && method === 'GET') return brandGuide(env, user);
 
   return json({ error: 'Not found' }, 404);
 }
+
+// ---------- /api/journey/craft ----------
+// AI-crafted option generator for "ai-craft" step kind. Reads the user's prior
+// answers, calls Claude, returns a polished list of options (phrases, USPs, etc.)
+// for the user to pick from. Result is cached in step_progress[step_id].ai_options.
+//
+// Body: { tool, step_id, regenerate?: boolean }
+async function journeyCraft(request, env, user) {
+  if (!user.has_access) return json({ error: 'No active access' }, 402);
+  const body = await request.json().catch(() => ({}));
+  const { tool, step_id, regenerate } = body || {};
+  if (!tool || !step_id) return json({ error: 'Need tool + step_id' }, 400);
+
+  // Pull craft preset definition (sources, prompts, count).
+  const preset = CRAFT_PRESETS[step_id];
+  if (!preset) return json({ error: 'No craft preset for ' + step_id }, 400);
+
+  // Load existing step_progress for this tool. May already have cached options.
+  const row = await env.DB.prepare(
+    'SELECT step_progress FROM brand_progress WHERE user_id = ? AND tool = ?'
+  ).bind(user.id, tool).first();
+  let progress = {};
+  try { progress = JSON.parse(row?.step_progress || '{}') || {}; } catch { progress = {}; }
+  if (!progress.journey_responses) progress.journey_responses = {};
+
+  const existing = progress.journey_responses[step_id];
+  if (existing?.ai_options?.length && !regenerate) {
+    return json({ ok: true, options: existing.ai_options, cached: true });
+  }
+
+  // Gather source answers from prior steps.
+  const sourceMap = {};
+  for (const sid of preset.sources) {
+    const r = progress.journey_responses[sid] || {};
+    sourceMap[sid] = r;
+  }
+
+  // Build the user-message body for Claude.
+  const userMessage = preset.buildUserMessage(sourceMap);
+
+  const apiKey = env.ANTHROPIC_API_KEY;
+  if (!apiKey) return json({ error: 'Missing Anthropic key' }, 500);
+
+  const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1500,
+      system: preset.systemPrompt,
+      messages: [{ role: 'user', content: userMessage }],
+    }),
+  });
+  if (!aiRes.ok) {
+    const errText = await aiRes.text().catch(() => '');
+    console.error('Anthropic craft error', aiRes.status, errText);
+    return json({ error: 'AI craft failed' }, 502);
+  }
+  const aiData = await aiRes.json().catch(() => ({}));
+  const aiText = (aiData?.content || []).map((c) => c.text || '').join('');
+
+  // Parse: expect JSON array of strings, or numbered lines as fallback.
+  const options = parseCraftedOptions(aiText, preset.count || 6);
+  if (!options.length) return json({ error: 'AI returned no options' }, 502);
+
+  // Cache the options on the step response.
+  progress.journey_responses[step_id] = {
+    ...existing,
+    ai_options: options,
+  };
+  const stepJson = JSON.stringify(progress);
+  if (row) {
+    await env.DB.prepare(
+      "UPDATE brand_progress SET step_progress = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE user_id = ? AND tool = ?"
+    ).bind(stepJson, user.id, tool).run();
+  } else {
+    await env.DB.prepare(
+      "INSERT INTO brand_progress (user_id, tool, completed, messages, summary, step_progress) VALUES (?, ?, 0, '[]', NULL, ?)"
+    ).bind(user.id, tool, stepJson).run();
+  }
+
+  return json({ ok: true, options });
+}
+
+// Parse Claude's response into a list of {id, text} options.
+// Accepts JSON array of strings, or numbered list ("1. text\n2. text\n").
+function parseCraftedOptions(text, max = 10) {
+  if (!text) return [];
+
+  // Try JSON first.
+  const jsonMatch = text.match(/\[[\s\S]*\]/);
+  if (jsonMatch) {
+    try {
+      const arr = JSON.parse(jsonMatch[0]);
+      if (Array.isArray(arr) && arr.length) {
+        return arr.slice(0, max).map((item, i) => {
+          const t = typeof item === 'string' ? item : (item?.text || item?.phrase || item?.option || JSON.stringify(item));
+          return { id: 'c' + i, text: String(t).trim() };
+        }).filter(o => o.text);
+      }
+    } catch {}
+  }
+
+  // Fallback: numbered lines.
+  const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
+  const numbered = lines
+    .map((l) => l.replace(/^\d+[\.\)]\s*/, '').replace(/^[-*]\s*/, '').trim())
+    .filter(Boolean);
+  return numbered.slice(0, max).map((t, i) => ({ id: 'c' + i, text: t }));
+}
+
+// ---------- Craft presets ----------
+// Each preset names the prior steps to read from and builds the user-message
+// payload sent to Claude. Add new presets here whenever an ai-craft step is
+// introduced in journey.js.
+const CRAFT_PRESETS = {
+  'brag-bank-craft': {
+    count: 8,
+    sources: ['value-prep', 'value-background', 'value-strengths', 'value-results'],
+    systemPrompt: `You are Lisa, a brand strategist who pulls a brand out of small business owners. The user has written raw answers about their background, skills, and outcomes. Your job is to distill those answers into a "brag bank": polished, copy-ready confidence phrases the user can paste into a bio, a pitch, a sales page, or use to start a sales call.
+
+Rules:
+- Write in the user's voice, first person.
+- Each phrase is one sentence, max 18 words.
+- Capture a specific strength, an earned credibility, or a real outcome. Not generic.
+- Sound like a real person, not marketing copy. No buzzwords, no hedging, no em dashes.
+- Fix any obvious typos or grammar mistakes from the user's input. Make it sharp.
+- Each phrase should make the user feel a small jolt of confidence reading it.
+
+Return exactly 8 phrases as a JSON array of strings. No commentary, no preamble. Example output:
+["I have spent twelve years learning how brands actually work, not just how they look.", "My clients come back because I treat their business like it's mine.", ...]`,
+    buildUserMessage(s) {
+      const opener = s['value-prep']?.fields?.opener || '';
+      const edu = s['value-background']?.fields?.education || '';
+      const prof = s['value-background']?.fields?.professional || '';
+      const life = s['value-background']?.fields?.life || '';
+      const strengths = s['value-strengths']?.fields?.strengths || '';
+      const compliments = s['value-strengths']?.fields?.compliments || '';
+      const results = s['value-results']?.fields?.results || '';
+      return `What I secretly know I am great at:
+${opener || '(blank)'}
+
+My education and training:
+${edu || '(blank)'}
+
+My professional experience:
+${prof || '(blank)'}
+
+Life experiences that shaped me:
+${life || '(blank)'}
+
+My specific skills:
+${strengths || '(blank)'}
+
+What people compliment me on:
+${compliments || '(blank)'}
+
+Real outcomes I have created:
+${results || '(blank)'}
+
+Now distill these into 8 brag bank phrases. Return as JSON array.`;
+    },
+  },
+
+  'portrait-craft': {
+    count: 4,
+    sources: ['dream-intro', 'dream-demographics', 'dream-beliefs', 'dream-external', 'dream-internal', 'dream-where'],
+    systemPrompt: `You are Lisa, a brand strategist who pulls a real person out of dream-customer answers. The user has written raw answers about their ideal client. Your job is to draft 4 ideal-client-portrait paragraphs they can paste into a brand guide or sales page.
+
+Rules:
+- Each portrait is 3 to 5 sentences. A real specific person.
+- Use the user's own words and details. Don't invent new facts.
+- One portrait reads cleanly demographics-first. One reads empathy-first (lead with how she feels). One reads contrast-shaped (looks successful but...). One reads structured (one sentence per dimension).
+- Fix any obvious typos, sharpen vague language. No buzzwords. No em dashes.
+- Each portrait should make the user say "yes, that's her."
+
+Return exactly 4 portraits as a JSON array of strings. No commentary.`,
+    buildUserMessage(s) {
+      const excites = s['dream-intro']?.fields?.excites || '';
+      const dem = s['dream-demographics']?.fields || {};
+      const beliefs = s['dream-beliefs']?.fields?.beliefs || '';
+      const external = s['dream-external']?.fields?.external || '';
+      const internal = s['dream-internal']?.fields?.internal || '';
+      const spaces = s['dream-where']?.fields?.spaces || '';
+      return `Who excites me to work with: ${excites || '(blank)'}
+
+Demographics:
+- Age: ${dem.age || '(blank)'}
+- Stage of life: ${dem.stage || '(blank)'}
+- Location: ${dem.location || '(blank)'}
+- Income: ${dem.income || '(blank)'}
+
+Their beliefs and what they care about:
+${beliefs || '(blank)'}
+
+External (surface) problem they're trying to solve:
+${external || '(blank)'}
+
+Internal (under-the-surface) problem driving them:
+${internal || '(blank)'}
+
+Where they spend time:
+${spaces || '(blank)'}
+
+Now draft 4 portrait paragraphs as a JSON array.`;
+    },
+  },
+
+  'usp-craft': {
+    count: 5,
+    sources: ['mission-discovery', 'brag-bank-craft', 'dream-intro', 'dream-internal'],
+    systemPrompt: `You are Lisa, a brand strategist. The user has finished their mission discovery, a brag bank of confidence phrases, and an ideal-client portrait. Your job is to write 5 candidate Unique Selling Proposition (USP) statements they could put on their homepage, headline, or pitch.
+
+Rules:
+- One sentence each. Under 22 words.
+- Each USP names WHO they serve and what specific transformation or outcome they deliver, with one differentiating edge that no one else in the user's space typically claims.
+- Lead with the assertion. No "we help" hedges. Active voice.
+- Sound like the user's mission and brag bank, not generic marketing.
+- No em dashes. No buzzwords (synergy, holistic, empowerment, journey). Plain English.
+- The five candidates should differ in angle: one tight and direct, one warm and human, one bold and contrarian, one outcomes-led, one identity-led.
+
+Return exactly 5 USP candidates as a JSON array of strings. No commentary.`,
+    buildUserMessage(s) {
+      const what = s['mission-discovery']?.fields?.what || '';
+      const who = s['mission-discovery']?.fields?.who || '';
+      const how = s['mission-discovery']?.fields?.how || '';
+      const bragSel = s['brag-bank-craft']?.selected || [];
+      const bragOpts = s['brag-bank-craft']?.ai_options || [];
+      const bragPicked = bragSel.map((id) => bragOpts.find((o) => o.id === id)?.text).filter(Boolean);
+      const excites = s['dream-intro']?.fields?.excites || '';
+      const internal = s['dream-internal']?.fields?.internal || '';
+      return `Mission discovery:
+- What I do: ${what || '(blank)'}
+- Who I help: ${who || '(blank)'}
+- How they change: ${how || '(blank)'}
+
+My brag bank (the confidence phrases I picked):
+${bragPicked.length ? bragPicked.map((p, i) => `${i + 1}. ${p}`).join('\n') : '(none picked yet)'}
+
+The type of client that excites me most:
+${excites || '(blank)'}
+
+What my ideal client feels internally:
+${internal || '(blank)'}
+
+Now write 5 USP candidates as a JSON array.`;
+    },
+  },
+};
 
 // ---------- /api/progress/step ----------
 // Records a single step event for a (user, tool) pair into brand_progress.step_progress

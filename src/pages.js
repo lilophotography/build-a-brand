@@ -465,15 +465,19 @@ export function renderDashboard(user, progressRows) {
       <p class="dash-deliverable__label">Core Values</p>
       <p class="dash-deliverable__value">${topValues.map((id) => esc(valueLabel(id))).join(' · ')}</p>
     </div>` : ''}
-    ${vald[0].complete && vald[0].value ? `<div class="dash-deliverable">
-      <p class="dash-deliverable__label">${esc(vald[0].label)}</p>
-      <p class="dash-deliverable__value">${esc(vald[0].value)}</p>
+    ${vald[2] && vald[2].complete && vald[2].value ? `<div class="dash-deliverable">
+      <p class="dash-deliverable__label">${esc(vald[2].label)}</p>
+      <p class="dash-deliverable__value">${esc(vald[2].value)}</p>
     </div>` : ''}
-    ${vald[1].complete && vald[1].value ? `<div class="dash-deliverable">
+    ${vald[0] && vald[0].complete && vald[0].items && vald[0].items.length ? `<div class="dash-deliverable">
+      <p class="dash-deliverable__label">${esc(vald[0].label)} (${vald[0].items.length})</p>
+      <ul class="dash-deliverable__list">${vald[0].items.slice(0, 3).map((b) => `<li>${esc(b)}</li>`).join('')}${vald[0].items.length > 3 ? `<li class="dash-deliverable__more">+${vald[0].items.length - 3} more</li>` : ''}</ul>
+    </div>` : ''}
+    ${vald[1] && vald[1].complete && vald[1].value ? `<div class="dash-deliverable">
       <p class="dash-deliverable__label">${esc(vald[1].label)}</p>
       <p class="dash-deliverable__value">${esc(vald[1].value)}</p>
     </div>` : ''}
-    ${vald[2].complete ? `<div class="dash-deliverable">
+    ${vald[3] && vald[3].complete ? `<div class="dash-deliverable">
       <p class="dash-deliverable__label">Customer Transformation</p>
       <p class="dash-deliverable__value dash-deliverable__value--pending">Saved. Open Value to review.</p>
     </div>` : ''}
