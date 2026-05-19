@@ -27,23 +27,71 @@ function applyTokens(text, tokenMap) {
   });
 }
 
-// Build a token map from journey_responses for the Vision module.
-function visionTokenMap(journeyResponses = {}) {
+// Build a token map from journey_responses. Generic across tools so any
+// step's templates can reference any prior answer.
+function brandTokenMap(journeyResponses = {}) {
   const r = journeyResponses;
+  // Vision tokens
   const what = r['mission-discovery']?.fields?.what || '';
   const who = r['mission-discovery']?.fields?.who || '';
   const how = r['mission-discovery']?.fields?.how || '';
   const visionImpact = r['vision-discovery']?.fields?.impact || '';
   const archetypeId = (r['vision-archetype']?.selected || [])[0];
   const archetype = VISION_ARCHETYPES.find((a) => a.id === archetypeId);
+
+  // Value tokens
+  const valueSkill = r['value-strengths']?.fields?.strengths || r['value-background']?.fields?.professional || '';
+  const valuePraise = r['value-strengths']?.fields?.compliments || '';
+  const valueBackground = r['value-background']?.fields?.life || r['value-background']?.fields?.professional || '';
+  const valueAudience = r['mission-discovery']?.fields?.who || 'the people you serve';
+  const ageRange = r['dream-demographics']?.fields?.age || '';
+  const stage = r['dream-demographics']?.fields?.stage || '';
+  const location = r['dream-demographics']?.fields?.location || '';
+  const belief = r['dream-beliefs']?.fields?.beliefs || '';
+  const external = r['dream-external']?.fields?.external || '';
+  const internal = r['dream-internal']?.fields?.internal || '';
+  const spaces = r['dream-where']?.fields?.spaces || '';
+
   return {
     WHAT: what,
     WHO: who,
     HOW: how,
     IMPACT: visionImpact,
     ARCHETYPE: archetype ? archetype.label.toLowerCase() : '',
+    // Value
+    SKILL: valueSkill,
+    STRENGTH: valueSkill,
+    PRAISE: valuePraise,
+    BACKGROUND: valueBackground,
+    AUDIENCE: valueAudience,
+    INDUSTRY: 'your industry',
+    QUALITY: 'integrity',
+    TONE: 'honest',
+    OUTCOME: how || 'get what they actually want',
+    PROOF: valueBackground,
+    COMMON: 'tactics',
+    DIFFERENT: 'transformation',
+    EXPERTISE: valueBackground,
+    VALUE: 'the slow part',
+    ROLE: 'craftsperson',
+    BROADER_ROLE: 'guide',
+    CRAFT: 'this',
+    PROCESS: 'the listening',
+    // Portrait
+    NAME: 'your person',
+    AGE_RANGE: ageRange || 'late thirties',
+    STAGE: stage || 'mid-career',
+    LOCATION: location || 'your town',
+    BELIEF: belief || 'cares deeply about doing it right',
+    EXTERNAL: external || 'the work feels invisible',
+    INTERNAL: internal || 'they wonder if they are an impostor',
+    GOAL: 'a brand that finally fits them',
+    SPACES: spaces || 'Instagram and her favorite three podcasts',
   };
 }
+
+// Back-compat alias for the Vision-only label.
+const visionTokenMap = brandTokenMap;
 
 // ---------------------------------------------------------------------------
 // Static content used by Vision step definitions
@@ -150,6 +198,27 @@ const MISSION_TEMPLATES = [
   { id: 'm8', text: 'The [WHAT] that [WHO] wishes they had years ago.', description: 'Hindsight framing.' },
   { id: 'm9', text: 'I work with [WHO] to build [HOW] on their own terms.', description: 'Autonomy framing.' },
   { id: 'm10', text: 'For [WHO] who are ready to stop [PAIN] and finally [HOW].', description: 'Threshold framing.' },
+];
+
+const VALUE_TEMPLATES = [
+  { id: 'uv1', text: 'I [SKILL] for [AUDIENCE] in a way no one else in this space does.', description: 'Differentiator framing.' },
+  { id: 'uv2', text: 'My superpower is [STRENGTH], built from [BACKGROUND].', description: 'Origin framing.' },
+  { id: 'uv3', text: 'I bring [QUALITY] to [INDUSTRY] in a way that feels [TONE].', description: 'Tone-shaped framing.' },
+  { id: 'uv4', text: 'I help [AUDIENCE] [OUTCOME] because I have actually [PROOF].', description: 'Earned-credibility framing.' },
+  { id: 'uv5', text: 'Other [INDUSTRY] folks focus on [COMMON]. I focus on [DIFFERENT].', description: 'Contrast framing.' },
+  { id: 'uv6', text: 'What my clients keep telling me: I [PRAISE].', description: 'Testimonial-shaped framing.' },
+  { id: 'uv7', text: 'Years of [EXPERTISE] plus my own [BACKGROUND] equals something most folks in [INDUSTRY] do not have.', description: 'Equation framing.' },
+  { id: 'uv8', text: 'I refuse to skip [VALUE], even when it would be faster not to.', description: 'Principle framing.' },
+  { id: 'uv9', text: 'I am not just a [ROLE]. I am [BROADER_ROLE] who happens to use [CRAFT].', description: 'Identity-shift framing.' },
+  { id: 'uv10', text: 'The thing I do that everyone else skips: [PROCESS].', description: 'Process framing.' },
+];
+
+const PORTRAIT_TEMPLATES = [
+  { id: 'p1', text: 'My person is around [AGE_RANGE], [STAGE], in [LOCATION]. She [BELIEF]. She struggles with [EXTERNAL], and underneath that, [INTERNAL]. What she really wants is [GOAL].', description: 'Classic portrait, demographics-first.' },
+  { id: 'p2', text: 'Picture her in her [AGE_RANGE], [STAGE]. More days than not, she feels [INTERNAL]. On the surface she is dealing with [EXTERNAL]. Underneath, she wants [GOAL]. She spends time on [SPACES].', description: 'Empathy-first portrait.' },
+  { id: 'p3', text: 'From the outside she looks successful. But [INTERNAL]. She is ready to chase [GOAL], but [EXTERNAL] keeps getting in the way. She finds people like me on [SPACES].', description: 'Success-mask portrait.' },
+  { id: 'p4', text: 'My ideal client is a [STAGE] in [LOCATION], around [AGE_RANGE]. She [BELIEF]. Her biggest external problem: [EXTERNAL]. Her biggest internal block: [INTERNAL]. When she finds me, she is looking for [GOAL].', description: 'Structured portrait.' },
+  { id: 'p5', text: 'Write your own from scratch.', description: 'Skip the template and write a portrait in your own words.' },
 ];
 
 const VISION_TEMPLATES = [
@@ -499,7 +568,7 @@ export const VISION_STEPS = [
     kind: 'wordcloud',
     section: 'Values',
     title: 'Now tap every value word that resonates.',
-    subtitle: "Don't filter. Pick everything that feels even a little bit like you. We'll narrow.",
+    subtitle: "Aim for at least 8. Don't filter. Pick everything that feels even a little bit like you. We'll narrow next.",
     estimatedMinutes: 6,
     words: VALUE_WORDS,
   },
@@ -549,9 +618,354 @@ export const VISION_STEPS = [
   },
 ];
 
+// ===========================================================================
+// VALUE module: You-Are-Your-Brand, Dream Customer, Transformation
+// Sourced from build-a-brand_workbook-_module_2_value.pdf + the Value GPT
+// system prompt. Three deliverables: Unique Value Statement, Ideal Client
+// Portrait, Customer Transformation grid.
+// ===========================================================================
+
+export const VALUE_STEPS = [
+  // ----- Process A: You Are Your Brand -----
+  {
+    id: 'value-prep',
+    kind: 'fillblank',
+    section: 'Your value',
+    title: "Time to brag. We need this on paper.",
+    subtitle: "You are your brand. The more you can see your own value, the easier everything else gets, pricing, messaging, all of it. Don't be modest. Lisa's framework: write 25 to 50 things over the next few steps.",
+    estimatedMinutes: 5,
+    fields: [
+      {
+        id: 'opener',
+        label: 'Take a breath. Then answer: what do you secretly know you are great at, that most people overlook?',
+        helpText: "The thing you'd say only after a glass of wine. Say it sober here.",
+        placeholder: "I can read a room in 30 seconds and tell you exactly what a brand is missing.",
+        rows: 4,
+      },
+    ],
+  },
+  {
+    id: 'value-background',
+    kind: 'fillblank',
+    section: 'Your value',
+    title: 'Your background.',
+    subtitle: 'Education, professional history, life experiences. All of it counts.',
+    estimatedMinutes: 8,
+    fields: [
+      {
+        id: 'education',
+        label: 'Formal education, certifications, training.',
+        helpText: 'Degrees, courses, mentorships. Even the ones you dismiss.',
+        placeholder: 'BA in Marketing, certified brand strategist with XYZ, two years of mentorship under [name].',
+        rows: 3,
+      },
+      {
+        id: 'professional',
+        label: 'Professional experiences that shaped you.',
+        helpText: 'Jobs, freelance, side projects. The work that taught you the most.',
+        placeholder: '12 years as an in-house designer, then 5 years on my own. Worked with both Fortune 500s and solo coaches.',
+        rows: 3,
+      },
+      {
+        id: 'life',
+        label: 'Life experiences that shaped you.',
+        helpText: 'The non-work stuff. Where you grew up, what you survived, what you raised.',
+        placeholder: 'Raised three kids while building this. Watched my mom run a small business with no help. Lived in three countries before I was 20.',
+        rows: 3,
+      },
+    ],
+  },
+  {
+    id: 'value-strengths',
+    kind: 'fillblank',
+    section: 'Your value',
+    title: 'Your strengths, in your own words and theirs.',
+    subtitle: "Two angles: what you know about yourself, and what other people keep telling you. Lisa's challenge: ask your partner or best friend if you get stuck.",
+    estimatedMinutes: 8,
+    fields: [
+      {
+        id: 'strengths',
+        label: 'Specific knowledge and skills that contribute to your value.',
+        helpText: "Not vague. Specific things you can do that not everyone can.",
+        placeholder: "I can write a brand voice doc that the client's whole team actually uses. I can shoot brand and lifestyle in the same day without losing consistency.",
+        rows: 4,
+      },
+      {
+        id: 'compliments',
+        label: 'What do people often tell you you are particularly good at?',
+        helpText: 'Compliments you have gotten more than once. Skip false modesty.',
+        placeholder: "That I make complicated things feel simple. That I get to the heart of a brand faster than anyone they've worked with.",
+        rows: 4,
+      },
+    ],
+  },
+  {
+    id: 'value-results',
+    kind: 'fillblank',
+    section: 'Your value',
+    title: 'Real outcomes you have created.',
+    subtitle: 'Tangible or intangible, for clients or friends or yourself. Receipts.',
+    estimatedMinutes: 6,
+    fields: [
+      {
+        id: 'results',
+        label: 'Things that changed because of your work.',
+        helpText: 'Numbers if you have them. Stories if you do not. Both are fine.',
+        placeholder: 'A client tripled her rates after our session. Another finally felt confident enough to show up on Instagram. A third said it was the first branding work that ever felt like her.',
+        rows: 6,
+      },
+    ],
+  },
+  {
+    id: 'value-mirror',
+    kind: 'mirror',
+    section: 'Your value',
+    title: "Here is what makes you irreplaceable.",
+    subtitle: 'Read it. Feel the weight of it. We will turn this into one clean statement next.',
+    estimatedMinutes: 2,
+    mirror: {
+      template: [
+        { label: 'What you secretly know you are great at:', from: 'value-prep.fields.opener' },
+        { label: 'Background that shaped you:', from: 'value-background.fields.life' },
+        { label: 'Specific skills:', from: 'value-strengths.fields.strengths' },
+        { label: 'What people keep telling you:', from: 'value-strengths.fields.compliments' },
+        { label: 'Real outcomes from your work:', from: 'value-results.fields.results' },
+      ],
+    },
+  },
+  {
+    id: 'unique-value-pick',
+    kind: 'pick-3',
+    section: 'Your value',
+    title: 'Pick the framing that sounds most like you.',
+    subtitle: 'Each one uses your own words. You can edit on the next step.',
+    estimatedMinutes: 5,
+    maxPicks: 1,
+    optionsFromTemplates: 'unique-value',
+  },
+  {
+    id: 'unique-value-refine',
+    kind: 'fillblank',
+    section: 'Your value',
+    title: 'Make your unique value statement yours.',
+    subtitle: 'Replace any [brackets]. Move words around. Add a second sentence if you need.',
+    estimatedMinutes: 6,
+    fields: [
+      {
+        id: 'unique_value',
+        label: 'Your unique value statement.',
+        helpText: 'One or two sentences. Should make you feel a little uncomfortable saying it out loud, in a good way.',
+        placeholder: '',
+        rows: 4,
+        prefillFrom: { tool: 'value', step: 'unique-value-pick', kind: 'template' },
+      },
+    ],
+  },
+
+  // ----- Process B: Dream Customer -----
+  {
+    id: 'dream-intro',
+    kind: 'fillblank',
+    section: 'Dream customer',
+    title: "Now we find your people.",
+    subtitle: "Don't worry about being realistic yet. Think about who you'd be thrilled to work with every week.",
+    estimatedMinutes: 5,
+    fields: [
+      {
+        id: 'excites',
+        label: 'What type of person or business excites you most to work with?',
+        helpText: 'Be specific. The energy, the kind of work, the kind of person.',
+        placeholder: "Solo women founders in their 30s and 40s, doing meaningful work, just starting to take themselves seriously as a brand.",
+        rows: 4,
+      },
+    ],
+  },
+  {
+    id: 'dream-demographics',
+    kind: 'fillblank',
+    section: 'Dream customer',
+    title: 'The boring-but-useful demographics.',
+    subtitle: "Lisa's framework: age, stage, location, income. Quick answers, you'll use these in marketing later.",
+    estimatedMinutes: 5,
+    fields: [
+      { id: 'age', label: 'Age range.', placeholder: '32 to 48', rows: 1 },
+      { id: 'stage', label: 'Stage or phase of life.', helpText: 'Single, partnered, parenting, empty-nesting, career-shifting, etc.', placeholder: 'Mid-career, partnered, often with young kids.', rows: 2 },
+      { id: 'location', label: 'Location.', helpText: 'Geography, climate, city size. Or "anywhere online" if it does not matter.', placeholder: 'US-based, often suburban or small-town. Anywhere online.', rows: 1 },
+      { id: 'income', label: 'Income level.', helpText: 'What can they afford to invest with you? Be honest.', placeholder: 'Household $120k+, business revenue $50k to $300k.', rows: 1 },
+    ],
+  },
+  {
+    id: 'dream-beliefs',
+    kind: 'fillblank',
+    section: 'Dream customer',
+    title: 'What do they believe? What do they value?',
+    subtitle: "The stuff under the demographics. This is the bridge to good marketing copy.",
+    estimatedMinutes: 5,
+    fields: [
+      {
+        id: 'beliefs',
+        label: 'Their core beliefs, passions, and what they care about.',
+        helpText: 'Politics aside, what do they prioritize? What matters to them in a working relationship?',
+        placeholder: 'They believe in slow, intentional growth. They value craftsmanship over hustle. They want to be treated like an adult, not a project.',
+        rows: 5,
+      },
+    ],
+  },
+  {
+    id: 'dream-external',
+    kind: 'fillblank',
+    section: 'Dream customer',
+    title: 'What problem are they openly trying to solve?',
+    subtitle: "The surface stuff. The thing they'd say out loud at a networking event.",
+    estimatedMinutes: 5,
+    fields: [
+      {
+        id: 'external',
+        label: 'External problems.',
+        helpText: "Lisa's example: their brand isn't clear, their website doesn't convert, their pricing feels off.",
+        placeholder: 'They don\'t have a clear brand. Their website looks like everyone else\'s. They keep getting low-budget inquiries.',
+        rows: 5,
+      },
+    ],
+  },
+  {
+    id: 'dream-internal',
+    kind: 'fillblank',
+    section: 'Dream customer',
+    title: "Now the hard part. What's under the surface?",
+    subtitle: "The feeling driving the problem. This is where the magic is. Dig deep.",
+    estimatedMinutes: 6,
+    fields: [
+      {
+        id: 'internal',
+        label: 'Internal problems.',
+        helpText: "Lisa's example: they feel invisible, overshadowed, insecure. 'Don't look at my website, it's a mess.'",
+        placeholder: 'They feel invisible. They feel like an impostor. They are tired of apologizing for their prices. They wonder if they will ever feel ready.',
+        rows: 5,
+      },
+    ],
+  },
+  {
+    id: 'dream-where',
+    kind: 'fillblank',
+    section: 'Dream customer',
+    title: 'Where do they show up?',
+    subtitle: 'The spaces, online and off, where they live. So we can find them.',
+    estimatedMinutes: 4,
+    fields: [
+      {
+        id: 'spaces',
+        label: 'Online and offline spaces, plus why those spaces appeal to them.',
+        helpText: 'Platforms, podcasts, events, communities. Pair each with why.',
+        placeholder: 'Instagram for inspiration, Substack for the thinking they\'re hungry for, in-person retreats once a year because they need a break from screens.',
+        rows: 4,
+      },
+    ],
+  },
+  {
+    id: 'dream-mirror',
+    kind: 'mirror',
+    section: 'Dream customer',
+    title: 'Your person, in your own words.',
+    subtitle: 'Read this slowly. Does it sound like the real person you have in mind? Hit Back to refine if not.',
+    estimatedMinutes: 2,
+    mirror: {
+      template: [
+        { label: 'The type that excites you:', from: 'dream-intro.fields.excites' },
+        { label: 'Age range:', from: 'dream-demographics.fields.age' },
+        { label: 'Stage of life:', from: 'dream-demographics.fields.stage' },
+        { label: 'Their core beliefs:', from: 'dream-beliefs.fields.beliefs' },
+        { label: 'Their external problem:', from: 'dream-external.fields.external' },
+        { label: 'Their internal problem:', from: 'dream-internal.fields.internal' },
+        { label: 'Where you find them:', from: 'dream-where.fields.spaces' },
+      ],
+    },
+  },
+  {
+    id: 'portrait-pick',
+    kind: 'pick-3',
+    section: 'Dream customer',
+    title: 'Pick a portrait frame.',
+    subtitle: "These pull from your own answers. Pick one and we'll let you rewrite it.",
+    estimatedMinutes: 4,
+    maxPicks: 1,
+    optionsFromTemplates: 'portrait',
+  },
+  {
+    id: 'portrait-refine',
+    kind: 'fillblank',
+    section: 'Dream customer',
+    title: 'Now write your ideal client portrait.',
+    subtitle: 'Three to five sentences. A real person, named or unnamed.',
+    estimatedMinutes: 8,
+    fields: [
+      {
+        id: 'portrait',
+        label: 'Your ideal client portrait.',
+        helpText: "Imagine her, sit with her for a minute, and write what you see.",
+        placeholder: '',
+        rows: 8,
+        prefillFrom: { tool: 'value', step: 'portrait-pick', kind: 'template' },
+      },
+    ],
+  },
+
+  // ----- Process C: Customer Transformation -----
+  {
+    id: 'transformation',
+    kind: 'fillblank',
+    section: 'Transformation',
+    title: 'The before, the after, the how.',
+    subtitle: "Lisa's transformation grid. Four short answers. We use this on your website and sales pages.",
+    estimatedMinutes: 10,
+    fields: [
+      {
+        id: 'experience',
+        label: 'What will they experience as a result of working with you?',
+        helpText: 'The during. The texture of the work itself.',
+        placeholder: 'Long conversations that feel like therapy more than strategy. A finished brand they can actually use the next day. A few hard truths they needed to hear.',
+        rows: 3,
+      },
+      {
+        id: 'feel',
+        label: 'How will they feel after they work with you?',
+        helpText: 'The emotional after. Be specific.',
+        placeholder: 'Seen. Confident. Like they finally have language for what they always knew was true.',
+        rows: 3,
+      },
+      {
+        id: 'tools',
+        label: 'What tools or processes do you use to help them get there?',
+        helpText: "Your signature method. The thing other people don't do.",
+        placeholder: 'The Pull, the Mirror, the Refine. A custom voice doc. Two rounds of "say it out loud."',
+        rows: 3,
+      },
+      {
+        id: 'capable',
+        label: 'What will they be able to do after working with you?',
+        helpText: 'The capability shift. What unlocks.',
+        placeholder: 'Pitch their work without apologizing. Charge their full rate without flinching. Show up consistently because they finally sound like themselves.',
+        rows: 3,
+      },
+    ],
+  },
+  {
+    id: 'summary',
+    kind: 'mirror',
+    section: 'Value module',
+    title: 'Your Value module: locked in.',
+    subtitle: 'Unique value, ideal client, the transformation you create. Three deliverables you can deploy.',
+    estimatedMinutes: 2,
+    mirror: {
+      kind: 'value-summary',
+    },
+  },
+];
+
 const STEPS_BY_TOOL = {
   vision: VISION_STEPS,
-  // value, voice, visuals, visibility: TODO in Big Ship 2
+  value: VALUE_STEPS,
+  // voice, visuals, visibility: TODO in next ships
 };
 
 // ---------------------------------------------------------------------------
@@ -597,6 +1011,14 @@ export function visionDeliverables(journeyResponses = {}) {
     { key: 'mission', label: 'Mission Statement', value: journeyResponses['mission-refine']?.fields?.mission_statement || '', complete: !!journeyResponses['mission-refine'] },
     { key: 'vision', label: 'Vision Statement', value: journeyResponses['vision-refine']?.fields?.vision_statement || '', complete: !!journeyResponses['vision-refine'] },
     { key: 'values', label: 'Core Values', value: '', complete: !!journeyResponses['values-define'] },
+  ];
+}
+
+export function valueDeliverables(journeyResponses = {}) {
+  return [
+    { key: 'unique_value', label: 'Unique Value Statement', value: journeyResponses['unique-value-refine']?.fields?.unique_value || '', complete: !!journeyResponses['unique-value-refine'] },
+    { key: 'portrait', label: 'Ideal Client Portrait', value: journeyResponses['portrait-refine']?.fields?.portrait || '', complete: !!journeyResponses['portrait-refine'] },
+    { key: 'transformation', label: 'Customer Transformation', value: '', complete: !!journeyResponses['transformation'] },
   ];
 }
 
@@ -680,9 +1102,11 @@ function renderFillBlank(step, saved, journeyResponses) {
       if (pf.kind === 'template' && pfStep) {
         const pickedId = (pfStep.selected || [])[0];
         if (pickedId) {
-          const tmpl = (pf.step === 'mission-pick') ? MISSION_TEMPLATES.find((t) => t.id === pickedId)
-                     : (pf.step === 'vision-pick')  ? VISION_TEMPLATES.find((t) => t.id === pickedId)
-                     : null;
+          let tmpl = null;
+          if (pf.step === 'mission-pick') tmpl = MISSION_TEMPLATES.find((t) => t.id === pickedId);
+          else if (pf.step === 'vision-pick') tmpl = VISION_TEMPLATES.find((t) => t.id === pickedId);
+          else if (pf.step === 'unique-value-pick') tmpl = VALUE_TEMPLATES.find((t) => t.id === pickedId);
+          else if (pf.step === 'portrait-pick') tmpl = PORTRAIT_TEMPLATES.find((t) => t.id === pickedId);
           if (tmpl) {
             // Inject extra vision-pick tokens (PAIN, WORD1-3) loosely when not present.
             initial = applyTokens(applyVisionExtraTokens(tmpl.text, journeyResponses), tokens);
@@ -720,6 +1144,18 @@ function renderPick3(step, saved, journeyResponses) {
     options = VISION_TEMPLATES.map((t) => ({
       id: t.id,
       label: applyTokens(applyVisionExtraTokens(t.text, journeyResponses), tokens),
+      description: t.description,
+    }));
+  } else if (step.optionsFromTemplates === 'unique-value') {
+    options = VALUE_TEMPLATES.map((t) => ({
+      id: t.id,
+      label: applyTokens(t.text, tokens),
+      description: t.description,
+    }));
+  } else if (step.optionsFromTemplates === 'portrait') {
+    options = PORTRAIT_TEMPLATES.map((t) => ({
+      id: t.id,
+      label: applyTokens(t.text, tokens),
       description: t.description,
     }));
   }
@@ -764,7 +1200,25 @@ function renderRank(step, saved, journeyResponses) {
       label: capitalize(valuesById[id] || id),
       description: '',
     }));
-    // If nothing was picked, fall back to a sane default set so the step still renders.
+    // Always surface 6 to 10 items at the rank step so the narrowing exercise
+    // is meaningful. If the user tapped fewer than 6, supplement with common
+    // defaults (skipping ones they already picked) until we hit at least 8.
+    const MIN_RANK_ITEMS = 8;
+    if (items.length < MIN_RANK_ITEMS) {
+      const have = new Set(items.map((i) => i.id));
+      const defaults = ['integrity', 'honesty', 'kindness', 'craft', 'creativity', 'courage', 'service', 'freedom', 'family', 'joy', 'curiosity', 'rigor'];
+      for (const id of defaults) {
+        if (items.length >= MIN_RANK_ITEMS) break;
+        if (have.has(id)) continue;
+        items.push({
+          id,
+          label: capitalize(valuesById[id] || id),
+          description: 'Suggested. Drag below the line if it doesn\'t fit.',
+        });
+        have.add(id);
+      }
+    }
+    // If still nothing (extreme edge case), use the first 8 known values.
     if (!items.length) {
       items = VALUE_WORDS.slice(0, 8).map((w) => ({ id: w.id, label: capitalize(w.label) }));
     }
@@ -848,6 +1302,39 @@ function renderMirror(step, journeyResponses = {}) {
       <div class="mirror-section">
         <p class="mirror-section__label">Core Values</p>
         ${valueRows || '<p class="mirror-row__value mirror-row__value--muted">(no values defined yet)</p>'}
+      </div>
+    `;
+  } else if (m.kind === 'value-summary') {
+    const uniqueValue = journeyResponses['unique-value-refine']?.fields?.unique_value || '';
+    const portrait = journeyResponses['portrait-refine']?.fields?.portrait || '';
+    const t = journeyResponses['transformation']?.fields || {};
+    bodyHtml = `
+      <div class="mirror-section">
+        <p class="mirror-section__label">Unique Value Statement</p>
+        <p class="mirror-section__value">${esc(uniqueValue || '(blank)')}</p>
+      </div>
+      <div class="mirror-section">
+        <p class="mirror-section__label">Ideal Client Portrait</p>
+        <p class="mirror-section__value">${esc(portrait || '(blank)')}</p>
+      </div>
+      <div class="mirror-section">
+        <p class="mirror-section__label">Customer Transformation</p>
+        <div class="mirror-row">
+          <p class="mirror-row__label">During:</p>
+          <p class="mirror-row__value">${esc(t.experience || '(blank)')}</p>
+        </div>
+        <div class="mirror-row">
+          <p class="mirror-row__label">After they feel:</p>
+          <p class="mirror-row__value">${esc(t.feel || '(blank)')}</p>
+        </div>
+        <div class="mirror-row">
+          <p class="mirror-row__label">Tools you use:</p>
+          <p class="mirror-row__value">${esc(t.tools || '(blank)')}</p>
+        </div>
+        <div class="mirror-row">
+          <p class="mirror-row__label">What they can do after:</p>
+          <p class="mirror-row__value">${esc(t.capable || '(blank)')}</p>
+        </div>
       </div>
     `;
   }

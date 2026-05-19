@@ -11,6 +11,7 @@ import {
   journeyProgressPct,
   renderJourneyStepBody,
   visionDeliverables,
+  valueDeliverables,
 } from './journey.js';
 
 // ============================================================
@@ -428,36 +429,53 @@ export function renderDashboard(user, progressRows) {
     </a>
   </li>`;
 
-  // Pull Vision deliverables (mission, vision, values) for the "Your brand so far" panel.
-  // Empty until the user finishes those steps. Once written, they show on every dashboard load.
-  const visionRow = progressByTool['vision'];
-  let visionResponses = {};
-  try {
-    visionResponses = typeof visionRow?.step_progress === 'string'
-      ? (JSON.parse(visionRow.step_progress)?.journey_responses || {})
-      : (visionRow?.step_progress?.journey_responses || {});
-  } catch {}
-  const deliverables = visionDeliverables(visionResponses);
+  // Helper to read journey_responses for a given tool, handling string vs object step_progress.
+  const readResponses = (tool) => {
+    const row = progressByTool[tool];
+    try {
+      return typeof row?.step_progress === 'string'
+        ? (JSON.parse(row.step_progress)?.journey_responses || {})
+        : (row?.step_progress?.journey_responses || {});
+    } catch { return {}; }
+  };
+
+  // Pull Vision deliverables (mission, vision, values) and Value deliverables
+  // (unique value, ideal client portrait, transformation). Empty until those
+  // steps are finished. Once written, they appear on every dashboard load.
+  const visionResponses = readResponses('vision');
+  const valueResponses = readResponses('value');
+  const vd = visionDeliverables(visionResponses);
+  const vald = valueDeliverables(valueResponses);
   const valuesRanking = visionResponses['values-rank']?.ranking || visionResponses['values-tap']?.selected || [];
-  const valuesDef = visionResponses['values-define']?.fields || {};
-  // Static value labels mirror VALUE_WORDS but kept light: derive label from id by replacing -.
   const valueLabel = (id) => (id || '').replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
   const topValues = valuesRanking.slice(0, 6);
-  const anyDeliverable = deliverables.some((d) => d.complete);
+  const anyDeliverable = vd.some((d) => d.complete) || vald.some((d) => d.complete);
   const deliverablesPanel = anyDeliverable ? `
   <aside class="dash-deliverables">
     <p class="dash-deliverables__label">Your brand so far</p>
-    ${deliverables[0].complete && deliverables[0].value ? `<div class="dash-deliverable">
-      <p class="dash-deliverable__label">${esc(deliverables[0].label)}</p>
-      <p class="dash-deliverable__value">${esc(deliverables[0].value)}</p>
+    ${vd[0].complete && vd[0].value ? `<div class="dash-deliverable">
+      <p class="dash-deliverable__label">${esc(vd[0].label)}</p>
+      <p class="dash-deliverable__value">${esc(vd[0].value)}</p>
     </div>` : ''}
-    ${deliverables[1].complete && deliverables[1].value ? `<div class="dash-deliverable">
-      <p class="dash-deliverable__label">${esc(deliverables[1].label)}</p>
-      <p class="dash-deliverable__value">${esc(deliverables[1].value)}</p>
+    ${vd[1].complete && vd[1].value ? `<div class="dash-deliverable">
+      <p class="dash-deliverable__label">${esc(vd[1].label)}</p>
+      <p class="dash-deliverable__value">${esc(vd[1].value)}</p>
     </div>` : ''}
-    ${deliverables[2].complete && topValues.length ? `<div class="dash-deliverable">
+    ${vd[2].complete && topValues.length ? `<div class="dash-deliverable">
       <p class="dash-deliverable__label">Core Values</p>
       <p class="dash-deliverable__value">${topValues.map((id) => esc(valueLabel(id))).join(' · ')}</p>
+    </div>` : ''}
+    ${vald[0].complete && vald[0].value ? `<div class="dash-deliverable">
+      <p class="dash-deliverable__label">${esc(vald[0].label)}</p>
+      <p class="dash-deliverable__value">${esc(vald[0].value)}</p>
+    </div>` : ''}
+    ${vald[1].complete && vald[1].value ? `<div class="dash-deliverable">
+      <p class="dash-deliverable__label">${esc(vald[1].label)}</p>
+      <p class="dash-deliverable__value">${esc(vald[1].value)}</p>
+    </div>` : ''}
+    ${vald[2].complete ? `<div class="dash-deliverable">
+      <p class="dash-deliverable__label">Customer Transformation</p>
+      <p class="dash-deliverable__value dash-deliverable__value--pending">Saved. Open Value to review.</p>
     </div>` : ''}
   </aside>` : '';
 
