@@ -326,21 +326,11 @@ export const VISION_STEPS = [
   },
   {
     id: 'warmup-mirror',
-    kind: 'mirror',
+    kind: 'ai-mirror',
     section: 'Get to know you',
-    title: 'Here\'s what I\'m hearing about you so far.',
-    subtitle: 'Read it slowly. If anything\'s off, hit Back. Otherwise, we go pull a brand out of all of this.',
-    estimatedMinutes: 2,
-    mirror: {
-      template: [
-        { label: 'Why you started:', from: 'warmup-origin.fields.why_started' },
-        { label: 'Where this fits in your life:', from: 'warmup-origin.fields.before' },
-        { label: 'Short-term goal:', from: 'warmup-goals.fields.short_term' },
-        { label: 'Long-term goal:', from: 'warmup-goals.fields.long_term' },
-        { label: 'What life looks like when this works:', from: 'warmup-goals.fields.life' },
-        { label: 'The thing in your way:', from: 'warmup-stuck.fields.obstacle' },
-      ],
-    },
+    title: "Here's what I'm hearing about you so far.",
+    subtitle: 'Read it slowly. If anything is off, hit Back. Otherwise, we go pull a brand out of all of this.',
+    estimatedMinutes: 3,
   },
   {
     id: 'brand-reflection',
@@ -412,19 +402,11 @@ export const VISION_STEPS = [
   },
   {
     id: 'mission-mirror',
-    kind: 'mirror',
+    kind: 'ai-mirror',
     section: 'Mission',
-    title: "Here's what I'm hearing.",
-    subtitle: "Read it back. If anything's off, hit Back and edit. Otherwise let's pick a framing.",
-    estimatedMinutes: 2,
-    mirror: {
-      sourceStep: 'mission-discovery',
-      template: [
-        { label: 'You do this:', from: 'fields.what' },
-        { label: 'For these people:', from: 'fields.who' },
-        { label: 'And this is how they change:', from: 'fields.how' },
-      ],
-    },
+    title: "Here's the work I'm seeing.",
+    subtitle: "Read it back. If it lands, pick a framing next. If not, hit Back and edit your answers.",
+    estimatedMinutes: 3,
   },
   {
     id: 'mission-pick',
@@ -532,17 +514,11 @@ export const VISION_STEPS = [
   },
   {
     id: 'mission-vision-mirror',
-    kind: 'mirror',
+    kind: 'ai-mirror',
     section: 'Vision',
     title: 'Mission and Vision, side by side.',
-    subtitle: "Read them. Do they sit well together? You can still go back and refine.",
-    estimatedMinutes: 2,
-    mirror: {
-      template: [
-        { label: 'Mission (the work):', from: 'mission-refine.fields.mission_statement' },
-        { label: 'Vision (the world you want):', from: 'vision-refine.fields.vision_statement' },
-      ],
-    },
+    subtitle: "Read the connection. Then we go pull out your values.",
+    estimatedMinutes: 3,
   },
 
   // ===== Process C: Values =====
@@ -574,15 +550,11 @@ export const VISION_STEPS = [
   },
   {
     id: 'values-mirror',
-    kind: 'mirror',
+    kind: 'ai-mirror',
     section: 'Values',
-    title: "Here's what's resonating.",
-    subtitle: 'Does this list feel like you? Hit Back to add or remove. Otherwise pick your top values.',
-    estimatedMinutes: 2,
-    mirror: {
-      sourceStep: 'values-tap',
-      kind: 'wordcloud-list',
-    },
+    title: "Here's the through-line I'm seeing.",
+    subtitle: 'A reflection on what your principles + the words you tapped say about you. Pick your top values next.',
+    estimatedMinutes: 3,
   },
   {
     id: 'values-rank',
@@ -718,20 +690,11 @@ export const VALUE_STEPS = [
   },
   {
     id: 'value-mirror',
-    kind: 'mirror',
+    kind: 'ai-mirror',
     section: 'Your value',
-    title: "Here is what makes you irreplaceable.",
-    subtitle: 'Read it. Feel the weight of it. We will turn this into one clean statement next.',
-    estimatedMinutes: 2,
-    mirror: {
-      template: [
-        { label: 'What you secretly know you are great at:', from: 'value-prep.fields.opener' },
-        { label: 'Background that shaped you:', from: 'value-background.fields.life' },
-        { label: 'Specific skills:', from: 'value-strengths.fields.strengths' },
-        { label: 'What people keep telling you:', from: 'value-strengths.fields.compliments' },
-        { label: 'Real outcomes from your work:', from: 'value-results.fields.results' },
-      ],
-    },
+    title: "Here's what I'm hearing about you.",
+    subtitle: 'Read it slowly. This is what makes you irreplaceable, in cleaner language than you probably gave me.',
+    estimatedMinutes: 3,
   },
   {
     id: 'brag-bank-craft',
@@ -854,59 +817,22 @@ export const VALUE_STEPS = [
   },
   {
     id: 'dream-mirror',
-    kind: 'mirror',
+    kind: 'ai-mirror',
     section: 'Dream customer',
-    title: 'Your person, in your own words.',
-    subtitle: 'Read this slowly. Does it sound like the real person you have in mind? Hit Back to refine if not.',
-    estimatedMinutes: 2,
-    mirror: {
-      template: [
-        { label: 'The type that excites you:', from: 'dream-intro.fields.excites' },
-        { label: 'Age range:', from: 'dream-demographics.fields.age' },
-        { label: 'Stage of life:', from: 'dream-demographics.fields.stage' },
-        { label: 'Their core beliefs:', from: 'dream-beliefs.fields.beliefs' },
-        { label: 'Their external problem:', from: 'dream-external.fields.external' },
-        { label: 'Their internal problem:', from: 'dream-internal.fields.internal' },
-        { label: 'Where you find them:', from: 'dream-where.fields.spaces' },
-      ],
-    },
+    title: "Here's the person I'm seeing.",
+    subtitle: 'Read it slowly. Does it sound like the real person you have in mind? Hit Back if not.',
+    estimatedMinutes: 3,
   },
   {
     id: 'portrait-craft',
     kind: 'ai-craft',
     section: 'Dream customer',
     title: 'Your ideal client portrait.',
-    subtitle: "I'll craft 4 portrait versions from your dream-customer answers. Pick the one that feels most like the real person you have in mind. You can refine on the next step.",
+    subtitle: "I'll craft 4 portrait paragraphs from different angles. Pick the one that feels most like the real person you have in mind. Whichever you pick is your portrait, no rewriting required.",
     estimatedMinutes: 6,
     maxPicks: 1,
     generateLabel: 'Craft my portrait options',
-    generateHint: '~15 to 20 seconds. I weave your demographics, beliefs, and problem answers into 4 portrait drafts.',
-    sourceFields: [
-      { label: 'Who excites you:', from: 'dream-intro.fields.excites' },
-      { label: 'Demographics (age + stage + location):', from: 'dream-demographics.fields.stage' },
-      { label: 'Their beliefs:', from: 'dream-beliefs.fields.beliefs' },
-      { label: 'External problem:', from: 'dream-external.fields.external' },
-      { label: 'Internal problem:', from: 'dream-internal.fields.internal' },
-      { label: 'Where you find them:', from: 'dream-where.fields.spaces' },
-    ],
-  },
-  {
-    id: 'portrait-refine',
-    kind: 'fillblank',
-    section: 'Dream customer',
-    title: 'Now make the portrait yours.',
-    subtitle: 'Edit the wording. Add a sentence if you need.',
-    estimatedMinutes: 6,
-    fields: [
-      {
-        id: 'portrait',
-        label: 'Your ideal client portrait.',
-        helpText: "Imagine her, sit with her for a minute, and adjust until she feels real.",
-        placeholder: '',
-        rows: 8,
-        prefillFrom: { tool: 'value', step: 'portrait-craft', kind: 'ai-selected' },
-      },
-    ],
+    generateHint: '~15 to 20 seconds. Four different angles, you pick one.',
   },
 
   // ----- Process C: USP (Unique Selling Proposition) -----
@@ -915,36 +841,11 @@ export const VALUE_STEPS = [
     kind: 'ai-craft',
     section: 'Your USP',
     title: 'Your USP candidates.',
-    subtitle: "I'll write 5 unique-selling-proposition candidates from your mission, brag bank, and ideal client. Pick the one that hits hardest. You refine the wording next.",
+    subtitle: "Five Unique Selling Proposition candidates from different angles, synthesized from your mission, brag bank, and ideal client. Pick the one that hits hardest. Whichever you pick is your USP.",
     estimatedMinutes: 5,
     maxPicks: 1,
     generateLabel: 'Write my USP options',
-    generateHint: '~20 seconds. Five different angles, one tight directional sentence each.',
-    sourceFields: [
-      { label: 'What you do:', from: 'mission-discovery.fields.what' },
-      { label: 'Who you help:', from: 'mission-discovery.fields.who' },
-      { label: 'How they change:', from: 'mission-discovery.fields.how' },
-      { label: 'The client that excites you:', from: 'dream-intro.fields.excites' },
-      { label: "Their internal struggle:", from: 'dream-internal.fields.internal' },
-    ],
-  },
-  {
-    id: 'usp-refine',
-    kind: 'fillblank',
-    section: 'Your USP',
-    title: 'Make your USP yours.',
-    subtitle: 'Edit the wording. This goes on your homepage, your bio, and your sales calls.',
-    estimatedMinutes: 5,
-    fields: [
-      {
-        id: 'usp',
-        label: 'Your Unique Selling Proposition.',
-        helpText: 'One sentence, under 22 words. Lead with the assertion. Active voice. No hedges.',
-        placeholder: '',
-        rows: 4,
-        prefillFrom: { tool: 'value', step: 'usp-craft', kind: 'ai-selected' },
-      },
-    ],
+    generateHint: '~20 seconds. Five different angles, one tight sentence each.',
   },
 
   // ----- Process D: Customer Transformation -----
@@ -1051,14 +952,23 @@ export function visionDeliverables(journeyResponses = {}) {
   ];
 }
 
+// Helper: get the text of the user's picked AI option for a given step.
+function pickedOptionText(journeyResponses, stepId) {
+  const sel = (journeyResponses[stepId]?.selected || [])[0];
+  if (!sel) return '';
+  return journeyResponses[stepId]?.ai_options?.find((o) => o.id === sel)?.text || '';
+}
+
 export function valueDeliverables(journeyResponses = {}) {
   const bragSel = journeyResponses['brag-bank-craft']?.selected || [];
   const bragOpts = journeyResponses['brag-bank-craft']?.ai_options || [];
   const bragPicked = bragSel.map((id) => bragOpts.find((o) => o.id === id)?.text).filter(Boolean);
+  const portrait = pickedOptionText(journeyResponses, 'portrait-craft');
+  const usp = pickedOptionText(journeyResponses, 'usp-craft');
   return [
-    { key: 'brag_bank', label: 'Brag Bank', value: bragPicked.join(' · '), complete: !!journeyResponses['brag-bank-craft'] && bragSel.length > 0, items: bragPicked },
-    { key: 'portrait', label: 'Ideal Client Portrait', value: journeyResponses['portrait-refine']?.fields?.portrait || '', complete: !!journeyResponses['portrait-refine'] },
-    { key: 'usp', label: 'Unique Selling Proposition', value: journeyResponses['usp-refine']?.fields?.usp || '', complete: !!journeyResponses['usp-refine'] },
+    { key: 'brag_bank', label: 'Brag Bank', value: bragPicked.join(' · '), complete: bragPicked.length > 0, items: bragPicked },
+    { key: 'portrait', label: 'Ideal Client Portrait', value: portrait, complete: !!portrait },
+    { key: 'usp', label: 'Unique Selling Proposition', value: usp, complete: !!usp },
     { key: 'transformation', label: 'Customer Transformation', value: '', complete: !!journeyResponses['transformation'] },
   ];
 }
@@ -1079,6 +989,8 @@ export function renderJourneyStepBody(tool, step, savedResponse, journeyResponse
       return renderRank(step, savedResponse, journeyResponses);
     case 'mirror':
       return renderMirror(step, journeyResponses);
+    case 'ai-mirror':
+      return renderAiMirror(step, savedResponse);
     case 'ai-craft':
       return renderAiCraft(step, savedResponse, journeyResponses);
     case 'summary':
@@ -1095,22 +1007,10 @@ export function renderJourneyStepBody(tool, step, savedResponse, journeyResponse
 // journey_responses[step_id].ai_options so they don't regenerate on reload.
 // ---------------------------------------------------------------------------
 
-function renderAiCraft(step, saved, journeyResponses) {
+function renderAiCraft(step, saved /*, journeyResponses */) {
   const cached = saved?.ai_options || [];
   const selected = saved?.selected || [];
   const maxPicks = step.maxPicks || 6;
-
-  // Build a short read-back of the source answers so the user sees what we're working from.
-  const sourceFields = (step.sourceFields || []).map((s) => {
-    const path = s.from.split('.');
-    let cur = journeyResponses[path[0]] || {};
-    for (const k of path.slice(1)) cur = cur ? cur[k] : null;
-    const val = typeof cur === 'string' ? cur : '';
-    return `<div class="ai-craft-source">
-      <p class="ai-craft-source__label">${esc(s.label)}</p>
-      <p class="ai-craft-source__value">${esc(val || '(blank)')}</p>
-    </div>`;
-  }).join('');
 
   const optionsHtml = cached.length ? cached.map((o) => `
     <button type="button" class="ai-option ${selected.includes(o.id) ? 'is-selected' : ''}" data-option-id="${esc(o.id)}">
@@ -1120,14 +1020,6 @@ function renderAiCraft(step, saved, journeyResponses) {
   `).join('') : '';
 
   return `<div class="step-body step-body--ai-craft" data-step-kind="ai-craft" data-step-id="${esc(step.id)}" data-max-picks="${maxPicks}">
-    <div class="ai-craft__sources">
-      <p class="ai-craft__sources-label">What I'm working from</p>
-      <details class="ai-craft__details">
-        <summary>Show your raw answers</summary>
-        ${sourceFields}
-      </details>
-    </div>
-
     <div class="ai-craft__action">
       ${cached.length ? `
         <p class="ai-craft__hint"><span class="step-body__count" data-count>${selected.length}/${maxPicks}</span> picked. Pick ${maxPicks} that feel like you. Tap one to toggle.</p>
@@ -1135,10 +1027,34 @@ function renderAiCraft(step, saved, journeyResponses) {
         <button type="button" class="btn--quiet ai-craft__regen" data-ai-generate>Regenerate options</button>
       ` : `
         <button type="button" class="btn btn--primary btn--lg ai-craft__generate" data-ai-generate>${esc(step.generateLabel || 'Craft these for me')}</button>
-        <p class="ai-craft__hint">${esc(step.generateHint || 'This takes 15 to 30 seconds. I will pull from your answers above and craft polished options for you to pick from.')}</p>
+        <p class="ai-craft__hint">${esc(step.generateHint || 'I will turn your answers into polished options for you to pick from. This takes about 20 seconds.')}</p>
         <div class="ai-options" data-ai-options></div>
       `}
     </div>
+  </div>`;
+}
+
+// ---------------------------------------------------------------------------
+// ai-mirror: a "here's what I'm hearing" reflection step where the read-back
+// is AI-polished (not a raw echo of the user's input). Server checks for a
+// cached ai_summary; if missing, renders a loading state and the client JS
+// auto-fetches /api/journey/craft to populate.
+// ---------------------------------------------------------------------------
+
+function renderAiMirror(step, saved) {
+  const summary = saved?.ai_summary || '';
+  const hasSummary = !!summary;
+
+  return `<div class="step-body step-body--ai-mirror" data-step-kind="ai-mirror" data-step-id="${esc(step.id)}" data-has-summary="${hasSummary ? '1' : '0'}">
+    <div class="mirror-card mirror-card--ai" data-ai-mirror-card>
+      ${hasSummary
+        ? `<p class="mirror-card__text">${esc(summary)}</p>`
+        : `<p class="mirror-card__loading" data-ai-mirror-loading>
+            <span class="mirror-card__spinner" aria-hidden="true"></span>
+            Reading what you've told me so far...
+          </p>`}
+    </div>
+    ${hasSummary ? `<button type="button" class="btn--quiet ai-mirror__regen" data-ai-generate>Reflect again</button>` : ''}
   </div>`;
 }
 
@@ -1409,8 +1325,8 @@ function renderMirror(step, journeyResponses = {}) {
     const bragSel = journeyResponses['brag-bank-craft']?.selected || [];
     const bragOpts = journeyResponses['brag-bank-craft']?.ai_options || [];
     const bragPicked = bragSel.map((id) => bragOpts.find((o) => o.id === id)?.text).filter(Boolean);
-    const portrait = journeyResponses['portrait-refine']?.fields?.portrait || '';
-    const usp = journeyResponses['usp-refine']?.fields?.usp || '';
+    const portrait = pickedOptionText(journeyResponses, 'portrait-craft');
+    const usp = pickedOptionText(journeyResponses, 'usp-craft');
     const t = journeyResponses['transformation']?.fields || {};
     bodyHtml = `
       <div class="mirror-section">

@@ -21,9 +21,10 @@ export async function handleAPI(request, env, url, user) {
 }
 
 // ---------- /api/journey/craft ----------
-// AI-crafted option generator for "ai-craft" step kind. Reads the user's prior
-// answers, calls Claude, returns a polished list of options (phrases, USPs, etc.)
-// for the user to pick from. Result is cached in step_progress[step_id].ai_options.
+// Two modes: "options" (returns a list for the user to pick from) and
+// "summary" (returns a single polished paragraph the user reads then continues).
+// Mode is determined by the preset's `mode` field. Result caches in
+// step_progress[step_id].ai_options or .ai_summary.
 //
 // Body: { tool, step_id, regenerate?: boolean }
 async function journeyCraft(request, env, user) {
@@ -32,11 +33,10 @@ async function journeyCraft(request, env, user) {
   const { tool, step_id, regenerate } = body || {};
   if (!tool || !step_id) return json({ error: 'Need tool + step_id' }, 400);
 
-  // Pull craft preset definition (sources, prompts, count).
   const preset = CRAFT_PRESETS[step_id];
   if (!preset) return json({ error: 'No craft preset for ' + step_id }, 400);
+  const mode = preset.mode === 'summary' ? 'summary' : 'options';
 
-  // Load existing step_progress for this tool. May already have cached options.
   const row = await env.DB.prepare(
     'SELECT step_progress FROM brand_progress WHERE user_id = ? AND tool = ?'
   ).bind(user.id, tool).first();
@@ -45,8 +45,13 @@ async function journeyCraft(request, env, user) {
   if (!progress.journey_responses) progress.journey_responses = {};
 
   const existing = progress.journey_responses[step_id];
-  if (existing?.ai_options?.length && !regenerate) {
-    return json({ ok: true, options: existing.ai_options, cached: true });
+  if (!regenerate) {
+    if (mode === 'options' && existing?.ai_options?.length) {
+      return json({ ok: true, mode, options: existing.ai_options, cached: true });
+    }
+    if (mode === 'summary' && existing?.ai_summary) {
+      return json({ ok: true, mode, summary: existing.ai_summary, cached: true });
+    }
   }
 
   // Gather source answers from prior steps.
@@ -55,8 +60,6 @@ async function journeyCraft(request, env, user) {
     const r = progress.journey_responses[sid] || {};
     sourceMap[sid] = r;
   }
-
-  // Build the user-message body for Claude.
   const userMessage = preset.buildUserMessage(sourceMap);
 
   const apiKey = env.ANTHROPIC_API_KEY;
@@ -71,7 +74,7 @@ async function journeyCraft(request, env, user) {
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
-      max_tokens: 1500,
+      max_tokens: mode === 'summary' ? 800 : 1500,
       system: preset.systemPrompt,
       messages: [{ role: 'user', content: userMessage }],
     }),
@@ -82,17 +85,21 @@ async function journeyCraft(request, env, user) {
     return json({ error: 'AI craft failed' }, 502);
   }
   const aiData = await aiRes.json().catch(() => ({}));
-  const aiText = (aiData?.content || []).map((c) => c.text || '').join('');
+  const aiText = (aiData?.content || []).map((c) => c.text || '').join('').trim();
 
-  // Parse: expect JSON array of strings, or numbered lines as fallback.
-  const options = parseCraftedOptions(aiText, preset.count || 6);
-  if (!options.length) return json({ error: 'AI returned no options' }, 502);
+  let result;
+  if (mode === 'options') {
+    const options = parseCraftedOptions(aiText, preset.count || 6);
+    if (!options.length) return json({ error: 'AI returned no options' }, 502);
+    progress.journey_responses[step_id] = { ...existing, ai_options: options };
+    result = { ok: true, mode, options };
+  } else {
+    const summary = aiText.replace(/^["']|["']$/g, '');
+    if (!summary) return json({ error: 'AI returned no summary' }, 502);
+    progress.journey_responses[step_id] = { ...existing, ai_summary: summary };
+    result = { ok: true, mode, summary };
+  }
 
-  // Cache the options on the step response.
-  progress.journey_responses[step_id] = {
-    ...existing,
-    ai_options: options,
-  };
   const stepJson = JSON.stringify(progress);
   if (row) {
     await env.DB.prepare(
@@ -104,7 +111,7 @@ async function journeyCraft(request, env, user) {
     ).bind(user.id, tool, stepJson).run();
   }
 
-  return json({ ok: true, options });
+  return json(result);
 }
 
 // Parse Claude's response into a list of {id, text} options.
@@ -136,8 +143,13 @@ function parseCraftedOptions(text, max = 10) {
 
 // ---------- Craft presets ----------
 // Each preset names the prior steps to read from and builds the user-message
-// payload sent to Claude. Add new presets here whenever an ai-craft step is
-// introduced in journey.js.
+// payload sent to Claude.
+//
+// Two modes:
+//   - default ("options"): preset specifies `count` and returns a list of
+//     options for the user to pick from. Used by ai-craft step kind.
+//   - mode: 'summary': returns a single polished paragraph. Used by
+//     ai-mirror step kind for reading back what we've heard so far.
 const CRAFT_PRESETS = {
   'brag-bank-craft': {
     count: 8,
@@ -228,6 +240,159 @@ Where they spend time:
 ${spaces || '(blank)'}
 
 Now draft 4 portrait paragraphs as a JSON array.`;
+    },
+  },
+
+  // ---------- ai-mirror summaries ----------
+
+  'value-mirror': {
+    mode: 'summary',
+    sources: ['value-prep', 'value-background', 'value-strengths', 'value-results'],
+    systemPrompt: `You are Lisa, a brand strategist. The user just answered five questions about what makes them valuable: their background, their skills, what people compliment them on, and real outcomes they've created.
+
+Your job is to write back a polished 3-to-5 sentence summary that reflects what you heard, in their voice, but tighter and more confident than they could write it themselves. Use their actual specifics. Fix any typos or grammar. No buzzwords, no em dashes, no hedging.
+
+The tone is warm, direct, almost-impressed. The user should read this and feel slightly seen. Lead with the most striking thing about them, then bring in the rest.
+
+Return ONLY the polished summary as plain text. No commentary, no headers, no quotes.`,
+    buildUserMessage(s) {
+      const opener = s['value-prep']?.fields?.opener || '';
+      const edu = s['value-background']?.fields?.education || '';
+      const prof = s['value-background']?.fields?.professional || '';
+      const life = s['value-background']?.fields?.life || '';
+      const strengths = s['value-strengths']?.fields?.strengths || '';
+      const compliments = s['value-strengths']?.fields?.compliments || '';
+      const results = s['value-results']?.fields?.results || '';
+      return `Here's everything the user told me:
+
+What they secretly know they are great at: ${opener || '(blank)'}
+Education: ${edu || '(blank)'}
+Professional: ${prof || '(blank)'}
+Life experiences that shaped them: ${life || '(blank)'}
+Their specific skills: ${strengths || '(blank)'}
+What people compliment them on: ${compliments || '(blank)'}
+Real outcomes from their work: ${results || '(blank)'}
+
+Write a 3-to-5 sentence reflection summary.`;
+    },
+  },
+
+  'dream-mirror': {
+    mode: 'summary',
+    sources: ['dream-intro', 'dream-demographics', 'dream-beliefs', 'dream-external', 'dream-internal', 'dream-where'],
+    systemPrompt: `You are Lisa, a brand strategist. The user just answered seven questions about their ideal client: who excites them, demographics, beliefs, external problems, internal problems, where this person spends time.
+
+Your job is to write back a polished 3-to-5 sentence "here's the person I'm seeing" summary. Synthesize their answers into a real human you can picture. In the user's voice but tighter. Fix typos. No buzzwords, no em dashes.
+
+Tone: like Lisa describing a client she just understood for the first time. Specific. Empathetic. A little surprising. The user should read this and say "yes, that's her."
+
+Return ONLY the polished summary as plain text. No commentary, no headers, no quotes.`,
+    buildUserMessage(s) {
+      const excites = s['dream-intro']?.fields?.excites || '';
+      const dem = s['dream-demographics']?.fields || {};
+      const beliefs = s['dream-beliefs']?.fields?.beliefs || '';
+      const external = s['dream-external']?.fields?.external || '';
+      const internal = s['dream-internal']?.fields?.internal || '';
+      const spaces = s['dream-where']?.fields?.spaces || '';
+      return `Here's what the user told me about her ideal client:
+
+Who excites her to work with: ${excites || '(blank)'}
+Age: ${dem.age || '(blank)'}, Stage: ${dem.stage || '(blank)'}, Location: ${dem.location || '(blank)'}, Income: ${dem.income || '(blank)'}
+Their beliefs: ${beliefs || '(blank)'}
+External problem: ${external || '(blank)'}
+Internal problem: ${internal || '(blank)'}
+Where they show up: ${spaces || '(blank)'}
+
+Write a 3-to-5 sentence reflection summary.`;
+    },
+  },
+
+  'warmup-mirror': {
+    mode: 'summary',
+    sources: ['warmup-origin', 'warmup-goals', 'warmup-stuck'],
+    systemPrompt: `You are Lisa, a brand strategist. The user just answered seven warmup questions about themselves: why they started, what they did before, their short-term and long-term goals, what life looks like when this is working, the obstacle they keep hitting, and what feels just out of reach.
+
+Your job is to write back a polished 3-to-5 sentence "here's what I'm hearing about you so far" reflection. Their voice, but tighter and more grounded. Fix typos. No buzzwords, no em dashes.
+
+Tone: like a smart friend who just listened well. Warm, specific, slightly grounding. The user should feel seen.
+
+Return ONLY the polished summary as plain text. No commentary, no headers, no quotes.`,
+    buildUserMessage(s) {
+      const o = s['warmup-origin']?.fields || {};
+      const g = s['warmup-goals']?.fields || {};
+      const st = s['warmup-stuck']?.fields || {};
+      return `Why they started: ${o.why_started || '(blank)'}
+What they were doing before: ${o.before || '(blank)'}
+Short-term goal: ${g.short_term || '(blank)'}
+Long-term goal: ${g.long_term || '(blank)'}
+Life when it is working: ${g.life || '(blank)'}
+The obstacle they keep hitting: ${st.obstacle || '(blank)'}
+The gap they wish they could close: ${st.gap || '(blank)'}
+
+Write a 3-to-5 sentence reflection summary.`;
+    },
+  },
+
+  'mission-mirror': {
+    mode: 'summary',
+    sources: ['mission-discovery'],
+    systemPrompt: `You are Lisa, a brand strategist. The user just answered three questions about their work: what they do, who they help, and how those people are different after working with them.
+
+Your job is to write back a polished 2-to-3 sentence "here's the work I'm seeing" reflection. In their voice but tighter. Fix typos. No buzzwords, no em dashes.
+
+Tone: confident, specific, makes them feel that they know what they do better than they realized. The user should read this and feel a small jolt of clarity.
+
+Return ONLY the polished summary as plain text. No commentary, no headers, no quotes.`,
+    buildUserMessage(s) {
+      const m = s['mission-discovery']?.fields || {};
+      return `What they do: ${m.what || '(blank)'}
+Who they help: ${m.who || '(blank)'}
+How those people change: ${m.how || '(blank)'}
+
+Write a 2-to-3 sentence reflection summary.`;
+    },
+  },
+
+  'mission-vision-mirror': {
+    mode: 'summary',
+    sources: ['mission-refine', 'vision-refine'],
+    systemPrompt: `You are Lisa, a brand strategist. The user just locked in their mission statement and their vision statement. Your job is to write a short polished reflection that holds them side by side.
+
+Write 2-to-3 sentences that:
+- Acknowledge both statements as a working pair
+- Name the connection between them (mission = the work, vision = the world they're building)
+- Sound proud, not grandiose
+
+Fix typos. No buzzwords, no em dashes. Return ONLY the reflection as plain text.`,
+    buildUserMessage(s) {
+      const mission = s['mission-refine']?.fields?.mission_statement || '';
+      const vision = s['vision-refine']?.fields?.vision_statement || '';
+      return `Their mission: ${mission || '(blank)'}
+Their vision: ${vision || '(blank)'}
+
+Write a 2-to-3 sentence reflection.`;
+    },
+  },
+
+  'values-mirror': {
+    mode: 'summary',
+    sources: ['values-principles', 'values-tap'],
+    systemPrompt: `You are Lisa, a brand strategist. The user just wrote out their non-negotiable business principles in plain language, then tapped a bunch of value words.
+
+Your job is to write a polished 2-to-3 sentence reflection that names what you're seeing. Find the through-line. The combination of principles and words tells you something.
+
+Tone: like a friend who has been listening. Specific. Not generic. Fix typos. No buzzwords, no em dashes.
+
+Return ONLY the reflection as plain text.`,
+    buildUserMessage(s) {
+      const principles = s['values-principles']?.fields?.principles || '';
+      const tapped = s['values-tap']?.selected || [];
+      return `Their principles in plain language:
+${principles || '(blank)'}
+
+Words they tapped (${tapped.length} total): ${tapped.join(', ') || '(none)'}
+
+Write a 2-to-3 sentence reflection. Find the through-line.`;
     },
   },
 

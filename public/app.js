@@ -503,9 +503,11 @@
     wireRank(stepBody);
   } else if (kind === 'ai-craft') {
     wireAiCraft(stepBody);
+  } else if (kind === 'ai-mirror') {
+    wireAiMirror(stepBody);
   }
   // fillblank: textareas are uncontrolled, just read on save
-  // summary: nothing to interact
+  // summary / mirror: nothing to interact
 
   // ---- Save & continue ----
   nextBtn.addEventListener('click', async () => {
@@ -574,6 +576,7 @@
     }
     if (kind === 'summary') return { acknowledged: true };
     if (kind === 'mirror') return { acknowledged: true };
+    if (kind === 'ai-mirror') return { acknowledged: true };
     return {};
   }
 
@@ -725,5 +728,70 @@
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
+  }
+
+  // ---- ai-mirror: auto-fetch the polished summary on load if not cached ----
+  function wireAiMirror(body) {
+    const tool = nextBtn.dataset.tool;
+    const stepIdLocal = body.dataset.stepId;
+    const hasSummary = body.dataset.hasSummary === '1';
+    const card = body.querySelector('[data-ai-mirror-card]');
+    const regenBtn = body.querySelector('.ai-mirror__regen');
+
+    async function fetchSummary(regenerate) {
+      if (!card) return;
+      // Disable Next while loading so user can't submit until they have a summary.
+      const wasNextDisabled = nextBtn.disabled;
+      nextBtn.disabled = true;
+      const originalRegenLabel = regenBtn ? regenBtn.textContent : '';
+      if (regenBtn) {
+        regenBtn.disabled = true;
+        regenBtn.textContent = 'Reflecting...';
+      }
+      // Loading state in the card.
+      card.innerHTML = `<p class="mirror-card__loading"><span class="mirror-card__spinner" aria-hidden="true"></span> ${regenerate ? 'Reflecting again' : "Reading what you've told me so far"}...</p>`;
+      try {
+        const res = await fetch('/api/journey/craft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tool, step_id: stepIdLocal, regenerate: !!regenerate }),
+        });
+        if (!res.ok) throw new Error('summary fetch failed: ' + res.status);
+        const data = await res.json();
+        const summary = data.summary || '';
+        if (!summary) throw new Error('empty summary');
+        card.innerHTML = '<p class="mirror-card__text">' + escapeHtml(summary) + '</p>';
+        // Ensure a regen button exists after first fetch.
+        if (!regenBtn && body.querySelector('.ai-mirror__regen') == null) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'btn--quiet ai-mirror__regen';
+          btn.setAttribute('data-ai-generate', '');
+          btn.textContent = 'Reflect again';
+          btn.addEventListener('click', () => fetchSummary(true));
+          body.appendChild(btn);
+        }
+      } catch (err) {
+        console.error('ai-mirror error', err);
+        card.innerHTML = '<p class="mirror-card__loading mirror-card__loading--error">Could not load reflection. <button type="button" class="ai-mirror__retry" data-ai-mirror-retry>Try again</button></p>';
+        const retry = card.querySelector('[data-ai-mirror-retry]');
+        if (retry) retry.addEventListener('click', () => fetchSummary(false));
+      } finally {
+        nextBtn.disabled = wasNextDisabled;
+        if (regenBtn) {
+          regenBtn.disabled = false;
+          regenBtn.textContent = originalRegenLabel || 'Reflect again';
+        }
+      }
+    }
+
+    if (!hasSummary) {
+      // Auto-fire on load.
+      fetchSummary(false);
+    }
+
+    if (regenBtn) {
+      regenBtn.addEventListener('click', () => fetchSummary(true));
+    }
   }
 })();

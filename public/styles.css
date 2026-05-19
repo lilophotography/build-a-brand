@@ -1686,6 +1686,57 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
 }
 .ai-option.is-selected .ai-option__check { display: flex; }
 
+/* ---- ai-mirror: AI-polished reflection card with loading state ---- */
+.mirror-card--ai {
+  position: relative;
+}
+.mirror-card__text {
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.55;
+  color: var(--ink);
+  margin: 0;
+  white-space: pre-wrap;
+}
+.mirror-card__loading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--ink-soft);
+  font-size: 14px;
+  margin: 0;
+  font-style: italic;
+}
+.mirror-card__loading--error { color: var(--terracotta); font-style: normal; }
+.ai-mirror__retry {
+  appearance: none;
+  background: none;
+  border: none;
+  color: var(--terracotta);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 6px;
+}
+.mirror-card__spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--cream-line);
+  border-top-color: var(--terracotta);
+  border-radius: 50%;
+  animation: mirror-spin 0.8s linear infinite;
+}
+@keyframes mirror-spin {
+  to { transform: rotate(360deg); }
+}
+.ai-mirror__regen {
+  margin-top: var(--space-4);
+  align-self: flex-start;
+}
+
 /* ---- Mirror list (brag bank in value-summary) ---- */
 .mirror-list {
   list-style: none;
