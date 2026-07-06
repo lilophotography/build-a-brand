@@ -1,4 +1,4 @@
-// 5 V system prompts — ported VERBATIM from the original Next app
+// 5 V system prompts - ported VERBATIM from the original Next app
 // (lib/system-prompts.ts in lilophotography/build-a-brand). These are
 // Lisa's IP. Do not edit without her sign-off.
 //

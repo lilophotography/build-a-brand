@@ -2,6 +2,7 @@
 
 import { TOOL_ORDER, buildSystemPrompt } from './prompts.js';
 import { getConfig } from './config.js';
+import { journeyComplete } from './journey.js';
 
 // ---------- Public dispatch ----------
 
@@ -243,6 +244,67 @@ Now draft 4 portrait paragraphs as a JSON array.`;
     },
   },
 
+  'mission-craft': {
+    count: 10,
+    sources: ['warmup-origin', 'mission-discovery', 'brand-reflection'],
+    systemPrompt: `You are Lisa, a brand strategist. The user has answered questions about why they started, what they do, who they help, and how those people change. Your job is to write 10 candidate mission statements they could claim as their own.
+
+Rules:
+- One or two sentences each. First person.
+- Use the user's actual specifics. Fix all typos and grammar. Sharpen vague language.
+- Style guide, Lisa's own mission: "I partner with small business owners to create a compelling brand so they confidently stand out in the crowded world of online marketing without feeling overwhelmed."
+- Vary the angles: direct, collaborative, pain-relief, transformation-led, permission-giving, tribe-shaped, hindsight-shaped, process-shaped, contrast-shaped, stripped-down.
+- No buzzwords, no em dashes, no hedging. Plain confident English.
+- Each should sound like a real person saying it out loud, not a corporate plaque.
+
+Return exactly 10 mission statements as a JSON array of strings. No commentary.`,
+    buildUserMessage(s) {
+      const o = s['warmup-origin']?.fields || {};
+      const m = s['mission-discovery']?.fields || {};
+      const r = s['brand-reflection']?.fields || {};
+      return `Why they started: ${o.why_started || '(blank)'}
+What they were doing before: ${o.before || '(blank)'}
+What they do: ${m.what || '(blank)'}
+Who they help: ${m.who || '(blank)'}
+How those people change: ${m.how || '(blank)'}
+Their business's personality: ${r.personality || '(blank)'}
+What they want customers to remember: ${r.memory || '(blank)'}
+
+Write 10 mission statement candidates as a JSON array.`;
+    },
+  },
+
+  'vision-craft': {
+    count: 10,
+    sources: ['vision-discovery', 'warmup-goals', 'vision-archetype', 'vision-words', 'mission-craft'],
+    systemPrompt: `You are Lisa, a brand strategist. The user has locked in a mission statement and answered questions about the long-term impact they want to have. Your job is to write 10 candidate vision statements.
+
+Rules:
+- One sentence each. Big-picture, long-term, inspiring to the USER first.
+- Style guide, Lisa's own vision: "For every small business owner to have a brand that they feel proud of and confident in, and to do so with encouragement and integrity."
+- Use their actual impact language, archetype, and tapped words. Fix typos. Sharpen.
+- Vary angles: for-every framing, a-world-where framing, raise-the-standard framing, liberation framing, legacy framing, stripped-down declaration.
+- No buzzwords, no em dashes. Plain moving English, not grandiose.
+
+Return exactly 10 vision statements as a JSON array of strings. No commentary.`,
+    buildUserMessage(s) {
+      const impact = s['vision-discovery']?.fields?.impact || '';
+      const g = s['warmup-goals']?.fields || {};
+      const archetype = (s['vision-archetype']?.selected || [])[0] || '';
+      const words = (s['vision-words']?.selected || []).join(', ');
+      const missionSel = (s['mission-craft']?.selected || [])[0];
+      const mission = s['mission-craft']?.ai_options?.find((o) => o.id === missionSel)?.text || '';
+      return `The impact they want to have: ${impact || '(blank)'}
+Their long-term goal: ${g.long_term || '(blank)'}
+What life looks like when it works: ${g.life || '(blank)'}
+Their archetype: ${archetype || '(blank)'}
+Words that orbit their vision: ${words || '(blank)'}
+Their mission statement: ${mission || '(blank)'}
+
+Write 10 vision statement candidates as a JSON array.`;
+    },
+  },
+
   // ---------- ai-mirror summaries ----------
 
   'value-mirror': {
@@ -355,7 +417,7 @@ Write a 2-to-3 sentence reflection summary.`;
 
   'mission-vision-mirror': {
     mode: 'summary',
-    sources: ['mission-refine', 'vision-refine'],
+    sources: ['mission-craft', 'vision-craft'],
     systemPrompt: `You are Lisa, a brand strategist. The user just locked in their mission statement and their vision statement. Your job is to write a short polished reflection that holds them side by side.
 
 Write 2-to-3 sentences that:
@@ -365,8 +427,10 @@ Write 2-to-3 sentences that:
 
 Fix typos. No buzzwords, no em dashes. Return ONLY the reflection as plain text.`,
     buildUserMessage(s) {
-      const mission = s['mission-refine']?.fields?.mission_statement || '';
-      const vision = s['vision-refine']?.fields?.vision_statement || '';
+      const missionSel = (s['mission-craft']?.selected || [])[0];
+      const mission = s['mission-craft']?.ai_options?.find((o) => o.id === missionSel)?.text || '';
+      const visionSel = (s['vision-craft']?.selected || [])[0];
+      const vision = s['vision-craft']?.ai_options?.find((o) => o.id === visionSel)?.text || '';
       return `Their mission: ${mission || '(blank)'}
 Their vision: ${vision || '(blank)'}
 
@@ -484,13 +548,15 @@ async function progressStep(request, env, user) {
 
   const stepJson = JSON.stringify(progress);
 
-  // If the summary step of a journey was just saved, also flip completed=1
-  // so the dashboard, Brand Guide unlock, and coaching unlock all see this V
-  // as done. The summary step id is exactly 'summary' in current journey configs.
-  const flipComplete = op === 'journey_response' && value?.step_id === 'summary';
+  // completed=1 only when the section's actual deliverables exist (mission,
+  // vision, defined values, brag bank, portrait, USP, transformation). Merely
+  // visiting the summary step no longer counts. Gates the Brand Guide and
+  // coaching unlocks honestly.
+  const isComplete = op === 'journey_response'
+    && journeyComplete(tool, progress.journey_responses);
 
   if (row) {
-    if (flipComplete) {
+    if (isComplete) {
       await env.DB.prepare(
         "UPDATE brand_progress SET step_progress = ?, completed = 1, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE user_id = ? AND tool = ?"
       ).bind(stepJson, user.id, tool).run();
@@ -502,15 +568,15 @@ async function progressStep(request, env, user) {
   } else {
     await env.DB.prepare(
       "INSERT INTO brand_progress (user_id, tool, completed, messages, summary, step_progress) VALUES (?, ?, ?, '[]', NULL, ?)"
-    ).bind(user.id, tool, flipComplete ? 1 : 0, stepJson).run();
+    ).bind(user.id, tool, isComplete ? 1 : 0, stepJson).run();
   }
 
-  return json({ ok: true, step_progress: progress, completed: flipComplete });
+  return json({ ok: true, step_progress: progress, completed: isComplete });
 }
 
 // ---------- /api/chat ----------
 // Streams Claude responses as plain text. Client appends decoded chunks to the
-// rendered transcript. We do NOT persist messages here — the client posts to
+// rendered transcript. We do NOT persist messages here - the client posts to
 // /api/progress after each completed exchange.
 
 async function chat(request, env, user) {

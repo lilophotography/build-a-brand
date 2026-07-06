@@ -1,4 +1,4 @@
-// Build a Brand — client. Handles auth forms, chat streaming, checkout,
+// Build a Brand - client. Handles auth forms, chat streaming, checkout,
 // onboarding submit, mark-complete, mark-welcomed, sign-out, PDF download.
 // No framework. Plain ES2020.
 
@@ -22,7 +22,7 @@
   function renderMarkdown(text) {
     let s = escapeHtml(text);
 
-    // Headings (### / ## / #) — convert to bold paragraph-style
+    // Headings (### / ## / #) - convert to bold paragraph-style
     s = s.replace(/^#{1,3}\s+(.+)$/gm, '<strong>$1</strong>');
 
     // Bold: **text**
@@ -148,7 +148,7 @@
   });
 
   // ============================================================
-  // 3. Lisa letter — mark welcomed
+  // 3. Lisa letter - mark welcomed
   // ============================================================
   const welcomedForm = $('form[data-mark-welcomed]');
   if (welcomedForm) {
@@ -290,7 +290,7 @@
         // Light markdown for AI output (escapes HTML then applies bold/italic/lists)
         bubble.innerHTML = renderMarkdown(m.content || '');
       } else {
-        // User messages stay plain text — preserve newlines via white-space CSS
+        // User messages stay plain text - preserve newlines via white-space CSS
         bubble.textContent = m.content || '';
       }
       wrap.appendChild(bubble);
@@ -399,7 +399,7 @@
 
 // ============================================================
 // V Page: chip-rail video swap + workbook click tracking.
-// Independent of the chat IIFE — runs on /brand-builder/<v> pages.
+// Independent of the chat IIFE - runs on /brand-builder/<v> pages.
 // ============================================================
 (function () {
   const page = document.querySelector('.v-page');
@@ -454,7 +454,7 @@
   const workbookLink = page.querySelector('[data-workbook-link]');
   if (workbookLink) {
     workbookLink.addEventListener('click', () => {
-      // Don't preventDefault — we WANT the link to navigate to the PDF.
+      // Don't preventDefault - we WANT the link to navigate to the PDF.
       workbookLink.classList.add('is-done');
       postStep({ op: 'workbook' });
     });

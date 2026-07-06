@@ -409,36 +409,15 @@ export const VISION_STEPS = [
     estimatedMinutes: 3,
   },
   {
-    id: 'mission-pick',
-    kind: 'pick-3',
+    id: 'mission-craft',
+    kind: 'ai-craft',
     section: 'Mission',
-    title: 'Pick the framing that hits.',
-    subtitle: "Each one uses your own words. You'll edit the wording on the next step.",
-    estimatedMinutes: 4,
-    maxPicks: 1,
-    optionsFromTemplates: 'mission',
-  },
-  {
-    id: 'mission-refine',
-    kind: 'fillblank',
-    section: 'Mission',
-    title: 'Make it yours.',
-    subtitle: 'Replace the [brackets]. Move words around. It should sound like you, not a template.',
+    title: 'Your mission statement candidates.',
+    subtitle: "Ten polished mission statements crafted from everything you've told me, in your voice with the rough edges smoothed. Pick the one that hits. Whichever you pick is your mission statement.",
     estimatedMinutes: 6,
-    fields: [
-      {
-        id: 'mission_statement',
-        label: 'Your mission statement.',
-        helpText: 'One or two sentences. Try saying it out loud. Does it sound like you?',
-        placeholder: '',
-        rows: 4,
-        prefillFrom: { tool: 'vision', step: 'mission-pick', kind: 'template' },
-      },
-    ],
-    inspiration: {
-      label: "Lisa's mission",
-      text: '"I partner with small business owners to create a compelling brand so they confidently stand out in the crowded world of online marketing without feeling overwhelmed."',
-    },
+    maxPicks: 1,
+    generateLabel: 'Write my mission options',
+    generateHint: 'About 20 seconds. Ten different angles, one or two sentences each.',
   },
 
   // ===== Process B: Vision Statement =====
@@ -485,32 +464,15 @@ export const VISION_STEPS = [
     words: VISION_WORDS,
   },
   {
-    id: 'vision-pick',
-    kind: 'pick-3',
+    id: 'vision-craft',
+    kind: 'ai-craft',
     section: 'Vision',
-    title: 'Pick a framing for your vision.',
-    subtitle: 'Each one folds in your archetype, your words, and your mission.',
-    estimatedMinutes: 3,
-    maxPicks: 1,
-    optionsFromTemplates: 'vision',
-  },
-  {
-    id: 'vision-refine',
-    kind: 'fillblank',
-    section: 'Vision',
-    title: 'Make it yours.',
-    subtitle: 'Replace any [brackets]. Trust the bigger feel of it, not perfection.',
+    title: 'Your vision statement candidates.',
+    subtitle: "Ten vision statements woven from your impact, your archetype, your words, and your mission. Pick the one that inspires YOU first. Whichever you pick is your vision statement.",
     estimatedMinutes: 5,
-    fields: [
-      {
-        id: 'vision_statement',
-        label: 'Your vision statement.',
-        helpText: 'One sentence. Inspires YOU first, your audience second.',
-        placeholder: '',
-        rows: 4,
-        prefillFrom: { tool: 'vision', step: 'vision-pick', kind: 'template' },
-      },
-    ],
+    maxPicks: 1,
+    generateLabel: 'Write my vision options',
+    generateHint: 'About 20 seconds. Ten angles, one sentence each.',
   },
   {
     id: 'mission-vision-mirror',
@@ -945,11 +907,32 @@ export function journeyProgressPct(tool, journeyResponses) {
 
 // Per-deliverable progress for the dashboard breakdown.
 export function visionDeliverables(journeyResponses = {}) {
+  const mission = pickedOptionText(journeyResponses, 'mission-craft')
+    || journeyResponses['mission-refine']?.fields?.mission_statement || '';
+  const vision = pickedOptionText(journeyResponses, 'vision-craft')
+    || journeyResponses['vision-refine']?.fields?.vision_statement || '';
+  const valuesDefined = Object.values(journeyResponses['values-define']?.fields || {})
+    .some((v) => v && String(v).trim());
+  const valuesRanked = (journeyResponses['values-rank']?.ranking || []).length > 0;
   return [
-    { key: 'mission', label: 'Mission Statement', value: journeyResponses['mission-refine']?.fields?.mission_statement || '', complete: !!journeyResponses['mission-refine'] },
-    { key: 'vision', label: 'Vision Statement', value: journeyResponses['vision-refine']?.fields?.vision_statement || '', complete: !!journeyResponses['vision-refine'] },
-    { key: 'values', label: 'Core Values', value: '', complete: !!journeyResponses['values-define'] },
+    { key: 'mission', label: 'Mission Statement', value: mission, complete: !!mission },
+    { key: 'vision', label: 'Vision Statement', value: vision, complete: !!vision },
+    { key: 'values', label: 'Core Values', value: '', complete: valuesRanked && valuesDefined },
   ];
+}
+
+// A journey section is truly complete when its deliverables exist, not when
+// the user has merely visited the last step. Used by the dashboard status and
+// by the API when deciding whether to flip brand_progress.completed.
+export function journeyComplete(tool, journeyResponses = {}) {
+  if (tool === 'vision') {
+    return visionDeliverables(journeyResponses).every((d) => d.complete);
+  }
+  if (tool === 'value') {
+    return valueDeliverables(journeyResponses).every((d) => d.complete);
+  }
+  // Tools without a journey definition fall back to summary-step presence.
+  return !!journeyResponses['summary'];
 }
 
 // Helper: get the text of the user's picked AI option for a given step.
@@ -1242,7 +1225,14 @@ function renderRank(step, saved, journeyResponses) {
   }
   items = items || [];
 
-  const order = (saved && Array.isArray(saved.ranking)) ? saved.ranking : items.map((i) => i.id);
+  // Saved ranking first, then any items the ranking doesn't know about yet.
+  // Without this, a user who saved a short ranking (3 taps) comes back and
+  // only ever sees those 3, never the supplemented suggestions.
+  let order = (saved && Array.isArray(saved.ranking)) ? [...saved.ranking] : items.map((i) => i.id);
+  const inOrder = new Set(order);
+  for (const item of items) {
+    if (!inOrder.has(item.id)) order.push(item.id);
+  }
   const itemById = Object.fromEntries(items.map((i) => [i.id, i]));
   return `<div class="step-body step-body--rank" data-step-kind="rank" data-step-id="${esc(step.id)}">
     <p class="step-body__hint">Drag to reorder. Top of the list is your top pick.</p>
@@ -1280,7 +1270,7 @@ function renderMirror(step, journeyResponses = {}) {
       const value = readByPath(row.from, step, journeyResponses);
       return `<div class="mirror-row">
         <p class="mirror-row__label">${esc(row.label)}</p>
-        <p class="mirror-row__value">${esc(value || '(blank — go back to fill this in)')}</p>
+        <p class="mirror-row__value">${esc(value || '(blank. Go back to fill this in.)')}</p>
       </div>`;
     }).join('');
   } else if (m.kind === 'wordcloud-list') {
@@ -1292,10 +1282,12 @@ function renderMirror(step, journeyResponses = {}) {
     });
     bodyHtml = labels.length
       ? `<div class="mirror-chips">${labels.map((l) => `<span class="mirror-chip">${esc(l)}</span>`).join('')}</div>`
-      : `<p class="mirror-row__value">(nothing tapped yet — go back and tap some words)</p>`;
+      : `<p class="mirror-row__value">(nothing tapped yet. Go back and tap some words.)</p>`;
   } else if (m.kind === 'vision-summary') {
-    const mission = journeyResponses['mission-refine']?.fields?.mission_statement || '';
-    const vision = journeyResponses['vision-refine']?.fields?.vision_statement || '';
+    const mission = pickedOptionText(journeyResponses, 'mission-craft')
+      || journeyResponses['mission-refine']?.fields?.mission_statement || '';
+    const vision = pickedOptionText(journeyResponses, 'vision-craft')
+      || journeyResponses['vision-refine']?.fields?.vision_statement || '';
     const definitions = journeyResponses['values-define']?.fields || {};
     const ranking = journeyResponses['values-rank']?.ranking || journeyResponses['values-tap']?.selected || [];
     const valuesById = Object.fromEntries(VALUE_WORDS.map((w) => [w.id, w.label]));

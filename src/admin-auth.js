@@ -89,7 +89,7 @@ async function adminLogin(request, env) {
     return json({ error: 'Invalid credentials' }, 401);
   }
 
-  // Success — clear rate limit and create session
+  // Success - clear rate limit and create session
   await clearRateLimit(env, emailLower);
   const token = await createAdminSession(admin.id, env);
   await auditLog(env, admin.id, 'login_success', '', ip);
@@ -117,7 +117,7 @@ async function adminMe(request, env) {
   return json({ admin });
 }
 
-// Shared admin auth check — import this in other admin modules
+// Shared admin auth check - import this in other admin modules
 export async function authenticateAdmin(request, env) {
   const token = getAdminToken(request);
   if (!token) return null;
@@ -197,7 +197,7 @@ async function recordFailedAttempt(env, email) {
       ).bind(newAttempts, email).run();
     }
   } catch {
-    // Table doesn't exist — create it and record this attempt
+    // Table doesn't exist - create it and record this attempt
     try {
       await env.DB.prepare(`CREATE TABLE IF NOT EXISTS login_attempts (
         email TEXT PRIMARY KEY, attempts INTEGER DEFAULT 0,

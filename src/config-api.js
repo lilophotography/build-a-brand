@@ -13,7 +13,7 @@
 import { authenticateAdmin, auditLog } from './admin-auth.js';
 import { getDefaults, getConfig } from './config.js';
 
-// Public endpoint — returns branding + copy only, no auth needed
+// Public endpoint - returns branding + copy only, no auth needed
 export async function handlePublicConfig(env) {
   const config = await getConfig(env);
   return json({
@@ -87,7 +87,7 @@ async function getConfigValues(env, url) {
   return json({ config });
 }
 
-// PUT /admin/api/config — { items: [{ category, key, value }] }
+// PUT /admin/api/config - { items: [{ category, key, value }] }
 async function upsertConfig(request, env, admin) {
   await ensureTable(env);
   const { items } = await request.json();
@@ -130,7 +130,7 @@ async function upsertConfig(request, env, admin) {
   return json({ ok: true, saved: items.length });
 }
 
-// POST /admin/api/config/reset — { category, key } or { category, key: '*' }
+// POST /admin/api/config/reset - { category, key } or { category, key: '*' }
 async function resetConfig(request, env, admin) {
   const { category, key } = await request.json();
 

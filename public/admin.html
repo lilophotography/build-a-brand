@@ -400,7 +400,7 @@
 
 <script>
 // ============================================
-// CONFIG — Change these per app
+// CONFIG - Change these per app
 // ============================================
 const APP_NAME = 'Admin'; // Shows in sidebar
 const API_BASE = '/admin/api';
@@ -525,7 +525,7 @@ async function loadDashboard() {
   const actList = document.getElementById('recent-activity');
   if (actData?.activity) {
     actList.innerHTML = actData.activity.map(a =>
-      `<div class="activity-item"><span>${a.user_name || 'Unknown'} — ${a.action}</span><span class="activity-time">${timeAgo(a.created_at)}</span></div>`
+      `<div class="activity-item"><span>${a.user_name || 'Unknown'} - ${a.action}</span><span class="activity-time">${timeAgo(a.created_at)}</span></div>`
     ).join('');
   }
 }
@@ -617,9 +617,9 @@ async function showMemberDetail(id) {
   `;
 
   document.getElementById('detail-subscription').innerHTML = sub ? `
-    <div class="field"><div class="field-label">Plan</div><div class="field-value">${sub.plan_name} — $${(sub.amount_cents / 100).toFixed(2)}/${sub.interval_type}</div></div>
+    <div class="field"><div class="field-label">Plan</div><div class="field-value">${sub.plan_name} - $${(sub.amount_cents / 100).toFixed(2)}/${sub.interval_type}</div></div>
     <div class="field"><div class="field-label">Status</div><div class="field-value"><span class="badge badge-${sub.status === 'active' ? 'active' : 'deactivated'}">${sub.status}</span></div></div>
-    <div class="field"><div class="field-label">Current Period</div><div class="field-value">${formatDate(sub.current_period_start)} — ${formatDate(sub.current_period_end)}</div></div>
+    <div class="field"><div class="field-label">Current Period</div><div class="field-value">${formatDate(sub.current_period_start)} - ${formatDate(sub.current_period_end)}</div></div>
   ` : '<p style="color:var(--text-light);font-size:.85rem">No subscription</p>';
 
   document.getElementById('detail-notes').value = m.notes || '';
@@ -654,7 +654,7 @@ async function showMemberDetail(id) {
   const payEl = document.getElementById('detail-payments');
   if (payData?.payments?.length) {
     payEl.innerHTML = payData.payments.slice(0, 10).map(p =>
-      `<div class="activity-item"><span>$${(p.amount_cents / 100).toFixed(2)} — ${p.status}</span><span class="activity-time">${formatDate(p.paid_at)}</span></div>`
+      `<div class="activity-item"><span>$${(p.amount_cents / 100).toFixed(2)} - ${p.status}</span><span class="activity-time">${formatDate(p.paid_at)}</span></div>`
     ).join('');
   } else {
     payEl.innerHTML = '<p style="color:var(--text-light);font-size:.85rem">No payments</p>';

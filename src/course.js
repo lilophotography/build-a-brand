@@ -54,7 +54,7 @@ export function getCourseWelcomeLesson() {
   return m1?.lessons.find(l => l.slug === COURSE_WIDE_WELCOME_SLUG) || null;
 }
 
-// Module 6 — the bonus aggregate (Complete Workbook, content templates,
+// Module 6 - the bonus aggregate (Complete Workbook, content templates,
 // implementation checklists). Used by the Brand Guide finale.
 export function getBonusModule() {
   return COURSE.modules.find(m => m.order === 6) || null;

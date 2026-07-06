@@ -1,9 +1,9 @@
 // ============================================
 // Activity Tracking Module
-// Fire-and-forget logging — never blocks the response.
+// Fire-and-forget logging - never blocks the response.
 // ============================================
 
-// Default action map — customize per app
+// Default action map - customize per app
 const DEFAULT_ACTION_MAP = {
   'POST /api/auth/login': 'login',
   'POST /api/auth/register': 'registration',
@@ -50,7 +50,7 @@ export function logActivity(request, env, url, userId, ctx) {
   const insertPromise = env.DB.prepare(
     'INSERT INTO activity_log (user_id, action, path, ip_address) VALUES (?, ?, ?, ?)'
   ).bind(userId, action, path, ip).run().catch(() => {
-    // Silently fail — activity logging should never break the app
+    // Silently fail - activity logging should never break the app
   });
 
   // Use waitUntil if available (Cloudflare Workers execution context)

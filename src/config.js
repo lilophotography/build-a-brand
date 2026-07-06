@@ -1,11 +1,11 @@
 // ============================================
-// App Configuration — Build a Brand (Lisa Lord)
+// App Configuration - Build a Brand (Lisa Lord)
 // Loads config from D1 app_config table, merges over hardcoded defaults.
 // Auto-creates app_config on first read.
 // Empty config table = app behaves exactly as before (defaults rule).
 //
 // Customized for lilo-brand-app:
-//   - prompts: the 5 V system prompts (Lisa's IP — imported verbatim)
+//   - prompts: the 5 V system prompts (Lisa's IP - imported verbatim)
 //   - branding: real LiLo color tokens from public/styles.css :root
 //   - copy: hero + framework + testimonial copy from pages.js renderLanding()
 //   - settings: Anthropic model + token limits used by the chat handler
@@ -14,7 +14,7 @@
 import { SYSTEM_PROMPTS } from './prompts.js';
 
 // ============================================
-// DEFAULTS — Lisa's current values (do not edit casually)
+// DEFAULTS - Lisa's current values (do not edit casually)
 // ============================================
 const DEFAULTS = {
   prompts: {
@@ -29,7 +29,7 @@ const DEFAULTS = {
   branding: {
     app_name: 'Build a Brand',
     tagline: 'A brand with purpose is a brand with power.',
-    // LiLo palette — keys map to CSS custom property names in styles.css :root.
+    // LiLo palette - keys map to CSS custom property names in styles.css :root.
     // The landing page config loader sets `--{key}` from these values.
     // Token names kept; values are now LiLo official palette (red, black, white, yellow, gray)
     cream: '#FFFFFF',
@@ -40,8 +40,8 @@ const DEFAULTS = {
     terracotta_d: '#9D4134',
     gold: '#E8BB5C',
     gold_d: '#D9A640',
-    serif: "'Gilda Display', Georgia, 'Times New Roman', serif",
-    sans: "'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    serif: "'Times New Roman', Times, serif",
+    sans: "'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     logo_url: '',
   },
   copy: {
@@ -84,7 +84,7 @@ const DEFAULTS = {
   },
   settings: {
     // Used internally by api.js as fallback values when a config row is missing.
-    // Not surfaced in the admin UI — change via code deploy if you need to.
+    // Not surfaced in the admin UI - change via code deploy if you need to.
     model: 'claude-sonnet-4-6',
     max_tokens: 2048,
     max_history: 30,

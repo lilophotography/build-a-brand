@@ -12,6 +12,7 @@ import {
   renderJourneyStepBody,
   visionDeliverables,
   valueDeliverables,
+  journeyComplete,
 } from './journey.js';
 
 // ============================================================
@@ -242,7 +243,7 @@ export function renderSignUp({ error, email = '', preheading = null, lede = null
 // ============================================================
 
 export function renderWelcomeAfterStripe({ email, error } = {}) {
-  // No nav — this is a focused conversion moment.
+  // No nav - this is a focused conversion moment.
   const main = `
 <section class="auth">
   <div class="auth__panel">
@@ -338,11 +339,10 @@ export function renderOnboarding(user) {
 
 export function renderDashboard(user, progressRows) {
   const progressByTool = Object.fromEntries((progressRows || []).map(r => [r.tool, r]));
-  const completedCount = TOOL_ORDER.filter(t => progressByTool[t]?.completed).length;
-  const pct = Math.round((completedCount / 5) * 100);
 
-  // For each V, count how many journey steps are saved (if it has a journey).
-  // For V's without a journey yet, fall back to the completed flag.
+  // For each V with a journey, "complete" means its deliverables actually
+  // exist (journeyComplete), not that the user reached the last step or that
+  // a stale completed flag is set. Legacy V's fall back to the completed flag.
   const sectionStatus = TOOL_ORDER.map((tool) => {
     const row = progressByTool[tool];
     let sp = {};
@@ -352,7 +352,7 @@ export function renderDashboard(user, progressRows) {
     if (journey) {
       const done = journey.filter(s => responses[s.id]).length;
       const total = journey.length;
-      const isComplete = !!row?.completed || done >= total;
+      const isComplete = journeyComplete(tool, responses);
       const inProgress = done > 0 && !isComplete;
       return {
         tool,
@@ -373,6 +373,9 @@ export function renderDashboard(user, progressRows) {
     };
   });
 
+  const completedCount = sectionStatus.filter(s => s.isComplete).length;
+  const pct = Math.round((completedCount / 5) * 100);
+
   // Find the resume target. First V that has a journey and isn't complete,
   // else first V that isn't complete (legacy), else /brand-guide if all done.
   const resumeTarget = sectionStatus.find(s => !s.isComplete) || null;
@@ -387,7 +390,7 @@ export function renderDashboard(user, progressRows) {
     : pct === 100
     ? "Time to download your Brand Guide and put it to work."
     : resumeTarget
-      ? `Your next ~${estimateMinutesForResume(resumeTarget)} minutes: ${esc(resumeTarget.meta.label)}.`
+      ? `Up next: ${esc(resumeTarget.meta.label)}.`
       : "Pick up where you left off below.";
 
   const resumeHref = resumeTarget ? `/brand-builder/${resumeTarget.tool}` : '/brand-guide';
@@ -425,7 +428,7 @@ export function renderDashboard(user, progressRows) {
         <span class="dash-section__label">Your Brand Guide</span>
         <span class="dash-section__state">${guideUnlocked ? 'Ready to download' : `Unlocks after all 5 sections (${5 - completedCount} to go)`}</span>
       </span>
-      <span class="dash-section__chev" aria-hidden="true">${guideUnlocked ? '→' : '🔒'}</span>
+      <span class="dash-section__chev" aria-hidden="true">${guideUnlocked ? '→' : ''}</span>
     </a>
   </li>`;
 
@@ -603,7 +606,7 @@ function coachingCard(user, completedCount) {
 }
 
 function upsellCard(completedCount) {
-  // $250 buyers — offer to add the call for $300.
+  // $250 buyers - offer to add the call for $300.
   if (completedCount < 3) {
     return `<aside class="rail-card">
       <p class="rail-card__eyebrow">Want to go deeper later?</p>
@@ -654,10 +657,9 @@ export function renderJourney(user, tool, slug, journeyResponses) {
   <header class="journey__header">
     <div class="journey__crumbs">
       <p class="journey__eyebrow">${esc(meta.label)}${step.section ? ` <span class="journey__eyebrow-sub">· ${esc(step.section)}</span>` : ''}</p>
-      <p class="journey__progress-text">Step ${idx + 1} of ${steps.length} · ${pct}%</p>
     </div>
     <div class="journey__progress">
-      <div class="journey__progress-fill" style="width:${pct}%"></div>
+      <div class="journey__progress-fill" style="width:${Math.round(((idx + 1) / steps.length) * 100)}%"></div>
     </div>
   </header>
 
@@ -746,7 +748,7 @@ export function renderBrandBuilder(user, tool, progressRow, vData, stepProgress)
   }));
 }
 
-// What we'll do here — one sentence per V, written like a course teacher.
+// What we'll do here - one sentence per V, written like a course teacher.
 function vDescription(tool) {
   return ({
     vision: "Watch Lisa walk through Mission, Vision, and Values. Then sit down with your AI strategist and lock yours in.",
@@ -757,12 +759,12 @@ function vDescription(tool) {
   })[tool] || '';
 }
 
-// V page — Section 1: Watch
+// V page - Section 1: Watch
 // Featured video player with chip-rail underneath. Each chip swaps the player.
 // Public/app.js wires the click handler + POSTs /api/progress/step.
 function renderVWatch(tool, lessons, watchedSet) {
   if (!lessons || lessons.length === 0) {
-    return ''; // No videos for this V — section hides entirely.
+    return ''; // No videos for this V - section hides entirely.
   }
   // First-with-video becomes the initial featured lesson.
   const firstVideo = lessons.find(l => l.video_ids && l.video_ids.length > 0) || lessons[0];
@@ -801,7 +803,7 @@ function renderVWatch(tool, lessons, watchedSet) {
 </section>`;
 }
 
-// V page — Section 2: Workbook
+// V page - Section 2: Workbook
 function renderVWorkbook(tool, workbook, alreadyDownloaded) {
   if (!workbook || !workbook.url) return '';
   return `
@@ -809,27 +811,27 @@ function renderVWorkbook(tool, workbook, alreadyDownloaded) {
   <header class="v-section__head">
     <p class="v-section__num">02</p>
     <h2 class="v-section__title">Workbook</h2>
-    <p class="v-section__lede">Download Lisa's PDF workbook. Fill it as you watch — or print and write by hand.</p>
+    <p class="v-section__lede">Download Lisa's PDF workbook. Fill it as you watch, or print and write by hand.</p>
   </header>
   <a class="v-workbook__card ${alreadyDownloaded ? 'is-done' : ''}"
      href="${esc(workbook.url)}"
      target="_blank"
      rel="noopener"
      data-workbook-link>
-    <div class="v-workbook__icon" aria-hidden="true">📓</div>
+    
     <div class="v-workbook__body">
       <p class="v-workbook__title">${esc(workbook.title || 'Module Workbook')}</p>
-      <p class="v-workbook__desc">${esc(workbook.description || 'PDF — fillable and printable')}</p>
+      <p class="v-workbook__desc">${esc(workbook.description || 'PDF, fillable and printable')}</p>
     </div>
     <div class="v-workbook__cta">
-      <span class="v-workbook__cta-text">${alreadyDownloaded ? 'Downloaded — open again' : 'Download PDF'}</span>
+      <span class="v-workbook__cta-text">${alreadyDownloaded ? 'Downloaded. Open again' : 'Download PDF'}</span>
       <span aria-hidden="true">↓</span>
     </div>
   </a>
 </section>`;
 }
 
-// V page — Section 3: Build (the AI chat — preserved exactly from prior renderBrandBuilder)
+// V page - Section 3: Build (the AI chat - preserved exactly from prior renderBrandBuilder)
 function renderVBuild(initialState, meta) {
   return `
 <section class="v-build" data-section="build">
@@ -860,7 +862,7 @@ function renderVBuild(initialState, meta) {
 </section>`;
 }
 
-// V page — Section 4: Lock it in (only renders when summary exists)
+// V page - Section 4: Lock it in (only renders when summary exists)
 function renderVLockIn(meta, summary, nextTool, completed) {
   if (!completed && !summary) return '';
   const nextHref = nextTool ? `/brand-builder/${nextTool}` : '/brand-guide';
@@ -869,7 +871,7 @@ function renderVLockIn(meta, summary, nextTool, completed) {
 <section class="v-lock-in" data-section="lock-in">
   <header class="v-section__head">
     <p class="v-section__num">04</p>
-    <h2 class="v-section__title">${esc(meta.label)} — locked in</h2>
+    <h2 class="v-section__title">${esc(meta.label)}: locked in</h2>
     <p class="v-section__lede">Save this. It's the foundation for what comes next.</p>
   </header>
   ${summary ? `<div class="v-lock-in__summary">${esc(summary).replace(/\n\n/g, '</p><p>').replace(/^/, '<p>').replace(/$/, '</p>')}</div>` : ''}
@@ -909,7 +911,7 @@ export function renderBrandGuide(user, progressRows) {
     </section>`;
   }).join('');
 
-  // Bonus section — Module 6 of the ThriveCart course (Tools, Downloads, Templates).
+  // Bonus section - Module 6 of the ThriveCart course (Tools, Downloads, Templates).
   // Built from the manifest's bonus module: lists the workbook + every bonus
   // download Lisa packed in. Always visible (not gated) so users can grab the
   // resources even mid-journey.
@@ -922,11 +924,11 @@ export function renderBrandGuide(user, progressRows) {
   <header class="bg-bonus__header">
     <p class="eyebrow eyebrow--gold">Bonus</p>
     <h2 class="bg-bonus__title">${esc(bonusModule?.title || 'Tools, Downloads, Templates')}</h2>
-    <p class="bg-bonus__lede">Everything Lisa packs into the course — workbooks, content templates, planners, implementation checklists. Yours forever.</p>
+    <p class="bg-bonus__lede">Everything Lisa packs into the course: workbooks, content templates, planners, implementation checklists. Yours forever.</p>
   </header>
   <div class="bg-bonus__grid">
     ${bonusDownloads.map(d => `<a class="bg-bonus__card" href="${esc(d.url)}" target="_blank" rel="noopener">
-      <span class="bg-bonus__icon" aria-hidden="true">📓</span>
+      
       <span class="bg-bonus__body">
         <span class="bg-bonus__name">${esc(d.title || 'Download')}</span>
         <span class="bg-bonus__desc">${esc(d.description || 'PDF download')}</span>
@@ -1096,7 +1098,7 @@ export function renderBrandGuidePrint(user, progressRows) {
 <head>
 <meta charset="UTF-8">
 <title>Brand Guide</title>
-<link href="https://fonts.googleapis.com/css2?family=Gilda+Display&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles.css">
 <link rel="stylesheet" href="/print.css">
 </head>

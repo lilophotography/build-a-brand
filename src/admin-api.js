@@ -9,7 +9,7 @@ import { handleStripeWebhook } from './admin-stripe.js';
 import { cleanupActivityLog } from './admin-activity.js';
 
 export async function handleAdminAPI(request, env, url) {
-  // Stripe webhook — no admin auth, uses signature verification
+  // Stripe webhook - no admin auth, uses signature verification
   if (url.pathname === '/admin/api/stripe/webhook' && request.method === 'POST') {
     return handleStripeWebhook(request, env);
   }
@@ -352,7 +352,7 @@ async function getMemberProgress(env, url) {
 // ============================================
 // CUSTOMIZE THIS FUNCTION FOR EACH APP
 // ============================================
-// This is the adapter — implement it based on
+// This is the adapter - implement it based on
 // what the app tracks. Examples in progress-adapters.md.
 // ============================================
 async function getProgressForUser(env, userId) {

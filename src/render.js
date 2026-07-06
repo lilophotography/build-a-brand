@@ -10,7 +10,7 @@ export function esc(s) {
 }
 
 export function html(strings, ...values) {
-  // Tagged template — values are NOT auto-escaped. Caller must call esc() on
+  // Tagged template - values are NOT auto-escaped. Caller must call esc() on
   // any user-provided value. Keeps performance + flexibility for embedding raw
   // server-built fragments.
   let out = '';
@@ -50,8 +50,9 @@ export function head(title, opts = {}) {
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Gilda+Display&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/styles.css">`;
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"b4e1186305b34978807caae0e4e06af3"}'></script>`;
 }
 
 // LiLo logo mark. Two outer bars + short red middle bar + red dot.

@@ -1,4 +1,4 @@
-// Build a Brand — Worker entry. Routes everything: pages, auth, API, stripe.
+// Build a Brand - Worker entry. Routes everything: pages, auth, API, stripe.
 
 import { handleAuth, authenticate } from './auth.js';
 import { handleAPI, consumePrintToken } from './api.js';
@@ -77,7 +77,7 @@ export default {
         return await handleAPI(request, env, url, user);
       }
 
-      // ---- /welcome — post-Stripe success page ----
+      // ---- /welcome - post-Stripe success page ----
       if (path === '/welcome' && method === 'GET') {
         return await handleStripeWelcome(request, env, url);
       }
@@ -160,7 +160,7 @@ export default {
           ).bind(user.id, tool).first();
           return renderVComplete(user, tool, row?.summary || null);
         }
-        // Legacy /learn routes — the library is gone. Redirect to the V page
+        // Legacy /learn routes - the library is gone. Redirect to the V page
         // a slug belongs to (with #lesson hash so the chip rail can auto-select).
         // Bare /learn just bounces to dashboard.
         if (path === '/learn') return redirect('/dashboard', 301);
@@ -195,7 +195,7 @@ async function handleStripeWelcome(request, env, url) {
   const sessionId = url.searchParams.get('session');
   const user = await authenticate(request, env);
 
-  // Already signed in — webhook will (or already did) apply entitlement to them.
+  // Already signed in - webhook will (or already did) apply entitlement to them.
   if (user) return redirect('/lisa');
 
   if (!sessionId) return redirect('/');

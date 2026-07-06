@@ -1,10 +1,10 @@
 /* =============================================================
-   Build a Brand — Lisa Lord / LiLo Brand Studio
+   Build a Brand - Lisa Lord / LiLo Brand Studio
    Official LiLo palette: red, black, white, yellow (sparingly), gray.
    Token names are kept (cream, ink, terracotta, gold) so existing
    selectors keep working. The values are the official brand colors.
-     Headlines: Gilda Display
-     Body:      Montserrat
+     Headlines: Times New Roman (the LiLo typography rule)
+     Body:      Lato
      Voice:     gutsy, direct
    ============================================================= */
 
@@ -27,8 +27,8 @@
   --gold-l:       rgba(232, 187, 92, 0.12);
   --white:        #FFFFFF;
 
-  --serif: 'Gilda Display', Georgia, 'Times New Roman', serif;
-  --sans:  'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --serif: 'Times New Roman', Times, serif;
+  --sans:  'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   --radius-sm: 4px;
   --radius:    8px;
@@ -487,7 +487,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
 .chat__complete-link { background: transparent; border: 0; color: var(--terracotta); font-size: 12px; padding: 4px 0; cursor: pointer; letter-spacing: 0.02em; font-weight: 500; transition: color .15s ease; }
 .chat__complete-link:hover { color: var(--terracotta-d); text-decoration: underline; }
 
-/* Ready banner — appears when the AI signals the section is wrapped up. */
+/* Ready banner - appears when the AI signals the section is wrapped up. */
 .chat__ready-banner { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin: 0 20px; padding: 16px 20px; background: var(--gold-l); border: 1px solid rgba(201,169,110,0.40); border-radius: var(--radius); animation: ready-glow 1.4s ease-in-out 1; }
 .chat__ready-banner[hidden] { display: none; }
 .chat__ready-text { margin: 0; color: var(--ink); font-size: 14px; line-height: 1.5; flex: 1; min-width: 220px; }
@@ -542,7 +542,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
 
 /* =============================================================
    V-COMPLETE celebration
-   (Don't make body a flexbox here — sticky nav doesn't survive that.
+   (Don't make body a flexbox here - sticky nav doesn't survive that.
     Instead let the page flow naturally with generous top padding.)
    ============================================================= */
 .page-vcomplete { background: var(--cream); }
@@ -555,7 +555,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
 .vcomplete__actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
 
 /* =============================================================
-   V Page (the unified V journey) — Phase 2 of the UX overhaul.
+   V Page (the unified V journey) - Phase 2 of the UX overhaul.
    Composed sections: Hero · Watch · Workbook · Build · Lock-in
    Vertically stacked, editorial luxury feel, brand tokens already
    defined in :root above.
@@ -794,7 +794,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
   .v-workbook__cta { justify-content: center; }
 }
 
-/* Build (chat) — let the existing .chat styles drive layout, just give the
+/* Build (chat) - let the existing .chat styles drive layout, just give the
    section a little chrome so it sits well with Watch/Workbook. */
 .v-build__shell {
   background: var(--white);
@@ -836,7 +836,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
 }
 
 /* =============================================================
-   Dashboard — Welcome video block, multi-step progress chips,
+   Dashboard - Welcome video block, multi-step progress chips,
    and the 6th Brand Guide station. Phase 3.
    ============================================================= */
 
@@ -926,7 +926,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
 }
 .step-chip.is-done .step-chip__dot { color: var(--gold-d); opacity: 1; }
 
-/* Brand Guide station — distinct gold accent */
+/* Brand Guide station - distinct gold accent */
 .station--guide.is-active {
   background: linear-gradient(180deg, var(--cream) 0%, var(--gold-l) 100%);
   border-color: var(--gold);
@@ -940,7 +940,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
   color: var(--ink-mute);
 }
 
-/* Brand Guide bonus section — Module 6 aggregate */
+/* Brand Guide bonus section - Module 6 aggregate */
 .bg-bonus {
   margin-top: var(--space-8);
   padding-top: var(--space-7);
@@ -988,7 +988,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
 .bg-bonus__desc { display: block; font-size: 12px; color: var(--ink-mute); margin-top: 2px; }
 .bg-bonus__cta { font-size: 12px; color: var(--gold-d); font-weight: 600; white-space: nowrap; }
 
-/* Admin shortcut in footer — only rendered server-side for is_admin users. */
+/* Admin shortcut in footer - only rendered server-side for is_admin users. */
 .footer__admin {
   margin-left: var(--space-3);
   padding: 4px 12px;

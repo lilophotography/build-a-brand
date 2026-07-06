@@ -39,7 +39,7 @@ export async function handleStripeWebhook(request, env) {
         await handlePaymentFailed(event.data.object, env);
         break;
       default:
-        // Unhandled event type — log and move on
+        // Unhandled event type - log and move on
         break;
     }
   } catch (err) {
@@ -62,7 +62,7 @@ async function handleCheckoutCompleted(session, env) {
   ).bind(email.toLowerCase()).first();
 
   if (!user) {
-    // Payment for unknown user — log for admin review
+    // Payment for unknown user - log for admin review
     await env.DB.prepare(
       "INSERT INTO activity_log (user_id, action, path, metadata) VALUES (NULL, 'payment_unmatched', '/stripe/webhook', ?)"
     ).bind(JSON.stringify({ email, session_id: session.id })).run();
