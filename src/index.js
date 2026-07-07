@@ -64,6 +64,13 @@ export default {
               reply_to: 'lisa@photolilo.com',
               subject: 'Office Hours today at ' + time,
               html,
+              // Plain-text alternative improves spam scoring with every provider.
+              text: `Hey ${name}. Office Hours is today at ${time}. Bring your brand, your questions, and whatever you're stuck on.
+
+Join: ${link}
+
+Same link every month. See you there.
+Lisa`,
             }),
           });
         } catch (err) {
