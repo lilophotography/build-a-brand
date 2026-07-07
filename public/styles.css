@@ -1747,3 +1747,59 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
   padding-left: var(--space-4);
   border-left: 2px solid var(--terracotta);
 }
+
+/* ---- Brand Guide structured entries (journey deliverables) ---- */
+.bg-entry { margin: 0 0 var(--space-6); }
+.bg-entry:last-of-type { margin-bottom: var(--space-4); }
+.bg-entry__label {
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--terracotta);
+  font-weight: 700;
+  margin: 0 0 var(--space-3);
+}
+.bg-entry__statement {
+  font-family: var(--serif);
+  font-size: 22px;
+  line-height: 1.45;
+  color: var(--ink);
+  margin: 0;
+  max-width: 58ch;
+}
+.bg-entry__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.bg-entry__list li {
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--ink);
+  padding-left: var(--space-4);
+  border-left: 2px solid var(--terracotta);
+}
+.bg-entry__def {
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--cream-line);
+}
+.bg-entry__def:last-child { border-bottom: none; }
+.bg-entry__def-label {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+.bg-entry__def-text {
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--ink);
+  margin: 0;
+}

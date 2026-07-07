@@ -65,7 +65,7 @@ export default {
         const user = await env.DB.prepare('SELECT id, email, first_name, business_name FROM users WHERE id = ?').bind(userId).first();
         if (!user) return new Response('Forbidden', { status: 403 });
         const { results: progressRows } = await env.DB.prepare(
-          'SELECT tool, completed, summary FROM brand_progress WHERE user_id = ?'
+          'SELECT tool, completed, summary, step_progress FROM brand_progress WHERE user_id = ?'
         ).bind(userId).all();
         return renderBrandGuidePrint(user, progressRows || []);
       }
@@ -125,7 +125,7 @@ export default {
         if (path === '/coaching') return renderCoaching(user);
         if (path === '/brand-guide') {
           const { results } = await env.DB.prepare(
-            'SELECT tool, completed, summary FROM brand_progress WHERE user_id = ?'
+            'SELECT tool, completed, summary, step_progress FROM brand_progress WHERE user_id = ?'
           ).bind(user.id).all();
           return renderBrandGuide(user, results || []);
         }

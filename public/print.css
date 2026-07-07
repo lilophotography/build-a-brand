@@ -117,7 +117,7 @@ body.page-print { font-family: var(--sans); }
 }
 .pdf-section__empty {
   background: var(--cream-deep);
-  border-radius: 4mm;
+  
   padding: 8mm 10mm;
   font-size: 11pt;
   color: var(--ink-soft);
@@ -132,4 +132,50 @@ body.page-print { font-family: var(--sans); }
   letter-spacing: 0.18em;
   color: var(--gold);
   text-transform: uppercase;
+}
+
+/* ---- Structured entries (journey deliverables) ---- */
+.pdf-cover__mark { height: 22mm; width: auto; margin: 0 0 14mm; display: block; }
+.pdf-entry { margin: 0 0 12mm; }
+.pdf-entry__label {
+  font-size: 8pt;
+  letter-spacing: 0.26em;
+  color: var(--terracotta);
+  text-transform: uppercase;
+  font-weight: 700;
+  margin: 0 0 4mm;
+}
+.pdf-entry__statement {
+  font-family: var(--serif);
+  font-size: 16pt;
+  line-height: 1.45;
+  color: var(--ink);
+  margin: 0;
+  max-width: 150mm;
+}
+.pdf-entry__list { list-style: none; padding: 0; margin: 0; }
+.pdf-entry__list li {
+  font-family: var(--serif);
+  font-size: 12pt;
+  line-height: 1.5;
+  color: var(--ink);
+  padding-left: 5mm;
+  border-left: 0.6mm solid var(--terracotta);
+  margin: 0 0 4mm;
+}
+.pdf-entry__def { margin: 0 0 5mm; }
+.pdf-entry__def-label {
+  font-size: 8pt;
+  letter-spacing: 0.18em;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  font-weight: 700;
+  margin: 0 0 1.5mm;
+}
+.pdf-entry__def-text {
+  font-family: var(--serif);
+  font-size: 11.5pt;
+  line-height: 1.55;
+  color: var(--ink);
+  margin: 0;
 }

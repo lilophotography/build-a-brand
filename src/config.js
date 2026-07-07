@@ -27,7 +27,7 @@ const DEFAULTS = {
     visibility: SYSTEM_PROMPTS.visibility,
   },
   branding: {
-    app_name: 'Build a Brand',
+    app_name: 'The Next Level Brand Experience',
     tagline: 'A brand with purpose is a brand with power.',
     // LiLo palette - keys map to CSS custom property names in styles.css :root.
     // The landing page config loader sets `--{key}` from these values.
@@ -46,14 +46,14 @@ const DEFAULTS = {
   },
   copy: {
     // Hero (renderLanding hero section)
-    hero_eyebrow: 'Build a Brand · The Course',
+    hero_eyebrow: 'The Next Level Brand Experience',
     hero_title_line_1: 'A brand with purpose',
     hero_title_line_2: 'is a brand with power.',
     hero_lede: "Five AI-guided sessions with Lisa's brand strategist. One downloadable Brand Guide. Strategic branding that drives revenue, not vibes.",
     hero_cta_primary: 'Get Started',
     hero_cta_signin: 'Sign in',
     hero_cta_continue: 'Continue Building',
-    hero_trust: 'A LiLo Brand Studio course. Built for growing businesses ready to scale.',
+    hero_trust: 'A LiLo Brand Studio experience. Built for growing businesses ready to scale.',
     // Framework section
     framework_eyebrow: 'The Framework',
     framework_title: "The 5 V's of Brand Building",
@@ -67,7 +67,7 @@ const DEFAULTS = {
     meet_title_line_1: "Hey, I'm Lisa.",
     meet_title_line_2: 'My friends call me LiLo.',
     meet_lede: "My superpower is helping business owners feel confident in their branding so they can show up in their marketing and take their business to the next level. I've been doing this for 14 years.",
-    meet_para_1: 'This course is the framework I walk every 1:1 client through. The same Vision, Value, Voice, Visuals, and Visibility process. The same questions, the same prompts, the same direct feedback. Now in a format you can do on your time, at your pace, in your kitchen.',
+    meet_para_1: 'This experience is the framework I walk every 1:1 client through. The same Vision, Value, Voice, Visuals, and Visibility process. The same questions, the same prompts, the same direct feedback. Now in a format you can do on your time, at your pace, in your kitchen.',
     meet_para_2: "If you've been winging your brand and it's costing you clients, you're in the right place.",
     // How section
     how_title: 'Your AI Brand Strategist, on call.',

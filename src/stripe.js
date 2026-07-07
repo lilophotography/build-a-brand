@@ -30,19 +30,22 @@ async function checkout(request, env, user) {
   let priceId, label;
   if (tier === 'coaching') {
     priceId = env.STRIPE_PRICE_COURSE_COACHING;
-    label = 'Course + Strategy Call';
+    label = 'The Experience + Strategy Call';
   } else if (tier === 'upsell_call') {
     if (!user) return json({ error: 'Sign in to add a strategy call.' }, 401);
     priceId = env.STRIPE_PRICE_UPSELL_CALL;
     label = 'Add a Strategy Call';
   } else {
     priceId = env.STRIPE_PRICE_COURSE;
-    label = 'Build a Brand: The Course';
+    label = 'The Next Level Brand Experience';
   }
 
   if (!priceId) return json({ error: 'Pricing not configured' }, 500);
 
-  const appUrl = env.APP_URL || 'https://brand.photolilo.com';
+  // Redirect back to the origin the customer is actually on. APP_URL points at
+  // a custom domain that was never attached; sending Stripe there strands the
+  // customer on a dead page after paying.
+  const appUrl = new URL(request.url).origin;
   const params = new URLSearchParams();
   params.append('mode', 'payment');
   params.append('line_items[0][price]', priceId);

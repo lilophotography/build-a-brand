@@ -42,7 +42,7 @@ export function redirect(location, status = 302, extraHeaders = {}) {
 
 // Common <head> markup. Title is page-specific.
 export function head(title, opts = {}) {
-  const desc = opts.description || 'Build a Brand: a guided journey through Vision, Value, Voice, Visuals, and Visibility, with your AI brand strategist.';
+  const desc = opts.description || 'The Next Level Brand Experience: a guided journey through Vision, Value, Voice, Visuals, and Visibility.';
   return `<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="${esc(desc)}">
@@ -97,7 +97,7 @@ export function appNav(currentPath, user) {
   <div class="appnav__inner">
     <a href="/dashboard" class="appnav__home">
       <span class="appnav__brand-icon">${logoMark({ theme: 'dark', size: 30 })}</span>
-      <span class="appnav__title">Build a Brand</span>
+      <span class="appnav__title">The Next Level Brand Experience</span>
     </a>
     <div class="appnav__steps">${links}</div>
     <div class="appnav__right">
@@ -129,7 +129,7 @@ export function publicFooter(user) {
       <p class="footer__tag">Strategic branding, websites, and brand photography for growing businesses.</p>
     </div>
     <div class="footer__col">
-      <p class="footer__heading">Build a Brand</p>
+      <p class="footer__heading">The Next Level Brand Experience</p>
       <a href="#pricing">Pricing</a>
       <a href="/sign-in">Sign in</a>
       <a href="mailto:lisa@photolilo.com">Email Lisa</a>

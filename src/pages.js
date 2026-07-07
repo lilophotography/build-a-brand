@@ -13,6 +13,7 @@ import {
   visionDeliverables,
   valueDeliverables,
   journeyComplete,
+  brandGuideEntries,
 } from './journey.js';
 
 // ============================================================
@@ -23,7 +24,7 @@ export function renderLanding(user) {
   const isSignedIn = !!user;
   const main = `
 <section class="hero">
-  <p class="eyebrow" data-config="hero_eyebrow">Build a Brand · The Course</p>
+  <p class="eyebrow" data-config="hero_eyebrow">The Next Level Brand Experience</p>
   <h1 class="hero__title"><span data-config="hero_title_line_1">A brand with purpose</span><br><em><span data-config="hero_title_line_2">is a brand with power.</span></em></h1>
   <p class="hero__lede" data-config="hero_lede">Five AI-guided sessions with Lisa's brand strategist. One downloadable Brand Guide. Strategic branding that drives revenue, not vibes.</p>
   <div class="hero__actions">
@@ -32,7 +33,7 @@ export function renderLanding(user) {
       : `<a href="#pricing" class="btn btn--primary" data-config="hero_cta_primary">Get Started</a>
          <a href="/sign-in" class="btn btn--ghost" data-config="hero_cta_signin">Sign in</a>`}
   </div>
-  <p class="hero__trust" data-config="hero_trust">A LiLo Brand Studio course. Built for growing businesses ready to scale.</p>
+  <p class="hero__trust" data-config="hero_trust">A LiLo Brand Studio experience. Built for growing businesses ready to scale.</p>
 </section>
 
 <section class="framework">
@@ -66,7 +67,7 @@ export function renderLanding(user) {
       <p class="eyebrow" data-config="meet_eyebrow">Meet your strategist</p>
       <h2 class="meet-lisa__title"><span data-config="meet_title_line_1">Hey, I'm Lisa.</span><br><em><span data-config="meet_title_line_2">My friends call me LiLo.</span></em></h2>
       <p class="meet-lisa__lede" data-config="meet_lede">My superpower is helping business owners feel confident in their branding so they can show up in their marketing and take their business to the next level. I've been doing this for 14 years.</p>
-      <p class="meet-lisa__copy" data-config="meet_para_1">This course is the framework I walk every 1:1 client through. The same Vision, Value, Voice, Visuals, and Visibility process. The same questions, the same prompts, the same direct feedback. Now in a format you can do on your time, at your pace, in your kitchen.</p>
+      <p class="meet-lisa__copy" data-config="meet_para_1">This experience is the framework I walk every 1:1 client through. The same Vision, Value, Voice, Visuals, and Visibility process. The same questions, the same prompts, the same direct feedback. Now in a format you can do on your time, at your pace, in your kitchen.</p>
       <p class="meet-lisa__copy" data-config="meet_para_2">If you've been winging your brand and it's costing you clients, you're in the right place.</p>
       <p class="meet-lisa__sign">Lisa</p>
     </div>
@@ -109,7 +110,7 @@ export function renderLanding(user) {
 
   <div class="pricing__grid">
     <div class="price-card">
-      <p class="price-card__tier">Course</p>
+      <p class="price-card__tier">The Experience</p>
       <p class="price-card__amount"><span class="price-card__num">$250</span><span class="price-card__when">one-time</span></p>
       <p class="price-card__desc">Full access to all 5 AI brand-building sessions and your downloadable Brand Guide PDF.</p>
       <ul class="price-card__list">
@@ -125,11 +126,11 @@ export function renderLanding(user) {
 
     <div class="price-card price-card--featured">
       <span class="price-card__badge">Most Popular</span>
-      <p class="price-card__tier">Course + Strategy Call</p>
+      <p class="price-card__tier">The Experience + Strategy Call</p>
       <p class="price-card__amount"><span class="price-card__num">$500</span><span class="price-card__when">one-time</span></p>
-      <p class="price-card__desc">Everything in the course plus a private 1-hour strategy call with Lisa to bring your brand to life.</p>
+      <p class="price-card__desc">Everything in the experience plus a private 1-hour strategy call with Lisa to bring your brand to life.</p>
       <ul class="price-card__list">
-        <li>Everything in Course</li>
+        <li>Everything in The Experience</li>
         <li>1-hour 1:1 strategy call with Lisa</li>
         <li>Brand review + feedback</li>
         <li>Personalized action plan</li>
@@ -146,7 +147,7 @@ export function renderLanding(user) {
   <h2 class="section-title">Before you buy.</h2>
   <div class="faq__list">
     <details class="faq__item">
-      <summary>How long does the course take?</summary>
+      <summary>How long does the experience take?</summary>
       <p>Most people finish all 5 sessions across one or two focused weekends. Each session takes about an hour, and you can pause and come back anytime. Your progress saves automatically.</p>
     </details>
     <details class="faq__item">
@@ -162,7 +163,7 @@ export function renderLanding(user) {
       <p>Yes. Lifetime access to all 5 sessions, your saved answers, and your downloadable Brand Guide PDF. Come back and refine as your business grows.</p>
     </details>
     <details class="faq__item">
-      <summary>I bought the $250 course. Can I add the strategy call later?</summary>
+      <summary>I bought the $250 experience. Can I add the strategy call later?</summary>
       <p>Absolutely. Once you've finished a few sessions, you'll see an option to add a 1-hour 1:1 strategy call with me for $300. No pressure, no expiration.</p>
     </details>
     <details class="faq__item">
@@ -179,7 +180,7 @@ export function renderLanding(user) {
 </section>
 `;
   return htmlResponse(page({
-    title: 'Build a Brand · LiLo Brand Studio',
+    title: 'The Next Level Brand Experience · LiLo Brand Studio',
     nav: publicNav(user),
     main: main + publicFooter(user),
     bodyClass: 'page-landing',
@@ -579,7 +580,7 @@ function renderWelcomeVideoCard(opts = {}) {
     <div class="welcome-video__body">
       <p class="eyebrow">A note from Lisa</p>
       <h2 class="welcome-video__title">Watch first. Build second.</h2>
-      <p class="welcome-video__lede">A 90-second orientation on how to make this course work for you. Replay any time.</p>
+      <p class="welcome-video__lede">A 90-second orientation on how to make this experience work for you. Replay any time.</p>
     </div>
     ${iframe}
   </aside>`;
@@ -681,7 +682,7 @@ export function renderJourney(user, tool, slug, journeyResponses) {
 `;
 
   return htmlResponse(page({
-    title: `${meta.label} · ${step.title} · Build a Brand`,
+    title: `${meta.label} · ${step.title} · The Next Level Brand Experience`,
     nav: appNav(`/brand-builder/${tool}`, user),
     main,
     bodyClass: 'page-builder page-journey',
@@ -741,7 +742,7 @@ export function renderBrandBuilder(user, tool, progressRow, vData, stepProgress)
 </div>
 `;
   return htmlResponse(page({
-    title: `${meta.label} · Build a Brand`,
+    title: `${meta.label} · The Next Level Brand Experience`,
     nav: appNav(`/brand-builder/${tool}`, user),
     main,
     bodyClass: 'page-builder page-v',
@@ -883,16 +884,57 @@ function renderVLockIn(meta, summary, nextTool, completed) {
 // APP: Brand Guide (compiled summaries + download)
 // ============================================================
 
+// Render structured Brand Guide blocks. mode 'web' | 'print' picks class prefixes.
+function renderGuideBlocks(blocks, mode) {
+  const p = mode === 'print' ? 'pdf' : 'bg';
+  return blocks.map((b) => {
+    if (b.kind === 'statement') {
+      return `<div class="${p}-entry">
+        <p class="${p}-entry__label">${esc(b.label)}</p>
+        <p class="${p}-entry__statement">${esc(b.text)}</p>
+      </div>`;
+    }
+    if (b.kind === 'list') {
+      return `<div class="${p}-entry">
+        <p class="${p}-entry__label">${esc(b.label)}</p>
+        <ul class="${p}-entry__list">${b.items.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
+      </div>`;
+    }
+    if (b.kind === 'defs') {
+      return `<div class="${p}-entry">
+        <p class="${p}-entry__label">${esc(b.label)}</p>
+        ${b.items.map((it) => `<div class="${p}-entry__def">
+          <p class="${p}-entry__def-label">${esc(it.label)}</p>
+          ${it.text ? `<p class="${p}-entry__def-text">${esc(it.text)}</p>` : ''}
+        </div>`).join('')}
+      </div>`;
+    }
+    return '';
+  }).join('');
+}
+
+function rowResponses(row) {
+  try {
+    const sp = typeof row?.step_progress === 'string' ? JSON.parse(row.step_progress) : (row?.step_progress || {});
+    return sp?.journey_responses || {};
+  } catch { return {}; }
+}
+
 export function renderBrandGuide(user, progressRows) {
   const byTool = Object.fromEntries((progressRows || []).map(r => [r.tool, r]));
-  const completedCount = TOOL_ORDER.filter(t => byTool[t]?.completed).length;
+  const statuses = TOOL_ORDER.map(t => {
+    const row = byTool[t];
+    const responses = rowResponses(row);
+    const hasJourney = !!getJourneySteps(t);
+    return { t, row, responses, done: hasJourney ? journeyComplete(t, responses) : !!row?.completed };
+  });
+  const completedCount = statuses.filter(s => s.done).length;
   const allDone = completedCount === 5;
 
-  const sections = TOOL_ORDER.map(t => {
+  const sections = statuses.map(({ t, row, responses, done }) => {
     const m = TOOL_META[t];
-    const row = byTool[t];
+    const blocks = brandGuideEntries(t, responses);
     const summary = row?.summary;
-    const done = !!row?.completed;
     return `<section class="bg-section ${done ? 'is-done' : 'is-pending'}">
       <header class="bg-section__header">
         <span class="bg-section__num">${m.num}</span>
@@ -900,13 +942,15 @@ export function renderBrandGuide(user, progressRows) {
           <h3 class="bg-section__title">${esc(m.label)}</h3>
           <p class="bg-section__tag">${esc(m.tagline)}</p>
         </div>
-        <div class="bg-section__state">${done ? '✓ Complete' : `<a href="/brand-builder/${t}" class="link-quiet">Continue ${esc(m.label)} →</a>`}</div>
+        <div class="bg-section__state">${done ? 'Complete' : `<a href="/brand-builder/${t}" class="link-quiet">Continue ${esc(m.label)} →</a>`}</div>
       </header>
       <div class="bg-section__body">
-        ${summary
+        ${blocks
+          ? renderGuideBlocks(blocks, 'web') + `<a href="/brand-builder/${t}" class="link-quiet">Revisit ${esc(m.label)} →</a>`
+          : summary
           ? `<p class="bg-section__summary">${esc(summary)}</p>
-             <a href="/brand-builder/${t}" class="link-quiet">Edit in session →</a>`
-          : `<p class="bg-section__pending">Open <a href="/brand-builder/${t}">${esc(m.label)}</a> to watch the videos, do the workbook, and lock in your summary.</p>`}
+             <a href="/brand-builder/${t}" class="link-quiet">Revisit ${esc(m.label)} →</a>`
+          : `<p class="bg-section__pending">Open <a href="/brand-builder/${t}">${esc(m.label)}</a> and work through the experience. Your deliverables compile here as you go.</p>`}
       </div>
     </section>`;
   }).join('');
@@ -924,7 +968,7 @@ export function renderBrandGuide(user, progressRows) {
   <header class="bg-bonus__header">
     <p class="eyebrow eyebrow--gold">Bonus</p>
     <h2 class="bg-bonus__title">${esc(bonusModule?.title || 'Tools, Downloads, Templates')}</h2>
-    <p class="bg-bonus__lede">Everything Lisa packs into the course: workbooks, content templates, planners, implementation checklists. Yours forever.</p>
+    <p class="bg-bonus__lede">Everything Lisa packs into the experience: workbooks, content templates, planners, implementation checklists. Yours forever.</p>
   </header>
   <div class="bg-bonus__grid">
     ${bonusDownloads.map(d => `<a class="bg-bonus__card" href="${esc(d.url)}" target="_blank" rel="noopener">
@@ -954,12 +998,12 @@ export function renderBrandGuide(user, progressRows) {
     ${allDone
       ? `<p class="eyebrow">Ready to download</p>
          <h2 class="brand-guide__cta-title">Your Brand Guide is complete.</h2>
-         <p class="brand-guide__cta-desc">All 5 sessions done. Download your full Brand Guide PDF. Your brand foundation, locked in.</p>
+         <p class="brand-guide__cta-desc">All 5 sections done. Download your full Brand Guide PDF. Your brand foundation, locked in.</p>
          <button class="btn btn--gold" data-download-guide>Download Brand Guide PDF</button>`
       : `<h2 class="brand-guide__cta-title">${completedCount === 0
-            ? 'Start your first session to begin building.'
-            : `${5 - completedCount} session${(5 - completedCount) === 1 ? '' : 's'} left to unlock your full Brand Guide.`}</h2>
-         <p class="brand-guide__cta-desc">You can download a partial guide with the sessions you've completed, or finish all 5 V's for the complete version.</p>
+            ? 'Start your first section to begin building.'
+            : `${5 - completedCount} section${(5 - completedCount) === 1 ? '' : 's'} left to unlock your full Brand Guide.`}</h2>
+         <p class="brand-guide__cta-desc">You can download a partial guide with the sections you've completed, or finish all 5 V's for the complete version.</p>
          <div class="brand-guide__cta-actions">
            ${completedCount > 0 ? `<button class="btn btn--ghost" data-download-guide>Download partial guide</button>` : ''}
            <a href="/dashboard" class="btn btn--primary">Continue building →</a>
@@ -1018,7 +1062,7 @@ export function renderCoaching(user) {
 </section>
 `;
   return htmlResponse(page({
-    title: 'Coaching · Build a Brand',
+    title: 'Coaching · The Next Level Brand Experience',
     nav: appNav('/coaching', user),
     main,
     bodyClass: 'page-coaching',
@@ -1075,6 +1119,13 @@ export function renderBrandGuidePrint(user, progressRows) {
     const m = TOOL_META[t];
     const row = byTool[t];
     const summary = row?.summary?.trim();
+    const blocks = brandGuideEntries(t, rowResponses(row));
+    const body = blocks
+      ? renderGuideBlocks(blocks, 'print')
+      : summary
+      ? `<p class="pdf-section__label">YOUR ${esc(m.label.toUpperCase())} SUMMARY</p>
+         <div class="pdf-section__summary">${esc(summary).replace(/\n/g, '<br>')}</div>`
+      : `<div class="pdf-section__empty">This section is still open. Work through ${esc(m.label)} in your experience to fill this page.</div>`;
     return `<section class="pdf-page pdf-section">
   <header class="pdf-section__header">
     <p class="pdf-section__num">${m.num}: The ${esc(m.label)}</p>
@@ -1082,13 +1133,10 @@ export function renderBrandGuidePrint(user, progressRows) {
     <p class="pdf-section__desc">${esc(m.tagline)}</p>
   </header>
   <div class="pdf-section__body">
-    ${summary
-      ? `<p class="pdf-section__label">YOUR ${esc(m.label.toUpperCase())} SUMMARY</p>
-         <div class="pdf-section__summary">${esc(summary).replace(/\n/g, '<br>')}</div>`
-      : `<div class="pdf-section__empty">This session hasn't been completed yet. Complete the ${esc(m.label)} session in your Brand Builder to unlock this page.</div>`}
+    ${body}
   </div>
   <footer class="pdf-section__footer">
-    <span>LiLo Brand Studio</span>
+    <span>LiLo Brand Studio · The Next Level Brand Experience</span>
   </footer>
 </section>`;
   }).join('');
@@ -1104,7 +1152,8 @@ export function renderBrandGuidePrint(user, progressRows) {
 </head>
 <body class="page-print">
 <section class="pdf-page pdf-cover">
-  <p class="pdf-cover__eyebrow">Build a Brand · The Course</p>
+  <img class="pdf-cover__mark" src="/img/stamp-transparent.png" alt="LiLo Brand Studio" />
+  <p class="pdf-cover__eyebrow">The Next Level Brand Experience</p>
   <h1 class="pdf-cover__title">Your Brand Guide</h1>
   <p class="pdf-cover__sub">${user.business_name ? esc(user.business_name) : 'Your brand foundation, captured.'}</p>
   <div class="pdf-cover__divider"></div>

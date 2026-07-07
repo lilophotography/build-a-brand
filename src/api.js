@@ -16,7 +16,7 @@ export async function handleAPI(request, env, url, user) {
   if (path === '/api/progress/step' && method === 'POST') return progressStep(request, env, user);
   if (path === '/api/journey/craft' && method === 'POST') return journeyCraft(request, env, user);
   if (path === '/api/profile' && method === 'POST') return profileUpdate(request, env, user);
-  if (path === '/api/brand-guide' && method === 'GET') return brandGuide(env, user);
+  if (path === '/api/brand-guide' && method === 'GET') return brandGuide(env, user, url);
 
   return json({ error: 'Not found' }, 404);
 }
@@ -750,7 +750,7 @@ function normalizeUrl(s) {
 // and capture as PDF. The print page is server-rendered, so the user's data is
 // already inlined in the HTML when the browser visits it.
 
-async function brandGuide(env, user) {
+async function brandGuide(env, user, url) {
   if (!user.has_access) return json({ error: 'No active access' }, 402);
 
   // Cloudflare Browser Rendering: managed REST endpoint.
@@ -758,7 +758,10 @@ async function brandGuide(env, user) {
   // We call the same Worker's print page with a one-time signed token so the
   // headless browser can render an authenticated page.
   const printToken = await mintPrintToken(env, user.id);
-  const printUrl = `${env.APP_URL || 'https://brand.photolilo.com'}/brand-guide/print?t=${printToken}`;
+  // Use the origin the user actually hit. APP_URL points at a custom domain
+  // that was never attached, so the headless browser could not reach it.
+  const origin = url ? url.origin : (env.APP_URL || 'https://build-a-brand-app.lilophotography.workers.dev');
+  const printUrl = `${origin}/brand-guide/print?t=${printToken}`;
 
   // The BROWSER binding's REST API: we POST a /pdf request with { url }
   const upstream = await env.BROWSER.fetch('https://browser.do/pdf', {
@@ -785,7 +788,7 @@ async function brandGuide(env, user) {
   return new Response(pdf, {
     headers: {
       'Content-Type': 'application/pdf',
-      'Content-Disposition': 'attachment; filename="Brand-Guide.pdf"',
+      'Content-Disposition': 'attachment; filename="Next-Level-Brand-Guide.pdf"',
       'Cache-Control': 'no-store',
     },
   });

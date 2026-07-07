@@ -921,6 +921,53 @@ export function visionDeliverables(journeyResponses = {}) {
   ];
 }
 
+// Structured Brand Guide content for a tool, built from journey deliverables.
+// Returns an array of blocks or null when the tool has no journey data yet
+// (callers fall back to the legacy chat summary).
+//   { kind: 'statement', label, text }          one big serif statement
+//   { kind: 'list', label, items: [text] }      rust-barred list (brag bank)
+//   { kind: 'defs', label, items: [{label, text}] }  labeled sub-entries
+export function brandGuideEntries(tool, journeyResponses = {}) {
+  const r = journeyResponses;
+  if (tool === 'vision') {
+    const mission = pickedOptionText(r, 'mission-craft') || r['mission-refine']?.fields?.mission_statement || '';
+    const vision = pickedOptionText(r, 'vision-craft') || r['vision-refine']?.fields?.vision_statement || '';
+    const ranking = (r['values-rank']?.ranking || r['values-tap']?.selected || []).slice(0, 6);
+    const defs = r['values-define']?.fields || {};
+    const valuesById = Object.fromEntries(VALUE_WORDS.map((w) => [w.id, w.label]));
+    const values = ranking
+      .map((id) => ({ label: capitalize(valuesById[id] || id), text: String(defs['def_' + id] || '').trim() }))
+      .filter((v) => v.label);
+    const blocks = [];
+    if (mission) blocks.push({ kind: 'statement', label: 'Mission Statement', text: mission });
+    if (vision) blocks.push({ kind: 'statement', label: 'Vision Statement', text: vision });
+    if (values.length) blocks.push({ kind: 'defs', label: 'Core Values', items: values });
+    return blocks.length ? blocks : null;
+  }
+  if (tool === 'value') {
+    const usp = pickedOptionText(r, 'usp-craft');
+    const bragOpts = r['brag-bank-craft']?.ai_options || [];
+    const brag = (r['brag-bank-craft']?.selected || [])
+      .map((id) => bragOpts.find((o) => o.id === id)?.text)
+      .filter(Boolean);
+    const portrait = pickedOptionText(r, 'portrait-craft');
+    const t = r['transformation']?.fields || {};
+    const blocks = [];
+    if (usp) blocks.push({ kind: 'statement', label: 'Unique Selling Proposition', text: usp });
+    if (brag.length) blocks.push({ kind: 'list', label: 'Brag Bank', items: brag });
+    if (portrait) blocks.push({ kind: 'statement', label: 'Ideal Client Portrait', text: portrait });
+    const tr = [
+      { label: 'What they experience', text: String(t.experience || '').trim() },
+      { label: 'How they feel after', text: String(t.feel || '').trim() },
+      { label: 'The tools that get them there', text: String(t.tools || '').trim() },
+      { label: 'What they can do after', text: String(t.capable || '').trim() },
+    ].filter((x) => x.text);
+    if (tr.length) blocks.push({ kind: 'defs', label: 'Customer Transformation', items: tr });
+    return blocks.length ? blocks : null;
+  }
+  return null;
+}
+
 // A journey section is truly complete when its deliverables exist, not when
 // the user has merely visited the last step. Used by the dashboard status and
 // by the API when deciding whether to flip brand_progress.completed.
