@@ -566,6 +566,13 @@
       });
       return { fields };
     }
+    if (kind === 'slider') {
+      const values = {};
+      body.querySelectorAll('[data-slider-input]').forEach((inp) => {
+        values[inp.dataset.sliderInput] = Number(inp.value);
+      });
+      return { values };
+    }
     if (kind === 'ai-craft') {
       // Selected option IDs. The ai_options array is already persisted server-side
       // by /api/journey/craft, so we don't echo it back here.

@@ -2,7 +2,7 @@
 
 import { TOOL_ORDER, buildSystemPrompt } from './prompts.js';
 import { getConfig } from './config.js';
-import { journeyComplete } from './journey.js';
+import { journeyComplete, wordLabel } from './journey.js';
 
 // ---------- Public dispatch ----------
 
@@ -55,11 +55,24 @@ async function journeyCraft(request, env, user) {
     }
   }
 
-  // Gather source answers from prior steps.
+  // Gather source answers across ALL tools, not just the current one. Step ids
+  // are globally unique, and later modules build on earlier ones (Voice reads
+  // the mission from Vision and the ideal client from Value).
+  const { results: allRows } = await env.DB.prepare(
+    'SELECT tool, step_progress FROM brand_progress WHERE user_id = ?'
+  ).bind(user.id).all();
+  const merged = {};
+  for (const r of (allRows || [])) {
+    try {
+      const sp = JSON.parse(r.step_progress || '{}') || {};
+      Object.assign(merged, sp.journey_responses || {});
+    } catch {}
+  }
+  Object.assign(merged, progress.journey_responses);
+
   const sourceMap = {};
   for (const sid of preset.sources) {
-    const r = progress.journey_responses[sid] || {};
-    sourceMap[sid] = r;
+    sourceMap[sid] = merged[sid] || {};
   }
   const userMessage = preset.buildUserMessage(sourceMap);
 
@@ -457,6 +470,267 @@ ${principles || '(blank)'}
 Words they tapped (${tapped.length} total): ${tapped.join(', ') || '(none)'}
 
 Write a 2-to-3 sentence reflection. Find the through-line.`;
+    },
+  },
+
+  // ---------- Voice module ----------
+
+  'voice-mirror': {
+    mode: 'summary',
+    sources: ['voice-feel', 'voice-sliders', 'voice-words', 'mission-craft'],
+    systemPrompt: `You are Lisa, a brand strategist. The user just described how they want their words to feel, set four tone sliders, and tapped voice words. Write back a 3-to-4 sentence "here's the voice I'm hearing" reflection.
+
+Name the voice like a real thing: its warmth, its edge, where it sits between casual and formal. Ground it in their choices. Fix typos. No buzzwords, no em dashes. The user should read it out loud and say "that's me on a good day."
+
+Return ONLY the reflection as plain text.`,
+    buildUserMessage(s) {
+      const f = s['voice-feel']?.fields || {};
+      const v = s['voice-sliders']?.values || {};
+      const dial = (val, left, right) => {
+        const n = Number.isFinite(val) ? val : 50;
+        if (n <= 35) return 'leans ' + left;
+        if (n >= 65) return 'leans ' + right;
+        return 'balanced between ' + left + ' and ' + right;
+      };
+      const words = (s['voice-words']?.selected || []).map((id) => wordLabel(id)).join(', ');
+      const missionSel = (s['mission-craft']?.selected || [])[0];
+      const mission = s['mission-craft']?.ai_options?.find((o) => o.id === missionSel)?.text || '';
+      return `How they want readers to feel: ${f.feel || '(blank)'}
+Three words for their voice: ${f.three_words || '(blank)'}
+Tone dials: ${dial(v.formality, 'formal', 'casual')}; ${dial(v.edge, 'gentle', 'bold')}; ${dial(v.era, 'classic', 'modern')}; ${dial(v.volume, 'quiet', 'loud')}
+Voice words they tapped: ${words || '(none)'}
+Their mission: ${mission || '(blank)'}
+
+Write a 3-to-4 sentence voice reflection.`;
+    },
+  },
+
+  'ihelp-craft': {
+    count: 10,
+    sources: ['ihelp-discovery', 'mission-craft', 'usp-craft', 'dream-internal', 'voice-feel'],
+    systemPrompt: `You are Lisa, a brand strategist. Write 10 candidate "I Help" statements for the user.
+
+Lisa's formula: "I help ___ by doing ___" or "I help ___ because ___". Her own examples as the style bar: "I help business owners build brands that are beautiful and bankable." "I help people break through their out of date brand."
+
+Rules:
+- One sentence each, first person, under 20 words.
+- Use the user's actual who / what / why. Fix typos. Sharpen.
+- Vary the angles: by-doing, because, transformation, contrast, permission, hindsight.
+- Punchy and sayable out loud at a dinner party. No buzzwords, no em dashes.
+
+Return exactly 10 as a JSON array of strings. No commentary.`,
+    buildUserMessage(s) {
+      const d = s['ihelp-discovery']?.fields || {};
+      const missionSel = (s['mission-craft']?.selected || [])[0];
+      const mission = s['mission-craft']?.ai_options?.find((o) => o.id === missionSel)?.text || '';
+      const uspSel = (s['usp-craft']?.selected || [])[0];
+      const usp = s['usp-craft']?.ai_options?.find((o) => o.id === uspSel)?.text || '';
+      const internal = s['dream-internal']?.fields?.internal || '';
+      return `Who they help: ${d.who || '(blank)'}
+What they do for them: ${d.doing || '(blank)'}
+Why it matters: ${d.why || '(blank)'}
+Their mission: ${mission || '(blank)'}
+Their USP: ${usp || '(blank)'}
+Their client's internal struggle: ${internal || '(blank)'}
+
+Write 10 I Help statements as a JSON array.`;
+    },
+  },
+
+  'language-craft': {
+    count: 10,
+    sources: ['language-discovery', 'voice-feel', 'voice-words', 'ihelp-craft'],
+    systemPrompt: `You are Lisa, a brand strategist. Build the user a "common language bank": 10 short, catchy, copy-ready phrases in their voice. These get reused on their website, captions, emails, and sales calls so everything sounds aligned.
+
+Style bar, Lisa's own bank: "Level Up. Your Face Makes You Money. Stand Out. Captivating. Confident."
+
+Rules:
+- Each phrase is 2 to 7 words. Punchy. Sayable.
+- Build from the user's own phrases and their client's own words. Fix typos, keep their DNA.
+- Mix types: a couple of rally cries, a couple of client-truth phrases, a couple of alliterated building blocks, a couple of quiet confident ones.
+- Avoid every word on their jargon-to-avoid list. No buzzwords, no em dashes.
+
+Return exactly 10 phrases as a JSON array of strings. No commentary.`,
+    buildUserMessage(s) {
+      const l = s['language-discovery']?.fields || {};
+      const f = s['voice-feel']?.fields || {};
+      const words = (s['voice-words']?.selected || []).map((id) => wordLabel(id)).join(', ');
+      const ihelpSel = (s['ihelp-craft']?.selected || [])[0];
+      const ihelp = s['ihelp-craft']?.ai_options?.find((o) => o.id === ihelpSel)?.text || '';
+      return `Phrases they already use: ${l.phrases || '(blank)'}
+Their client's own words about the problem: ${l.client_words || '(blank)'}
+Jargon to avoid: ${l.jargon || '(none listed)'}
+Their voice in three words: ${f.three_words || '(blank)'}
+Voice words: ${words || '(none)'}
+Their I Help statement: ${ihelp || '(blank)'}
+
+Write 10 common-language phrases as a JSON array.`;
+    },
+  },
+
+  'aboutme-craft': {
+    count: 3,
+    sources: ['aboutme-discovery', 'dream-internal', 'voice-feel', 'ihelp-craft'],
+    systemPrompt: `You are Lisa, a brand strategist. Write 3 candidate About Me paragraphs using Lisa's flip-the-script rule: it is not really about the user, it is about the transformation. They once struggled with the same internal problems their ideal client has now; they found the other side; that is why they do this work.
+
+Lisa's style bar for the flip: instead of "I grew up with a camera in my hand," say "When my grandma died I was so sad that I couldn't find a single picture of the two of us together. That is why I am passionate about family photos."
+
+Rules:
+- Each is one paragraph, 4 to 6 sentences, first person.
+- Open with the struggle or the moment, not the credentials.
+- Land on how this connects to what they do for clients now.
+- Warm and human, not performative. Fix typos. No buzzwords, no em dashes.
+- Vary the three: one moment-led, one struggle-led, one conviction-led.
+
+Return exactly 3 paragraphs as a JSON array of strings. No commentary.`,
+    buildUserMessage(s) {
+      const a = s['aboutme-discovery']?.fields || {};
+      const internal = s['dream-internal']?.fields?.internal || '';
+      const feel = s['voice-feel']?.fields?.feel || '';
+      return `Their old struggle (same as their client's): ${a.struggle || '(blank)'}
+The turning point: ${a.turning || '(blank)'}
+The other side, and how it connects to their work: ${a.thriving || '(blank)'}
+Their ideal client's internal problem: ${internal || '(blank)'}
+How they want readers to feel: ${feel || '(blank)'}
+
+Write 3 About Me paragraphs as a JSON array.`;
+    },
+  },
+
+  // ---------- Visuals module ----------
+
+  'palette-craft': {
+    count: 6,
+    sources: ['colors-compass', 'colors-love', 'vibe-rank', 'vibe-words', 'visuals-inspiration'],
+    systemPrompt: `You are Lisa, a brand strategist. Write 6 color palette DIRECTIONS for the user using Lisa's formula: 1 to 3 main colors, plus a dark neutral, a light neutral, and a metallic accent.
+
+Rules:
+- Plain color words, not hex codes. "Clay rust and deep olive, anchored by charcoal, softened with cream, with brushed gold accents."
+- One sentence each, under 25 words.
+- Honor their compass (warm or cool, neutral or colorful, dark or light) and the colors they said they love.
+- Stay inside one color family per direction so everything complements.
+- Vary the six: two close to exactly what they described, two adjacent surprises, one quieter, one braver.
+- No em dashes.
+
+Return exactly 6 directions as a JSON array of strings. No commentary.`,
+    buildUserMessage(s) {
+      const v = s['colors-compass']?.values || {};
+      const dial = (val, left, right) => {
+        const n = Number.isFinite(val) ? val : 50;
+        if (n <= 35) return left;
+        if (n >= 65) return right;
+        return 'between ' + left + ' and ' + right;
+      };
+      const vibe = (s['vibe-rank']?.ranking || s['vibe-words']?.selected || []).slice(0, 6).map((id) => wordLabel(id)).join(', ');
+      return `Compass: ${dial(v.temp, 'warm', 'cool')}, ${dial(v.saturation, 'neutral', 'colorful')}, ${dial(v.lightness, 'dark', 'light')}
+Colors they love and why: ${s['colors-love']?.fields?.colors || '(blank)'}
+Their brand vibe words: ${vibe || '(blank)'}
+Brands whose look they love: ${s['visuals-inspiration']?.fields?.brands || '(blank)'}
+How they want theirs to feel: ${s['visuals-inspiration']?.fields?.yours || '(blank)'}
+
+Write 6 palette directions as a JSON array.`;
+    },
+  },
+
+  'visuals-mirror': {
+    mode: 'summary',
+    sources: ['vibe-rank', 'vibe-words', 'visuals-inspiration', 'colors-love', 'palette-craft', 'logo-check', 'fonts-direction'],
+    systemPrompt: `You are Lisa, a brand strategist. The user just defined their brand vibe, picked a color direction, ran a logo check, and chose a font direction. Write a 3-to-4 sentence "here's the visual identity I'm seeing" reflection that pulls it into one coherent picture.
+
+Make it feel like a look they can see: how the vibe, colors, and type sit together. If their logo notes say it needs a refresh, name that plainly as the next step, not a failure. Fix typos. No buzzwords, no em dashes.
+
+Return ONLY the reflection as plain text.`,
+    buildUserMessage(s) {
+      const vibe = (s['vibe-rank']?.ranking || s['vibe-words']?.selected || []).slice(0, 6).map((id) => wordLabel(id)).join(', ');
+      const palSel = (s['palette-craft']?.selected || [])[0];
+      const palette = s['palette-craft']?.ai_options?.find((o) => o.id === palSel)?.text || '';
+      const fonts = (s['fonts-direction']?.selected || [])[0] || '';
+      const logo = s['logo-check']?.fields || {};
+      return `Brand vibe words: ${vibe || '(blank)'}
+Color direction they picked: ${palette || '(blank)'}
+Font direction id they picked: ${fonts || '(blank)'} (editorial-serif = serif titles + sans body; modern-sans = all sans; serif-script = serif + script accent; all-serif; sans-serif-flip = sans titles + serif body; not-sure)
+Current logo: ${logo.current || '(blank)'}
+Their logo check: ${logo.fit || '(blank)'}
+How they want it all to feel: ${s['visuals-inspiration']?.fields?.yours || '(blank)'}
+
+Write a 3-to-4 sentence visual identity reflection.`;
+    },
+  },
+
+  // ---------- Visibility module ----------
+
+  'platform-craft': {
+    count: 5,
+    sources: ['audience-where', 'enjoy-words', 'dream-where', 'portrait-craft'],
+    systemPrompt: `You are Lisa, a brand strategist. Write 5 candidate platform strategies. Each names 2 to 3 platforms maximum and says what the user does there, matched to where their ideal client is AND what the user enjoys making. Consistency beats reach: never recommend a platform they would dread.
+
+Rules:
+- One sentence each, under 28 words. Concrete. "Instagram for daily presence, a biweekly newsletter you own, Pinterest on autopilot for search."
+- Vary the five: one lean two-platform version, one that leans into their favorite format, one search-led, one owned-audience-led, one stretch option.
+- No buzzwords, no em dashes.
+
+Return exactly 5 strategies as a JSON array of strings. No commentary.`,
+    buildUserMessage(s) {
+      const enjoy = (s['enjoy-words']?.selected || []).map((id) => wordLabel(id)).join(', ');
+      const portraitSel = (s['portrait-craft']?.selected || [])[0];
+      const portrait = s['portrait-craft']?.ai_options?.find((o) => o.id === portraitSel)?.text || '';
+      return `Where their ideal client hangs out: ${s['audience-where']?.fields?.where || '(blank)'}
+Where they said their client spends time (from Value): ${s['dream-where']?.fields?.spaces || '(blank)'}
+Platforms and formats the user enjoys: ${enjoy || '(none tapped)'}
+Their ideal client portrait: ${portrait || '(blank)'}
+
+Write 5 platform strategies as a JSON array.`;
+    },
+  },
+
+  'pillars-craft': {
+    count: 8,
+    sources: ['pillars-discovery', 'mission-craft', 'usp-craft', 'ihelp-craft', 'dream-internal'],
+    systemPrompt: `You are Lisa, a brand strategist. Write 8 candidate brand pillars: content buckets the user builds everything around so they never stare at a blank screen. Generic enough to hold months of content, specific enough to be unmistakably theirs.
+
+Rules:
+- Format each as "Pillar name: one-line description." Name is 1 to 4 words.
+- Build from what they know, what their client wants to hear, and what they are excited to share.
+- Mix: expertise pillars, client-transformation pillars, behind-the-scenes or personal pillars, and one point-of-view pillar (their contrarian take).
+- No buzzwords, no em dashes.
+
+Return exactly 8 as a JSON array of strings. No commentary.`,
+    buildUserMessage(s) {
+      const missionSel = (s['mission-craft']?.selected || [])[0];
+      const mission = s['mission-craft']?.ai_options?.find((o) => o.id === missionSel)?.text || '';
+      const internal = s['dream-internal']?.fields?.internal || '';
+      return `What they know, what their client wants, what excites them: ${s['pillars-discovery']?.fields?.topics || '(blank)'}
+Their mission: ${mission || '(blank)'}
+Their client's internal struggle: ${internal || '(blank)'}
+
+Write 8 brand pillars as a JSON array.`;
+    },
+  },
+
+  'photo-list-craft': {
+    count: 10,
+    sources: ['photos-3p', 'vibe-rank', 'platform-craft'],
+    systemPrompt: `You are Lisa, a brand photographer and strategist. Turn the user's 3 P's answers into 10 concrete, shootable images for their brand shoot list. Personalized photos beat stock every time.
+
+Rules:
+- Each is one specific shot a photographer could set up from the description alone. "Hands on the keyboard with the client's mood board blurred behind" not "working photos."
+- Cover all three P's: people, process, product or service. Include at least one detail shot and one personality shot.
+- Match their brand vibe.
+- Under 18 words each. No buzzwords, no em dashes.
+
+Return exactly 10 shots as a JSON array of strings. No commentary.`,
+    buildUserMessage(s) {
+      const p = s['photos-3p']?.fields || {};
+      const vibe = (s['vibe-rank']?.ranking || []).slice(0, 6).map((id) => wordLabel(id)).join(', ');
+      const platSel = (s['platform-craft']?.selected || [])[0];
+      const platform = s['platform-craft']?.ai_options?.find((o) => o.id === platSel)?.text || '';
+      return `PEOPLE shots they need: ${p.people || '(blank)'}
+PROCESS shots they need: ${p.process || '(blank)'}
+PRODUCT/SERVICE shots they need: ${p.product || '(blank)'}
+Their brand vibe: ${vibe || '(blank)'}
+Their platform strategy: ${platform || '(blank)'}
+
+Write 10 concrete shots as a JSON array.`;
     },
   },
 

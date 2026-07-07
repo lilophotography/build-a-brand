@@ -187,6 +187,103 @@ const VALUE_WORDS = [
   { id: 'faith', label: 'faith', group: 'Stewardship' },
 ];
 
+const VOICE_WORDS = [
+  // Warmth
+  { id: 'warm', label: 'warm', group: 'Warmth' },
+  { id: 'tender', label: 'tender', group: 'Warmth' },
+  { id: 'nurturing', label: 'nurturing', group: 'Warmth' },
+  { id: 'encouraging', label: 'encouraging', group: 'Warmth' },
+  { id: 'sincere', label: 'sincere', group: 'Warmth' },
+  { id: 'welcoming', label: 'welcoming', group: 'Warmth' },
+  // Edge
+  { id: 'direct', label: 'direct', group: 'Edge' },
+  { id: 'gutsy', label: 'gutsy', group: 'Edge' },
+  { id: 'contrarian', label: 'contrarian', group: 'Edge' },
+  { id: 'sassy', label: 'sassy', group: 'Edge' },
+  { id: 'irreverent', label: 'irreverent', group: 'Edge' },
+  { id: 'bold-voice', label: 'bold', group: 'Edge' },
+  // Polish
+  { id: 'polished-voice', label: 'polished', group: 'Polish' },
+  { id: 'editorial', label: 'editorial', group: 'Polish' },
+  { id: 'minimal-voice', label: 'minimal', group: 'Polish' },
+  { id: 'refined', label: 'refined', group: 'Polish' },
+  { id: 'articulate', label: 'articulate', group: 'Polish' },
+  // Play
+  { id: 'playful-voice', label: 'playful', group: 'Play' },
+  { id: 'witty', label: 'witty', group: 'Play' },
+  { id: 'quirky', label: 'quirky', group: 'Play' },
+  { id: 'fun', label: 'fun', group: 'Play' },
+  { id: 'lighthearted', label: 'lighthearted', group: 'Play' },
+  // Ground
+  { id: 'grounded-voice', label: 'grounded', group: 'Ground' },
+  { id: 'calm-voice', label: 'calm', group: 'Ground' },
+  { id: 'steady', label: 'steady', group: 'Ground' },
+  { id: 'wise', label: 'wise', group: 'Ground' },
+  { id: 'thoughtful-voice', label: 'thoughtful', group: 'Ground' },
+];
+
+const VIBE_WORDS = [
+  // Feel
+  { id: 'calm-vibe', label: 'calm', group: 'Feel' },
+  { id: 'cozy', label: 'cozy', group: 'Feel' },
+  { id: 'homey', label: 'homey', group: 'Feel' },
+  { id: 'warm-vibe', label: 'warm', group: 'Feel' },
+  { id: 'airy', label: 'airy', group: 'Feel' },
+  { id: 'moody', label: 'moody', group: 'Feel' },
+  { id: 'dreamy', label: 'dreamy', group: 'Feel' },
+  // Energy
+  { id: 'fun-vibe', label: 'fun', group: 'Energy' },
+  { id: 'playful-vibe', label: 'playful', group: 'Energy' },
+  { id: 'vibrant', label: 'vibrant', group: 'Energy' },
+  { id: 'bold-vibe', label: 'bold', group: 'Energy' },
+  { id: 'quiet', label: 'quiet', group: 'Energy' },
+  { id: 'chill', label: 'chill', group: 'Energy' },
+  // Polish
+  { id: 'professional', label: 'professional', group: 'Polish' },
+  { id: 'luxe', label: 'luxe', group: 'Polish' },
+  { id: 'editorial-vibe', label: 'editorial', group: 'Polish' },
+  { id: 'clean', label: 'clean', group: 'Polish' },
+  { id: 'minimal-vibe', label: 'minimal', group: 'Polish' },
+  { id: 'elevated', label: 'elevated', group: 'Polish' },
+  // Character
+  { id: 'earthy', label: 'earthy', group: 'Character' },
+  { id: 'coastal', label: 'coastal', group: 'Character' },
+  { id: 'vintage', label: 'vintage', group: 'Character' },
+  { id: 'modern-vibe', label: 'modern', group: 'Character' },
+  { id: 'romantic', label: 'romantic', group: 'Character' },
+  { id: 'edgy-vibe', label: 'edgy', group: 'Character' },
+  { id: 'organic', label: 'organic', group: 'Character' },
+  { id: 'timeless', label: 'timeless', group: 'Character' },
+];
+
+const PLATFORM_WORDS = [
+  // Platforms
+  { id: 'instagram', label: 'Instagram', group: 'Platforms' },
+  { id: 'tiktok', label: 'TikTok', group: 'Platforms' },
+  { id: 'linkedin', label: 'LinkedIn', group: 'Platforms' },
+  { id: 'facebook', label: 'Facebook', group: 'Platforms' },
+  { id: 'pinterest', label: 'Pinterest', group: 'Platforms' },
+  { id: 'youtube', label: 'YouTube', group: 'Platforms' },
+  // What you enjoy making
+  { id: 'writing', label: 'writing', group: 'What you enjoy' },
+  { id: 'video', label: 'video', group: 'What you enjoy' },
+  { id: 'photos', label: 'photos', group: 'What you enjoy' },
+  { id: 'speaking', label: 'speaking', group: 'What you enjoy' },
+  { id: 'teaching', label: 'teaching', group: 'What you enjoy' },
+  { id: 'community', label: 'community', group: 'What you enjoy' },
+];
+
+// One lookup across every word list so rank steps, mirrors, and deliverables
+// can resolve any tapped word id to its display label.
+const ALL_WORD_LISTS = [VALUE_WORDS, VISION_WORDS, VOICE_WORDS, VIBE_WORDS, PLATFORM_WORDS];
+export function wordLabel(id) {
+  for (const list of ALL_WORD_LISTS) {
+    const hit = list.find((w) => w.id === id);
+    if (hit) return hit.label;
+  }
+  return String(id || '').replace(/-/g, ' ');
+}
+
 const MISSION_TEMPLATES = [
   { id: 'm1', text: 'I [WHAT] for [WHO] resulting in [HOW].', description: "Lisa's classic framing." },
   { id: 'm2', text: 'I help [WHO] [HOW] without [PAIN].', description: 'Direct, deployable.' },
@@ -523,9 +620,10 @@ export const VISION_STEPS = [
     kind: 'rank',
     section: 'Values',
     title: 'Drag your top 6 to the top.',
-    subtitle: "Top of the list is most important. Lisa's GPT says 3 to 6 core values, top heavy.",
+    subtitle: 'Top of the list is most important. Three to six core values, top heavy.',
     estimatedMinutes: 6,
     itemsFrom: 'values-tap',
+    supplement: ['integrity', 'honesty', 'kindness', 'craft', 'creativity', 'courage', 'service', 'freedom', 'family', 'joy', 'curiosity', 'rigor'],
   },
   {
     id: 'values-define',
@@ -862,10 +960,426 @@ export const VALUE_STEPS = [
   },
 ];
 
+// ===========================================================================
+// VOICE module (Module Three): I Help statements, common language, About Me.
+// Sourced from build-a-brand_workbook-module_3_voice.pdf + the Voice GPT.
+// Deliverables: I Help Statement, Voice in three words, Common Language bank,
+// About Me story.
+// ===========================================================================
+
+export const VOICE_STEPS = [
+  {
+    id: 'voice-feel',
+    kind: 'fillblank',
+    section: 'Your voice',
+    title: 'How should your words make people feel?',
+    subtitle: "Before we write anything, we set the target. Two quick answers.",
+    estimatedMinutes: 5,
+    fields: [
+      {
+        id: 'feel',
+        label: 'When your ideal client reads your website or a post, how do you want them to FEEL?',
+        placeholder: 'Like a friend just told her the truth and she can finally exhale.',
+        rows: 3,
+      },
+      {
+        id: 'three_words',
+        label: 'What three words do you want people to use when they describe your voice?',
+        placeholder: 'Warm, direct, encouraging.',
+        rows: 1,
+      },
+    ],
+  },
+  {
+    id: 'voice-sliders',
+    kind: 'slider',
+    section: 'Your voice',
+    title: 'Where does your voice live?',
+    subtitle: 'Four spectrums. Trust your gut, you can nudge them later.',
+    estimatedMinutes: 4,
+    sliders: [
+      { id: 'formality', left: 'Formal', right: 'Casual' },
+      { id: 'edge', left: 'Gentle', right: 'Bold' },
+      { id: 'era', left: 'Classic', right: 'Modern' },
+      { id: 'volume', left: 'Quiet', right: 'Loud' },
+    ],
+  },
+  {
+    id: 'voice-words',
+    kind: 'wordcloud',
+    section: 'Your voice',
+    title: 'Tap the words that sound like you.',
+    subtitle: "Aim for at least 6. This is how you talk when you're at your best.",
+    estimatedMinutes: 5,
+    words: VOICE_WORDS,
+  },
+  {
+    id: 'voice-mirror',
+    kind: 'ai-mirror',
+    section: 'Your voice',
+    title: "Here's the voice I'm hearing.",
+    subtitle: 'Read it out loud. Does it sound like you on a good day?',
+    estimatedMinutes: 3,
+  },
+  {
+    id: 'ihelp-discovery',
+    kind: 'fillblank',
+    section: 'I Help statement',
+    title: 'The I Help statement.',
+    subtitle: "Lisa's formula: I help ___ by doing ___. Or: I help ___ because ___. This pulls your whole brand into one sentence.",
+    estimatedMinutes: 6,
+    fields: [
+      { id: 'who', label: 'Who do you help?', helpText: 'You defined this person in Value. Say it plainly here.', placeholder: 'Solo women founders who are done DIYing their brand.', rows: 2 },
+      { id: 'doing', label: 'What do you do for them?', placeholder: 'I build them a brand that finally matches the level of their work.', rows: 2 },
+      { id: 'why', label: 'Why does it matter?', helpText: 'The because. The stakes.', placeholder: 'Because being good was never their problem. Being seen is.', rows: 2 },
+    ],
+    inspiration: {
+      label: "Lisa's examples",
+      text: '"I help business owners build brands that are beautiful and bankable." "I help people break through their out of date brand."',
+    },
+  },
+  {
+    id: 'ihelp-craft',
+    kind: 'ai-craft',
+    section: 'I Help statement',
+    title: 'Your I Help candidates.',
+    subtitle: 'Ten I Help statements built from your mission, your value, and your ideal client. Pick the one that hits. Whichever you pick is your I Help statement.',
+    estimatedMinutes: 5,
+    maxPicks: 1,
+    generateLabel: 'Write my I Help options',
+    generateHint: 'About 20 seconds. Ten angles, one sentence each.',
+  },
+  {
+    id: 'language-discovery',
+    kind: 'fillblank',
+    section: 'Common language',
+    title: 'The words you already use.',
+    subtitle: 'Same language on your website, social, and marketing keeps everything aligned. Skip the jargon, keep it everyday.',
+    estimatedMinutes: 6,
+    fields: [
+      { id: 'phrases', label: 'Words or phrases you use often when you talk about your business.', helpText: 'Catchy phrases, alliterated building blocks, things clients repeat back to you.', placeholder: 'Level up. Show up like you mean it. Beautiful and bankable.', rows: 3 },
+      { id: 'client_words', label: 'Everyday words your ideal client uses about their problem.', helpText: 'Their words, not yours. How do they describe the struggle?', placeholder: '"My website is embarrassing." "I never know what to post." "I feel invisible."', rows: 3 },
+      { id: 'jargon', label: 'Industry jargon you want to avoid.', placeholder: 'Synergy, holistic, brand equity, omnichannel.', rows: 2 },
+    ],
+    inspiration: {
+      label: "Lisa's examples",
+      text: '"Level Up. Your Face Makes You Money. Stand Out. Captivating. Confident."',
+    },
+  },
+  {
+    id: 'language-craft',
+    kind: 'ai-craft',
+    section: 'Common language',
+    title: 'Your common language bank.',
+    subtitle: "Ten short, catchy, copy-ready phrases in your voice. Pick 6. Use them everywhere: website, captions, emails, sales calls.",
+    estimatedMinutes: 6,
+    maxPicks: 6,
+    generateLabel: 'Craft my language bank',
+    generateHint: 'About 20 seconds. Short phrases with Level Up energy, in your voice.',
+  },
+  {
+    id: 'aboutme-discovery',
+    kind: 'fillblank',
+    section: 'About Me',
+    title: "Your About Me. It's not really about you.",
+    subtitle: "Flip the script: you once struggled with the same internal problems your ideal client has now. Tell that story.",
+    estimatedMinutes: 8,
+    fields: [
+      { id: 'struggle', label: 'What did you struggle with that your ideal client struggles with now?', helpText: 'Their internal problem, back when it was yours.', placeholder: 'I spent years undercharging because I could not explain what made me different.', rows: 3 },
+      { id: 'turning', label: 'What was the turning point?', helpText: 'The moment, the decision, the thing that changed.', placeholder: 'A mentor asked me one question I could not answer, and I rebuilt everything around it.', rows: 3 },
+      { id: 'thriving', label: 'What does the other side look like, and how does it connect to what you do now?', placeholder: 'Now I charge what the work is worth, and I help other women get there faster than I did.', rows: 3 },
+    ],
+    inspiration: {
+      label: "Lisa's example of the flip",
+      text: '"When my grandma died I was so sad that I couldn\'t find a single picture of the two of us together. That is why I am passionate about family photos and capturing memories that last forever."',
+    },
+  },
+  {
+    id: 'aboutme-craft',
+    kind: 'ai-craft',
+    section: 'About Me',
+    title: 'Your About Me drafts.',
+    subtitle: 'Three versions, each built on your story and aimed at your ideal client. Pick the one that feels most like you.',
+    estimatedMinutes: 5,
+    maxPicks: 1,
+    generateLabel: 'Write my About Me options',
+    generateHint: 'About 25 seconds. Three drafts, a short paragraph each.',
+  },
+  {
+    id: 'summary',
+    kind: 'mirror',
+    section: 'Voice module',
+    title: 'Your Voice: locked in.',
+    subtitle: 'The words that sound like you, ready to deploy.',
+    estimatedMinutes: 2,
+    mirror: { kind: 'voice-summary' },
+  },
+];
+
+// ===========================================================================
+// VISUALS module (Module Four): vibe, colors, logo, fonts.
+// Sourced from build-a-brand_workbook-_module_4_visuals_1.pdf + Visuals GPT.
+// Deliverables: Brand Vibe words, Color Direction, Font Direction, Logo Notes.
+// ===========================================================================
+
+export const VISUALS_STEPS = [
+  {
+    id: 'visuals-confidence',
+    kind: 'pick-3',
+    section: 'Your visuals',
+    title: 'First, honestly: how confident are you about visuals?',
+    subtitle: 'No wrong answer. This tells me how much guidance to give.',
+    estimatedMinutes: 2,
+    maxPicks: 1,
+    options: [
+      { id: 'beginner', label: 'Complete beginner', description: 'Colors and fonts freeze me. Guide me all the way.' },
+      { id: 'somewhat', label: 'Somewhat confident', description: 'I have opinions but I second-guess them.' },
+      { id: 'confident', label: 'Totally confident', description: 'I know what I like. Help me sharpen it.' },
+    ],
+  },
+  {
+    id: 'vibe-words',
+    kind: 'wordcloud',
+    section: 'Brand vibe',
+    title: 'Tap every word that fits the vibe you want.',
+    subtitle: "Think about brands you love. How they look, feel, even smell. Now tap what YOURS should embody. Aim for at least 8.",
+    estimatedMinutes: 5,
+    words: VIBE_WORDS,
+  },
+  {
+    id: 'vibe-rank',
+    kind: 'rank',
+    section: 'Brand vibe',
+    title: 'Drag your top 6 vibe words to the top.',
+    subtitle: "These become your brand vibe. Every visual decision gets checked against them.",
+    estimatedMinutes: 5,
+    itemsFrom: 'vibe-words',
+    supplement: ['warm-vibe', 'clean', 'earthy', 'bold-vibe', 'timeless', 'playful-vibe', 'elevated', 'calm-vibe'],
+  },
+  {
+    id: 'visuals-inspiration',
+    kind: 'fillblank',
+    section: 'Brand vibe',
+    title: 'The brands you love looking at.',
+    estimatedMinutes: 5,
+    fields: [
+      { id: 'brands', label: 'Brands whose look you love, and which elements grab you.', helpText: 'Any industry. The packaging, the colors, the fonts, the photos?', placeholder: "Aesop's shelves, Magnolia's warmth, my favorite coffee shop's hand-painted sign.", rows: 3 },
+      { id: 'yours', label: 'How do you want YOUR brand to look and feel?', placeholder: 'Warm and earthy but still sharp. Like a linen shirt that fits perfectly.', rows: 3 },
+    ],
+  },
+  {
+    id: 'colors-compass',
+    kind: 'slider',
+    section: 'Brand colors',
+    title: 'Your color compass.',
+    subtitle: "Lisa's rule: don't overthink colors. They set a feeling, and they can evolve. Three quick calls.",
+    estimatedMinutes: 3,
+    sliders: [
+      { id: 'temp', left: 'Warm', right: 'Cool' },
+      { id: 'saturation', left: 'Neutral', right: 'Colorful' },
+      { id: 'lightness', left: 'Dark', right: 'Light' },
+    ],
+  },
+  {
+    id: 'colors-love',
+    kind: 'fillblank',
+    section: 'Brand colors',
+    title: 'Colors you actually love.',
+    subtitle: "You'll wear these in photos and live with them on your website. Pick colors you like, not colors a trend likes.",
+    estimatedMinutes: 4,
+    fields: [
+      { id: 'colors', label: 'Colors you are drawn to, and why.', placeholder: 'Rust and clay tones. Deep green. Cream instead of white. They feel like my house.', rows: 3 },
+    ],
+  },
+  {
+    id: 'palette-craft',
+    kind: 'ai-craft',
+    section: 'Brand colors',
+    title: 'Your palette directions.',
+    subtitle: "Six palette directions using Lisa's formula: 1 to 3 main colors, a dark neutral, a light neutral, and a metallic accent. Pick the one you'd wear.",
+    estimatedMinutes: 5,
+    maxPicks: 1,
+    generateLabel: 'Craft my palette directions',
+    generateHint: 'About 20 seconds. Six directions in plain words, no hex codes to stress over.',
+  },
+  {
+    id: 'logo-check',
+    kind: 'fillblank',
+    section: 'Your logo',
+    title: 'The logo check.',
+    subtitle: "You don't need a complicated logo. You need one that passes four questions: easy to read, fits your voice, embodies your vibe, and doesn't need a facelift.",
+    estimatedMinutes: 5,
+    fields: [
+      { id: 'current', label: 'Describe your current logo. Or write "none yet."', placeholder: 'A script wordmark from 2019 with a camera icon.', rows: 2 },
+      { id: 'fit', label: 'Run the check: easy to read? Fits your voice? Embodies the vibe you just named? Needs a facelift?', helpText: 'Be honest. A pink script logo marketing to contractors is a disconnect.', placeholder: 'Readable, but the script feels off against "earthy and sharp." Probably needs a refresh.', rows: 3 },
+    ],
+  },
+  {
+    id: 'fonts-direction',
+    kind: 'pick-3',
+    section: 'Your fonts',
+    title: 'Pick your font direction.',
+    subtitle: "Lisa's structure: a title font with personality, a main font that is VERY easy to read, and an optional supporting font. Pick the trio that fits your vibe.",
+    estimatedMinutes: 4,
+    maxPicks: 1,
+    options: [
+      { id: 'editorial-serif', label: 'Editorial serif lead', description: 'Classic serif titles, clean sans body. Timeless, high-end, magazine energy.' },
+      { id: 'modern-sans', label: 'Modern sans lead', description: 'Bold sans titles, lighter sans body. Clean, current, confident.' },
+      { id: 'serif-script', label: 'Serif with script accent', description: 'Serif titles, sans body, script for small moments. Warm and personal.' },
+      { id: 'all-serif', label: 'All serif', description: 'Serif titles and serif body. Literary, established, quiet luxury.' },
+      { id: 'sans-serif-flip', label: 'Sans titles, serif body', description: 'Modern headline energy over a classic reading experience. Editorial flip.' },
+      { id: 'not-sure', label: 'Not sure yet', description: 'Pick this and your Brand Guide will note font direction as an open decision.' },
+    ],
+  },
+  {
+    id: 'visuals-mirror',
+    kind: 'ai-mirror',
+    section: 'Your visuals',
+    title: "Here's the visual identity I'm seeing.",
+    subtitle: 'Vibe, color, and type, pulled together. Does it look like you?',
+    estimatedMinutes: 3,
+  },
+  {
+    id: 'summary',
+    kind: 'mirror',
+    section: 'Visuals module',
+    title: 'Your Visuals: locked in.',
+    subtitle: 'A look you can hand to any designer, or to Lisa.',
+    estimatedMinutes: 2,
+    mirror: { kind: 'visuals-summary' },
+  },
+];
+
+// ===========================================================================
+// VISIBILITY module (Module Five): platforms, anchor content, pillars, photos.
+// Sourced from build-a-brand_workbook-_module_5_vehicle.pdf + Visibility GPT.
+// Deliverables: Platform Strategy, Anchor Content, Brand Pillars, Photo
+// Checklist, Content Cadence.
+// ===========================================================================
+
+export const VISIBILITY_STEPS = [
+  {
+    id: 'audience-where',
+    kind: 'fillblank',
+    section: 'Platforms',
+    title: 'Where does your ideal client actually hang out?',
+    subtitle: "Rough guide: Gen Z lives on TikTok. 25 to 45 lives on Instagram. Business owners live on LinkedIn. 50 plus lives on Facebook. People who want to learn go to YouTube.",
+    estimatedMinutes: 4,
+    fields: [
+      { id: 'where', label: 'Where does your person spend time online, and what are they doing there?', placeholder: 'Instagram in the evenings for inspiration, one or two podcasts on school runs, a couple of newsletters she actually opens.', rows: 3 },
+    ],
+  },
+  {
+    id: 'enjoy-words',
+    kind: 'wordcloud',
+    section: 'Platforms',
+    title: 'Tap the platforms and formats you actually enjoy.',
+    subtitle: "Consistency beats reach. You will only show up on platforms you don't hate.",
+    estimatedMinutes: 3,
+    words: PLATFORM_WORDS,
+  },
+  {
+    id: 'platform-craft',
+    kind: 'ai-craft',
+    section: 'Platforms',
+    title: 'Your platform strategy options.',
+    subtitle: "Five strategies matching where your person is with what you enjoy. Two to three platforms each, no more. Pick the one you'd actually follow.",
+    estimatedMinutes: 5,
+    maxPicks: 1,
+    generateLabel: 'Write my platform options',
+    generateHint: 'About 20 seconds. Five strategies, one sentence each.',
+  },
+  {
+    id: 'anchor-pick',
+    kind: 'pick-3',
+    section: 'Anchor content',
+    title: 'Pick your anchor content.',
+    subtitle: "One piece of long-form content each week that you break into bite-sized pieces. Pick something you ENJOY, so you'll do it consistently.",
+    estimatedMinutes: 3,
+    maxPicks: 1,
+    options: [
+      { id: 'blog', label: 'Blog', description: 'You like writing. Great for SEO and your website.' },
+      { id: 'newsletter', label: 'Email newsletter', description: 'You like writing to real people. You own the list.' },
+      { id: 'podcast', label: 'Podcast', description: 'You like talking. Builds deep trust on commutes and school runs.' },
+      { id: 'youtube', label: 'YouTube', description: 'You like being on camera. Searchable and evergreen.' },
+      { id: 'none-yet', label: 'Not yet', description: 'Start with short-form only. Add an anchor when the rhythm is real.' },
+    ],
+  },
+  {
+    id: 'cadence',
+    kind: 'fillblank',
+    section: 'Rhythm',
+    title: 'Find your rhythm.',
+    subtitle: "A predictable pattern helps you show up when you aren't feeling creative. Lisa's example: Monday a quote, Wednesday a tip, Friday behind the scenes.",
+    estimatedMinutes: 5,
+    fields: [
+      { id: 'often', label: 'How often can you realistically show up?', helpText: 'Be honest, not aspirational. Consistency beats volume.', placeholder: 'Three posts a week plus one newsletter.', rows: 2 },
+      { id: 'rhythm', label: 'Sketch your cadence.', helpText: 'By content type, by day, or both.', placeholder: 'Monday tip, Wednesday client story, Friday behind the scenes. Newsletter every other Thursday.', rows: 3 },
+    ],
+  },
+  {
+    id: 'pillars-discovery',
+    kind: 'fillblank',
+    section: 'Brand pillars',
+    title: 'What could you talk about forever?',
+    subtitle: "Brand pillars are 3 to 6 buckets you build content around, so you never stare at a blank screen. Generic enough to last, specific enough to be yours.",
+    estimatedMinutes: 5,
+    fields: [
+      { id: 'topics', label: 'What are you knowledgeable about, what does your ideal client want to hear about, and what are you excited to share?', placeholder: 'Brand strategy, pricing confidence, behind the scenes of shoots, mom-life-meets-business, before and afters.', rows: 4 },
+    ],
+  },
+  {
+    id: 'pillars-craft',
+    kind: 'ai-craft',
+    section: 'Brand pillars',
+    title: 'Your brand pillar candidates.',
+    subtitle: 'Eight pillar candidates built from your brand and your ideal client. Pick 4. Each one can hold months of content.',
+    estimatedMinutes: 5,
+    maxPicks: 4,
+    generateLabel: 'Craft my pillar options',
+    generateHint: 'About 20 seconds. Eight buckets with a one-line description each.',
+  },
+  {
+    id: 'photos-3p',
+    kind: 'fillblank',
+    section: 'Photos',
+    title: "The 3 P's of photos.",
+    subtitle: "Personalized photos beat stock every time. People can tell stock from a mile away. Three quick lists.",
+    estimatedMinutes: 6,
+    fields: [
+      { id: 'people', label: 'PEOPLE: what photos of the humans in your business do you need?', placeholder: 'Headshots, working-with-client shots, a real laugh, the "note to self" card shot.', rows: 2 },
+      { id: 'process', label: 'PROCESS: what photos show how you do what you do?', placeholder: 'Camera in hand, mood boards on the table, the messy middle of a project.', rows: 2 },
+      { id: 'product', label: 'PRODUCT or SERVICE: what photos showcase what you sell?', placeholder: 'Finished websites on screens, before and afters, deliverables in real hands.', rows: 2 },
+    ],
+  },
+  {
+    id: 'photo-list-craft',
+    kind: 'ai-craft',
+    section: 'Photos',
+    title: 'Your photo checklist.',
+    subtitle: "Ten concrete shots built from your answers. Pick the 6 that matter most. Hand this list to your photographer, or to Lisa.",
+    estimatedMinutes: 5,
+    maxPicks: 6,
+    generateLabel: 'Build my shot list',
+    generateHint: 'About 20 seconds. Ten specific, shootable images.',
+  },
+  {
+    id: 'summary',
+    kind: 'mirror',
+    section: 'Visibility module',
+    title: 'Your Visibility plan: locked in.',
+    subtitle: 'Your Brand Guide is complete. This is the moment to book your call with Lisa and bring it all to life.',
+    estimatedMinutes: 2,
+    mirror: { kind: 'visibility-summary' },
+  },
+];
+
 const STEPS_BY_TOOL = {
   vision: VISION_STEPS,
   value: VALUE_STEPS,
-  // voice, visuals, visibility: TODO in next ships
+  voice: VOICE_STEPS,
+  visuals: VISUALS_STEPS,
+  visibility: VISIBILITY_STEPS,
 };
 
 // ---------------------------------------------------------------------------
@@ -921,6 +1435,48 @@ export function visionDeliverables(journeyResponses = {}) {
   ];
 }
 
+export function voiceDeliverables(journeyResponses = {}) {
+  const ihelp = pickedOptionText(journeyResponses, 'ihelp-craft');
+  const threeWords = String(journeyResponses['voice-feel']?.fields?.three_words || '').trim();
+  const language = pickedOptionTexts(journeyResponses, 'language-craft');
+  const aboutme = pickedOptionText(journeyResponses, 'aboutme-craft');
+  return [
+    { key: 'ihelp', label: 'I Help Statement', value: ihelp, complete: !!ihelp },
+    { key: 'three_words', label: 'Your Voice in Three Words', value: threeWords, complete: !!threeWords },
+    { key: 'language', label: 'Common Language', value: language.join(' · '), complete: language.length > 0, items: language },
+    { key: 'aboutme', label: 'About Me', value: aboutme, complete: !!aboutme },
+  ];
+}
+
+export function visualsDeliverables(journeyResponses = {}) {
+  const ranked = (journeyResponses['vibe-rank']?.ranking || journeyResponses['vibe-words']?.selected || []).slice(0, 6);
+  const vibe = ranked.map((id) => capitalize(wordLabel(id)));
+  const palette = pickedOptionText(journeyResponses, 'palette-craft');
+  const fonts = pickedStaticLabel('visuals', 'fonts-direction', journeyResponses);
+  const logoNotes = String(journeyResponses['logo-check']?.fields?.fit || '').trim();
+  return [
+    { key: 'vibe', label: 'Brand Vibe', value: vibe.join(' · '), complete: vibe.length > 0, items: vibe },
+    { key: 'palette', label: 'Color Direction', value: palette, complete: !!palette },
+    { key: 'fonts', label: 'Font Direction', value: fonts, complete: !!fonts },
+    { key: 'logo', label: 'Logo Notes', value: logoNotes, complete: !!logoNotes },
+  ];
+}
+
+export function visibilityDeliverables(journeyResponses = {}) {
+  const platform = pickedOptionText(journeyResponses, 'platform-craft');
+  const anchor = pickedStaticLabel('visibility', 'anchor-pick', journeyResponses);
+  const cadence = String(journeyResponses['cadence']?.fields?.rhythm || '').trim();
+  const pillars = pickedOptionTexts(journeyResponses, 'pillars-craft');
+  const photos = pickedOptionTexts(journeyResponses, 'photo-list-craft');
+  return [
+    { key: 'platform', label: 'Platform Strategy', value: platform, complete: !!platform },
+    { key: 'anchor', label: 'Anchor Content', value: anchor, complete: !!anchor },
+    { key: 'cadence', label: 'Content Cadence', value: cadence, complete: !!cadence },
+    { key: 'pillars', label: 'Brand Pillars', value: pillars.join(' · '), complete: pillars.length > 0, items: pillars },
+    { key: 'photos', label: 'Photo Checklist', value: photos.join(' · '), complete: photos.length > 0, items: photos },
+  ];
+}
+
 // Structured Brand Guide content for a tool, built from journey deliverables.
 // Returns an array of blocks or null when the tool has no journey data yet
 // (callers fall back to the legacy chat summary).
@@ -965,6 +1521,40 @@ export function brandGuideEntries(tool, journeyResponses = {}) {
     if (tr.length) blocks.push({ kind: 'defs', label: 'Customer Transformation', items: tr });
     return blocks.length ? blocks : null;
   }
+  if (tool === 'voice') {
+    const d = voiceDeliverables(journeyResponses);
+    const blocks = [];
+    if (d[0].value) blocks.push({ kind: 'statement', label: 'I Help Statement', text: d[0].value });
+    if (d[1].value) blocks.push({ kind: 'statement', label: 'Your Voice in Three Words', text: d[1].value });
+    if (d[2].items?.length) blocks.push({ kind: 'list', label: 'Common Language', items: d[2].items });
+    if (d[3].value) blocks.push({ kind: 'statement', label: 'About Me', text: d[3].value });
+    return blocks.length ? blocks : null;
+  }
+  if (tool === 'visuals') {
+    const d = visualsDeliverables(journeyResponses);
+    const blocks = [];
+    if (d[0].value) blocks.push({ kind: 'statement', label: 'Brand Vibe', text: d[0].value });
+    if (d[1].value) blocks.push({ kind: 'statement', label: 'Color Direction', text: d[1].value });
+    const defs = [
+      { label: 'Font Direction', text: d[2].value },
+      { label: 'Logo Notes', text: d[3].value },
+    ].filter((x) => x.text);
+    if (defs.length) blocks.push({ kind: 'defs', label: 'Type and Mark', items: defs });
+    return blocks.length ? blocks : null;
+  }
+  if (tool === 'visibility') {
+    const d = visibilityDeliverables(journeyResponses);
+    const blocks = [];
+    if (d[0].value) blocks.push({ kind: 'statement', label: 'Platform Strategy', text: d[0].value });
+    const defs = [
+      { label: 'Anchor Content', text: d[1].value },
+      { label: 'Content Cadence', text: d[2].value },
+    ].filter((x) => x.text);
+    if (defs.length) blocks.push({ kind: 'defs', label: 'Your Rhythm', items: defs });
+    if (d[3].items?.length) blocks.push({ kind: 'list', label: 'Brand Pillars', items: d[3].items });
+    if (d[4].items?.length) blocks.push({ kind: 'list', label: 'Photo Checklist', items: d[4].items });
+    return blocks.length ? blocks : null;
+  }
   return null;
 }
 
@@ -978,6 +1568,21 @@ export function journeyComplete(tool, journeyResponses = {}) {
   if (tool === 'value') {
     return valueDeliverables(journeyResponses).every((d) => d.complete);
   }
+  if (tool === 'voice') {
+    // Three Words rides along with the others; the core three are required.
+    const d = voiceDeliverables(journeyResponses);
+    return !!(d[0].complete && d[2].complete && d[3].complete);
+  }
+  if (tool === 'visuals') {
+    // Vibe, palette, and fonts are required. Logo notes are optional.
+    const d = visualsDeliverables(journeyResponses);
+    return !!(d[0].complete && d[1].complete && d[2].complete);
+  }
+  if (tool === 'visibility') {
+    // Platform, pillars, and photo list are required. Anchor and cadence ride along.
+    const d = visibilityDeliverables(journeyResponses);
+    return !!(d[0].complete && d[3].complete && d[4].complete);
+  }
   // Tools without a journey definition fall back to summary-step presence.
   return !!journeyResponses['summary'];
 }
@@ -987,6 +1592,22 @@ function pickedOptionText(journeyResponses, stepId) {
   const sel = (journeyResponses[stepId]?.selected || [])[0];
   if (!sel) return '';
   return journeyResponses[stepId]?.ai_options?.find((o) => o.id === sel)?.text || '';
+}
+
+// All picked AI option texts for multi-pick craft steps (language bank, pillars, shot list).
+function pickedOptionTexts(journeyResponses, stepId) {
+  const opts = journeyResponses[stepId]?.ai_options || [];
+  return (journeyResponses[stepId]?.selected || [])
+    .map((id) => opts.find((o) => o.id === id)?.text)
+    .filter(Boolean);
+}
+
+// Label of a picked STATIC option (pick-3 steps with hardcoded options).
+function pickedStaticLabel(tool, stepId, journeyResponses) {
+  const sel = (journeyResponses[stepId]?.selected || [])[0];
+  if (!sel) return '';
+  const step = getJourneyStep(tool, stepId);
+  return step?.options?.find((o) => o.id === sel)?.label || '';
 }
 
 export function valueDeliverables(journeyResponses = {}) {
@@ -1017,6 +1638,8 @@ export function renderJourneyStepBody(tool, step, savedResponse, journeyResponse
       return renderPick3(step, savedResponse, journeyResponses);
     case 'rank':
       return renderRank(step, savedResponse, journeyResponses);
+    case 'slider':
+      return renderSlider(step, savedResponse);
     case 'mirror':
       return renderMirror(step, journeyResponses);
     case 'ai-mirror':
@@ -1120,11 +1743,10 @@ function renderFillBlank(step, saved, journeyResponses) {
     // Pull top 5 ranked items from `values-rank` and turn them into fields.
     const priorRank = journeyResponses[step.fieldsFrom]?.ranking || [];
     const priorTap = journeyResponses['values-tap']?.selected || [];
-    const valuesById = Object.fromEntries(VALUE_WORDS.map((w) => [w.id, w.label]));
     const ranked = priorRank.length ? priorRank : priorTap;
     fields = ranked.slice(0, 6).map((id) => ({
       id: 'def_' + id,
-      label: capitalize(valuesById[id] || id),
+      label: capitalize(wordLabel(id)),
       helpText: step.fieldHelp || 'Define what this looks like in your work.',
       placeholder: '',
       rows: 2,
@@ -1241,33 +1863,32 @@ function renderRank(step, saved, journeyResponses) {
   let items = step.items;
   if (!items && step.itemsFrom) {
     const priorSel = journeyResponses[step.itemsFrom]?.selected || [];
-    const valuesById = Object.fromEntries(VALUE_WORDS.map((w) => [w.id, w.label]));
     items = priorSel.map((id) => ({
       id,
-      label: capitalize(valuesById[id] || id),
+      label: capitalize(wordLabel(id)),
       description: '',
     }));
-    // Always surface 6 to 10 items at the rank step so the narrowing exercise
-    // is meaningful. If the user tapped fewer than 6, supplement with common
-    // defaults (skipping ones they already picked) until we hit at least 8.
+    // Always surface enough items that the narrowing exercise is meaningful.
+    // If the user tapped fewer than 8, supplement from the step's own
+    // suggestion list (skipping ones they already picked).
     const MIN_RANK_ITEMS = 8;
-    if (items.length < MIN_RANK_ITEMS) {
+    const supplement = step.supplement || [];
+    if (items.length < MIN_RANK_ITEMS && supplement.length) {
       const have = new Set(items.map((i) => i.id));
-      const defaults = ['integrity', 'honesty', 'kindness', 'craft', 'creativity', 'courage', 'service', 'freedom', 'family', 'joy', 'curiosity', 'rigor'];
-      for (const id of defaults) {
+      for (const id of supplement) {
         if (items.length >= MIN_RANK_ITEMS) break;
         if (have.has(id)) continue;
         items.push({
           id,
-          label: capitalize(valuesById[id] || id),
+          label: capitalize(wordLabel(id)),
           description: 'Suggested. Drag below the line if it doesn\'t fit.',
         });
         have.add(id);
       }
     }
-    // If still nothing (extreme edge case), use the first 8 known values.
+    // If still nothing (extreme edge case), use the suggestions alone.
     if (!items.length) {
-      items = VALUE_WORDS.slice(0, 8).map((w) => ({ id: w.id, label: capitalize(w.label) }));
+      items = supplement.slice(0, 8).map((id) => ({ id, label: capitalize(wordLabel(id)) }));
     }
   }
   items = items || [];
@@ -1300,6 +1921,25 @@ function renderRank(step, saved, journeyResponses) {
         </li>`;
       }).join('')}
     </ul>
+  </div>`;
+}
+
+// Slider: 1D spectra. Each slider stores 0 to 100 under values[slider.id].
+// 50 is the neutral middle; the client reads positions on save.
+function renderSlider(step, saved) {
+  const values = saved?.values || {};
+  return `<div class="step-body step-body--slider" data-step-kind="slider" data-step-id="${esc(step.id)}">
+    <p class="step-body__hint">Drag each toward whichever side sounds more like you. The middle is a fine answer too.</p>
+    ${(step.sliders || []).map((s) => {
+      const v = Number.isFinite(values[s.id]) ? values[s.id] : 50;
+      return `<div class="slider-row" data-slider-id="${esc(s.id)}">
+        <div class="slider-row__labels">
+          <span class="slider-row__left">${esc(s.left)}</span>
+          <span class="slider-row__right">${esc(s.right)}</span>
+        </div>
+        <input type="range" class="slider-row__input" min="0" max="100" step="5" value="${v}" data-slider-input="${esc(s.id)}" aria-label="${esc(s.left)} to ${esc(s.right)}" />
+      </div>`;
+    }).join('')}
   </div>`;
 }
 
@@ -1400,6 +2040,29 @@ function renderMirror(step, journeyResponses = {}) {
         </div>
       </div>
     `;
+  }
+
+  // Module lock-in summaries for Voice, Visuals, Visibility share one shape:
+  // each deliverable as a mirror-section, lists as rust-barred items.
+  const MODULE_SUMMARIES = {
+    'voice-summary': voiceDeliverables,
+    'visuals-summary': visualsDeliverables,
+    'visibility-summary': visibilityDeliverables,
+  };
+  if (MODULE_SUMMARIES[m.kind]) {
+    const dels = MODULE_SUMMARIES[m.kind](journeyResponses);
+    bodyHtml = dels.map((d) => {
+      if (d.items && d.items.length) {
+        return `<div class="mirror-section">
+          <p class="mirror-section__label">${esc(d.label)}</p>
+          <ul class="mirror-list">${d.items.map((t) => `<li class="mirror-list__item">${esc(t)}</li>`).join('')}</ul>
+        </div>`;
+      }
+      return `<div class="mirror-section">
+        <p class="mirror-section__label">${esc(d.label)}</p>
+        <p class="mirror-section__value">${d.value ? esc(d.value) : '<span class="mirror-row__value--muted">(blank)</span>'}</p>
+      </div>`;
+    }).join('');
   }
 
   return `<div class="step-body step-body--mirror" data-step-kind="mirror" data-step-id="${esc(step.id)}">
