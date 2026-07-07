@@ -47,7 +47,7 @@ export function head(title, opts = {}) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="${esc(desc)}">
 <title>${esc(title)}</title>
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/img/lilo-stamp.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
@@ -55,16 +55,11 @@ export function head(title, opts = {}) {
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"b4e1186305b34978807caae0e4e06af3"}'></script>`;
 }
 
-// LiLo logo mark. Two outer bars + short red middle bar + red dot.
-// White bars use currentColor so it adapts to nav text color.
-// Red bars/dot are hardcoded brand red.
-export function logoMark({ size = 28, label = 'LiLo' } = {}) {
-  return `<svg class="logo-mark" width="${size * 1.27}" height="${size}" viewBox="0 0 280 220" aria-label="${esc(label)}" role="img">
-    <rect x="40" y="20" width="40" height="180" fill="currentColor"/>
-    <rect x="120" y="105" width="40" height="95" fill="#AF493B"/>
-    <rect x="200" y="20" width="40" height="180" fill="currentColor"/>
-    <circle cx="265" cy="190" r="11" fill="#AF493B"/>
-  </svg>`;
+// The LiLo stamp: the real 2026 mark from the brand asset library.
+// theme 'light' = ink stamp for light backgrounds, 'dark' = white stamp for Ink backgrounds.
+export function logoMark({ theme = 'light', size = 30, label = 'LiLo Brand Studio' } = {}) {
+  const src = theme === 'dark' ? '/img/stamp-transparent.png' : '/img/stamp-black.png';
+  return `<img class="logo-mark" src="${src}" alt="${esc(label)}" style="height:${size}px;width:auto" />`;
 }
 
 // Public marketing nav (landing only). For the in-app nav we use AppNav.
@@ -75,8 +70,8 @@ export function publicNav(currentUser) {
   return `<nav class="nav nav--public">
   <div class="nav__inner">
     <a href="/" class="brandmark">
-      <span class="brandmark__icon">${logoMark({ size: 24 })}</span>
-      <span class="brandmark__text">LiLo Photography &amp; Branding</span>
+      <span class="brandmark__icon">${logoMark({ theme: 'light', size: 30 })}</span>
+      <span class="brandmark__text">LiLo Brand Studio</span>
     </a>
     <div class="nav__right">${right}</div>
   </div>
@@ -101,7 +96,7 @@ export function appNav(currentPath, user) {
   return `<nav class="appnav">
   <div class="appnav__inner">
     <a href="/dashboard" class="appnav__home">
-      <span class="appnav__brand-icon">${logoMark({ size: 22 })}</span>
+      <span class="appnav__brand-icon">${logoMark({ theme: 'dark', size: 30 })}</span>
       <span class="appnav__title">Build a Brand</span>
     </a>
     <div class="appnav__steps">${links}</div>
@@ -130,7 +125,7 @@ export function publicFooter(user) {
   return `<footer class="footer">
   <div class="footer__inner">
     <div class="footer__col">
-      <p class="footer__brand">LiLo Photography &amp; Branding</p>
+      <p class="footer__brand">LiLo Brand Studio</p>
       <p class="footer__tag">Strategic branding, websites, and brand photography for growing businesses.</p>
     </div>
     <div class="footer__col">
@@ -147,7 +142,7 @@ export function publicFooter(user) {
     </div>
   </div>
   <div class="footer__bottom">
-    <p>© ${year} LiLo Photography &amp; Branding. All rights reserved.${adminLink ? ' ' + adminLink : ''}</p>
+    <p>© ${year} LiLo Brand Studio. All rights reserved.${adminLink ? ' ' + adminLink : ''}</p>
   </div>
 </footer>`;
 }
@@ -185,7 +180,7 @@ fetch('/api/config/public').then(r => r.json()).then(cfg => {
       if (k === 'app_name' || k === 'tagline' || k === 'logo_url') continue;
       root.setProperty('--' + k.replace(/_/g, '-'), v);
     }
-    if (cfg.branding.app_name) document.title = cfg.branding.app_name + ' · LiLo Photography & Branding';
+    if (cfg.branding.app_name) document.title = cfg.branding.app_name + ' · LiLo Brand Studio';
   }
 }).catch(() => {});
 </script>

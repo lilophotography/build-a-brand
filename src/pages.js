@@ -32,7 +32,7 @@ export function renderLanding(user) {
       : `<a href="#pricing" class="btn btn--primary" data-config="hero_cta_primary">Get Started</a>
          <a href="/sign-in" class="btn btn--ghost" data-config="hero_cta_signin">Sign in</a>`}
   </div>
-  <p class="hero__trust" data-config="hero_trust">A LiLo Photography &amp; Branding course. Built for growing businesses ready to scale.</p>
+  <p class="hero__trust" data-config="hero_trust">A LiLo Brand Studio course. Built for growing businesses ready to scale.</p>
 </section>
 
 <section class="framework">
@@ -60,7 +60,7 @@ export function renderLanding(user) {
 <section class="meet-lisa">
   <div class="meet-lisa__inner">
     <div class="meet-lisa__photo">
-      <img src="/img/lisa-portrait.jpg" alt="Lisa Lord, founder of LiLo Photography & Branding" loading="lazy">
+      <img src="/img/lisa-portrait.jpg" alt="Lisa Lord, founder of LiLo Brand Studio" loading="lazy">
     </div>
     <div class="meet-lisa__body">
       <p class="eyebrow" data-config="meet_eyebrow">Meet your strategist</p>
@@ -179,7 +179,7 @@ export function renderLanding(user) {
 </section>
 `;
   return htmlResponse(page({
-    title: 'Build a Brand · LiLo Photography & Branding',
+    title: 'Build a Brand · LiLo Brand Studio',
     nav: publicNav(user),
     main: main + publicFooter(user),
     bodyClass: 'page-landing',
@@ -1088,7 +1088,7 @@ export function renderBrandGuidePrint(user, progressRows) {
       : `<div class="pdf-section__empty">This session hasn't been completed yet. Complete the ${esc(m.label)} session in your Brand Builder to unlock this page.</div>`}
   </div>
   <footer class="pdf-section__footer">
-    <span>LiLo Photography &amp; Branding</span>
+    <span>LiLo Brand Studio</span>
   </footer>
 </section>`;
   }).join('');
@@ -1108,7 +1108,7 @@ export function renderBrandGuidePrint(user, progressRows) {
   <h1 class="pdf-cover__title">Your Brand Guide</h1>
   <p class="pdf-cover__sub">${user.business_name ? esc(user.business_name) : 'Your brand foundation, captured.'}</p>
   <div class="pdf-cover__divider"></div>
-  <p class="pdf-cover__meta">Generated ${esc(dateStr)} · LiLo Photography &amp; Branding</p>
+  <p class="pdf-cover__meta">Generated ${esc(dateStr)} · LiLo Brand Studio</p>
 </section>
 ${sectionPages}
 </body>

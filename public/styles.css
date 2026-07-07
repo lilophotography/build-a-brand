@@ -1,6 +1,6 @@
 /* =============================================================
    Build a Brand - Lisa Lord / LiLo Brand Studio
-   Official LiLo palette: red, black, white, yellow (sparingly), gray.
+   Official 2026 palette: Rust, Driftwood, Greige, Linen, Ink. 60/30/10.
    Token names are kept (cream, ink, terracotta, gold) so existing
    selectors keep working. The values are the official brand colors.
      Headlines: Times New Roman (the LiLo typography rule)
@@ -9,34 +9,34 @@
    ============================================================= */
 
 :root {
-  /* "cream" tokens now resolve to white-on-light surfaces */
-  --cream:        #FFFFFF;
-  --cream-deep:   #F5F5F5;
-  --cream-line:   #D4D4D4;
-  /* "ink" tokens now resolve to black + official gray */
-  --ink:          #000000;
-  --ink-soft:     #747474;
-  --ink-mute:     rgba(0, 0, 0, 0.45);
-  /* terracotta is already on-brand red */
+  /* Light surfaces: Linen dominant, Greige for lines and quiet panels */
+  --cream:        #F2EFEA;   /* Linen */
+  --cream-deep:   #E1DBD4;   /* Greige tint */
+  --cream-line:   #C8BEB2;   /* Greige hairlines */
+  /* Ink anchors text; tints of Ink for secondary text */
+  --ink:          #161616;   /* Ink */
+  --ink-soft:     #6B6660;   /* Ink tint, warm */
+  --ink-mute:     rgba(22, 22, 22, 0.45);
+  /* Rust: accent and CTA only, spend like punctuation */
   --terracotta:   #AF493B;
   --terracotta-d: #9D4134;
   --terracotta-l: rgba(175, 73, 59, 0.08);
-  /* "gold" tokens now resolve to official yellow (use sparingly) */
-  --gold:         #E8BB5C;
-  --gold-d:       #D9A640;
-  --gold-l:       rgba(232, 187, 92, 0.12);
+  /* Driftwood: warm secondary (legacy token name kept) */
+  --gold:         #A8957E;   /* Driftwood */
+  --gold-d:       #8A7660;
+  --gold-l:       rgba(168, 149, 126, 0.14);
   --white:        #FFFFFF;
 
   --serif: 'Times New Roman', Times, serif;
   --sans:  'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-  --radius-sm: 4px;
-  --radius:    8px;
-  --radius-lg: 14px;
+  --radius-sm: 0;
+  --radius:    0;
+  --radius-lg: 0;
 
-  --shadow-sm: 0 1px 2px rgba(43,43,43,0.05);
-  --shadow:    0 6px 24px rgba(43,43,43,0.06);
-  --shadow-lg: 0 12px 48px rgba(43,43,43,0.10);
+  --shadow-sm: none;
+  --shadow:    none;
+  --shadow-lg: none;
 
   --container: 1120px;
   --container-narrow: 720px;
@@ -151,14 +151,9 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
 .brandmark__icon {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  background: #000000;
-  color: #FFFFFF;
-  border-radius: 6px;
-  padding: 6px 8px;
   flex-shrink: 0;
 }
-.brandmark__icon .logo-mark { display: block; }
+.brandmark__icon img { display: block; height: 30px; width: auto; }
 .brandmark__text {
   font-size: 11px;
   letter-spacing: 0.32em;
@@ -174,7 +169,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
 .appnav__inner { max-width: var(--container); margin: 0 auto; padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .appnav__home { display: flex; align-items: center; gap: 12px; color: var(--white); font-family: var(--sans); }
 .appnav__brand-icon { display: inline-flex; align-items: center; color: var(--white); flex-shrink: 0; }
-.appnav__brand-icon .logo-mark { display: block; }
+.appnav__brand-icon img { display: block; height: 30px; width: auto; }
 /* Legacy classes kept in case any other page still references them */
 .appnav__brand { color: var(--gold); font-size: 11px; letter-spacing: 0.32em; font-weight: 500; }
 .appnav__sep { color: rgba(255,255,255,0.3); }
@@ -323,7 +318,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
 .price-card__badge {
   position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
   background: var(--gold); color: var(--ink);
-  padding: 5px 16px; font-size: 10px; letter-spacing: 0.16em; border-radius: 999px; font-weight: 600;
+  padding: 5px 16px; font-size: 10px; letter-spacing: 0.16em; border-radius: 0; font-weight: 600;
 }
 .price-card__tier { font-size: 11px; letter-spacing: 0.22em; color: var(--gold); margin: 0 0 8px; text-transform: uppercase; }
 .price-card__amount { display: flex; align-items: baseline; gap: 8px; margin: 0 0 12px; }
@@ -352,7 +347,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
 .auth__form input { padding: 12px 14px; border: 1px solid var(--cream-line); border-radius: var(--radius-sm); font: inherit; background: var(--cream); transition: border-color .15s ease; }
 .auth__form input:focus { outline: none; border-color: var(--terracotta); background: var(--white); }
 .auth__alt { margin: 24px 0 0; font-size: 13px; color: var(--ink-soft); text-align: center; }
-.auth__success-pill { display: inline-flex; align-items: center; gap: 8px; background: var(--terracotta-l); border: 1px solid rgba(175,73,59,0.30); color: var(--terracotta); padding: 5px 14px; border-radius: 999px; font-size: 11px; letter-spacing: 0.10em; margin: 0 0 18px; font-weight: 500; }
+.auth__success-pill { display: inline-flex; align-items: center; gap: 8px; background: var(--terracotta-l); border: 1px solid rgba(175,73,59,0.30); color: var(--terracotta); padding: 5px 14px; border-radius: 0; font-size: 11px; letter-spacing: 0.10em; margin: 0 0 18px; font-weight: 500; }
 
 /* =============================================================
    LISA LETTER
@@ -396,7 +391,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
 
 .progress { display: flex; align-items: center; gap: 16px; margin-top: 20px; max-width: 480px; }
 .progress--inline { margin-top: 16px; max-width: 100%; }
-.progress__bar { flex: 1; height: 4px; background: var(--cream-line); border-radius: 999px; overflow: hidden; }
+.progress__bar { flex: 1; height: 4px; background: var(--cream-line); border-radius: 0; overflow: hidden; }
 .progress__bar span { display: block; height: 100%; background: var(--gold); transition: width .6s ease; }
 .progress__meta { font-size: 12px; color: var(--ink-soft); margin: 0; white-space: nowrap; }
 .progress__meta strong { color: var(--ink); }
@@ -436,7 +431,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
 .station.is-active { box-shadow: 0 0 0 1px rgba(175,73,59,0.20), var(--shadow); }
 .station.is-locked { opacity: 0.55; }
 .station.is-progress { border-color: rgba(175,73,59,0.40); }
-.station__marker { width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--cream-line); display: flex; align-items: center; justify-content: center; font-family: var(--serif); color: var(--ink-soft); background: var(--white); }
+.station__marker { width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--cream-line); display: flex; align-items: center; justify-content: center; font-family: var(--serif); color: var(--ink-soft); background: var(--white); }
 .station.is-done .station__marker { border-color: var(--gold); background: var(--gold); color: var(--white); }
 .station.is-done .station__marker svg { width: 22px; height: 22px; }
 .station.is-active .station__marker { border-color: var(--terracotta); color: var(--terracotta); }
@@ -492,9 +487,9 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
 .chat__ready-banner[hidden] { display: none; }
 .chat__ready-text { margin: 0; color: var(--ink); font-size: 14px; line-height: 1.5; flex: 1; min-width: 220px; }
 @keyframes ready-glow {
-  0% { box-shadow: 0 0 0 0 rgba(201,169,110,0); }
-  50% { box-shadow: 0 0 0 8px rgba(201,169,110,0.22); }
-  100% { box-shadow: 0 0 0 0 rgba(201,169,110,0); }
+  0% { box-shadow: 0 0 0 0 rgba(168,149,126,0); }
+  50% { box-shadow: 0 0 0 8px rgba(168,149,126,0.22); }
+  100% { box-shadow: 0 0 0 0 rgba(168,149,126,0); }
 }
 
 /* =============================================================
@@ -584,7 +579,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
   align-items: center;
   gap: var(--space-2);
   padding: 8px 14px;
-  border-radius: 999px;
+  border-radius: 0;
   text-decoration: none;
   color: var(--ink-soft);
   font-family: var(--sans);
@@ -717,7 +712,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
   align-items: center;
   gap: var(--space-2);
   padding: 10px 16px;
-  border-radius: 999px;
+  border-radius: 0;
   background: var(--cream);
   border: 1px solid var(--cream-line);
   cursor: pointer;
@@ -777,7 +772,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
   align-items: center;
   gap: var(--space-2);
   padding: 10px 18px;
-  border-radius: 999px;
+  border-radius: 0;
   background: var(--terracotta);
   color: var(--cream);
   font-family: var(--sans);
@@ -905,7 +900,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
   align-items: center;
   gap: 5px;
   padding: 4px 10px;
-  border-radius: 999px;
+  border-radius: 0;
   background: var(--cream-deep);
   border: 1px solid var(--cream-line);
   font-size: 11.5px;
@@ -994,7 +989,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
   padding: 4px 12px;
   background: var(--ink);
   color: var(--cream) !important;
-  border-radius: 999px;
+  border-radius: 0;
   font-size: 11px;
   font-weight: 600;
   text-decoration: none !important;
@@ -1054,7 +1049,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
 .dash__progress {
   height: 4px;
   background: var(--cream-line);
-  border-radius: 999px;
+  border-radius: 0;
   overflow: hidden;
   margin-bottom: var(--space-5);
 }
@@ -1063,7 +1058,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
   display: block;
   height: 100%;
   background: var(--terracotta);
-  border-radius: 999px;
+  border-radius: 0;
   transition: width .6s ease;
 }
 .dash__cta-row { display: flex; gap: var(--space-4); align-items: center; flex-wrap: wrap; }
@@ -1102,7 +1097,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
   gap: var(--space-4);
   padding: var(--space-4) var(--space-5);
   background: var(--white);
-  border: 2px solid var(--cream-line);
+  border: 1px solid var(--cream-line);
   border-radius: var(--radius);
   text-decoration: none;
   color: var(--ink);
@@ -1157,13 +1152,13 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
 .journey__progress {
   height: 4px;
   background: var(--cream-line);
-  border-radius: 999px;
+  border-radius: 0;
   overflow: hidden;
 }
 .journey__progress-fill {
   height: 100%;
   background: var(--terracotta);
-  border-radius: 999px;
+  border-radius: 0;
   transition: width .6s ease;
 }
 .journey__step { margin-bottom: var(--space-7); }
@@ -1234,12 +1229,12 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
 .word-chip {
   appearance: none;
   background: var(--white);
-  border: 2px solid var(--cream-line);
+  border: 1px solid var(--cream-line);
   color: var(--ink);
   font-family: var(--sans);
   font-size: 14px;
   padding: 6px 14px;
-  border-radius: 999px;
+  border-radius: 0;
   cursor: pointer;
   transition: all .15s ease;
 }
@@ -1267,7 +1262,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
   position: relative;
   text-align: left;
   background: var(--white);
-  border: 2px solid var(--cream-line);
+  border: 1px solid var(--cream-line);
   border-radius: var(--radius);
   padding: var(--space-4) var(--space-5);
   cursor: pointer;
@@ -1281,8 +1276,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
 .pick-card:hover { border-color: var(--ink-soft); }
 .pick-card.is-selected {
   border-color: var(--terracotta);
-  box-shadow: 0 0 0 3px rgba(175, 73, 59, 0.15);
-}
+  }
 .pick-card__label { font-size: 14px; font-weight: 500; line-height: 1.4; }
 .pick-card__desc { font-size: 12px; color: var(--ink-soft); line-height: 1.4; }
 .pick-card__check {
@@ -1315,7 +1309,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
   gap: var(--space-4);
   padding: var(--space-3) var(--space-4);
   background: var(--white);
-  border: 2px solid var(--cream-line);
+  border: 1px solid var(--cream-line);
   border-radius: var(--radius);
   cursor: grab;
   transition: border-color .15s ease;
@@ -1340,7 +1334,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
   background: var(--white);
   border: 1px solid var(--cream-line);
   width: 28px; height: 22px;
-  border-radius: 4px;
+  border-radius: 0;
   font-size: 12px;
   color: var(--ink);
   cursor: pointer;
@@ -1367,7 +1361,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
   font-size: 14px;
   line-height: 1.55;
   padding: var(--space-3) var(--space-4);
-  border: 2px solid var(--cream-line);
+  border: 1px solid var(--cream-line);
   border-radius: var(--radius);
   resize: vertical;
   background: var(--white);
@@ -1381,7 +1375,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
 
 /* ---- Summary ---- */
 .summary-card {
-  border: 2px solid rgba(175, 73, 59, 0.2);
+  border: 1px solid rgba(175, 73, 59, 0.2);
   background: var(--terracotta-l);
   padding: var(--space-5) var(--space-5);
   border-radius: var(--radius);
@@ -1469,7 +1463,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
   font-size: 13px;
   background: var(--white);
   border: 1px solid var(--cream-line);
-  border-radius: 999px;
+  border-radius: 0;
   color: var(--ink);
 }
 
@@ -1501,7 +1495,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
 /* ---- Dashboard: "Your brand so far" panel ---- */
 .dash-deliverables {
   background: var(--white);
-  border: 2px solid var(--cream-line);
+  border: 1px solid var(--cream-line);
   border-radius: var(--radius);
   padding: var(--space-5) var(--space-5);
   margin-top: var(--space-6);
@@ -1646,7 +1640,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
   position: relative;
   text-align: left;
   background: var(--white);
-  border: 2px solid var(--cream-line);
+  border: 1px solid var(--cream-line);
   border-radius: var(--radius);
   padding: var(--space-4) var(--space-5);
   padding-right: 48px;
@@ -1663,8 +1657,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
 .ai-option.is-selected {
   border-color: var(--terracotta);
   background: var(--terracotta-l);
-  box-shadow: 0 0 0 3px rgba(175, 73, 59, 0.12);
-}
+  }
 .ai-option__text {
   display: block;
 }
@@ -1724,7 +1717,7 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
   display: inline-block;
   width: 14px;
   height: 14px;
-  border: 2px solid var(--cream-line);
+  border: 1px solid var(--cream-line);
   border-top-color: var(--terracotta);
   border-radius: 50%;
   animation: mirror-spin 0.8s linear infinite;

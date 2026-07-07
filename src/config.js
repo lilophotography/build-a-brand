@@ -31,15 +31,15 @@ const DEFAULTS = {
     tagline: 'A brand with purpose is a brand with power.',
     // LiLo palette - keys map to CSS custom property names in styles.css :root.
     // The landing page config loader sets `--{key}` from these values.
-    // Token names kept; values are now LiLo official palette (red, black, white, yellow, gray)
-    cream: '#FFFFFF',
-    cream_deep: '#F5F5F5',
-    ink: '#000000',
-    ink_soft: '#747474',
+    // Token names kept; values are the official 2026 palette (Rust, Driftwood, Greige, Linen, Ink)
+    cream: '#F2EFEA',
+    cream_deep: '#E1DBD4',
+    ink: '#161616',
+    ink_soft: '#6B6660',
     terracotta: '#AF493B',
     terracotta_d: '#9D4134',
-    gold: '#E8BB5C',
-    gold_d: '#D9A640',
+    gold: '#A8957E',
+    gold_d: '#8A7660',
     serif: "'Times New Roman', Times, serif",
     sans: "'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     logo_url: '',
@@ -53,7 +53,7 @@ const DEFAULTS = {
     hero_cta_primary: 'Get Started',
     hero_cta_signin: 'Sign in',
     hero_cta_continue: 'Continue Building',
-    hero_trust: 'A LiLo Photography & Branding course. Built for growing businesses ready to scale.',
+    hero_trust: 'A LiLo Brand Studio course. Built for growing businesses ready to scale.',
     // Framework section
     framework_eyebrow: 'The Framework',
     framework_title: "The 5 V's of Brand Building",
