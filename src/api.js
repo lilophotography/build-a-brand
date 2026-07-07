@@ -3,6 +3,7 @@
 import { TOOL_ORDER, buildSystemPrompt } from './prompts.js';
 import { getConfig } from './config.js';
 import { journeyComplete, wordLabel } from './journey.js';
+import puppeteer from '@cloudflare/puppeteer';
 
 // ---------- Public dispatch ----------
 
@@ -1037,28 +1038,25 @@ async function brandGuide(env, user, url) {
   const origin = url ? url.origin : (env.APP_URL || 'https://build-a-brand-app.lilophotography.workers.dev');
   const printUrl = `${origin}/brand-guide/print?t=${printToken}`;
 
-  // The BROWSER binding's REST API: we POST a /pdf request with { url }
-  const upstream = await env.BROWSER.fetch('https://browser.do/pdf', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      url: printUrl,
-      pdf: {
-        format: 'A4',
-        printBackground: true,
-        margin: { top: '0', right: '0', bottom: '0', left: '0' },
-      },
-      gotoOptions: { waitUntil: 'networkidle0', timeout: 30000 },
-    }),
-  });
-
-  if (!upstream.ok) {
-    const errText = await upstream.text().catch(() => '');
-    console.error('Browser Rendering error', upstream.status, errText);
+  // Browser Rendering via the BROWSER binding + @cloudflare/puppeteer:
+  // launch a headless browser, load our own print page, capture as PDF.
+  let pdf;
+  let browser;
+  try {
+    browser = await puppeteer.launch(env.BROWSER);
+    const pageHandle = await browser.newPage();
+    await pageHandle.goto(printUrl, { waitUntil: 'networkidle0', timeout: 30000 });
+    pdf = await pageHandle.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: { top: '0', right: '0', bottom: '0', left: '0' },
+    });
+  } catch (err) {
+    console.error('Browser Rendering error', err.message);
     return json({ error: 'PDF generation failed' }, 502);
+  } finally {
+    try { if (browser) await browser.close(); } catch {}
   }
-
-  const pdf = await upstream.arrayBuffer();
   return new Response(pdf, {
     headers: {
       'Content-Type': 'application/pdf',
