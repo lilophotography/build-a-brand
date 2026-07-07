@@ -15,6 +15,7 @@ import {
   journeyComplete,
   brandGuideEntries,
 } from './journey.js';
+import { nextOfficeHours, cadenceLabel } from './office-hours.js';
 
 // ============================================================
 // PUBLIC: Landing page
@@ -137,7 +138,7 @@ export function renderLanding(user) {
     </details>
     <details class="faq__item">
       <summary>Is this self-paced or live?</summary>
-      <p>Self-paced. You go through each session as a private conversation with my AI brand strategist, on your time. The $500 tier adds a real 1:1 hour with me to bring it all to life.</p>
+      <p>Self-paced. Most people finish in a few focused sittings. And every month you can bring whatever you're working on to live Office Hours with me.</p>
     </details>
     <details class="faq__item">
       <summary>What if I get stuck?</summary>
@@ -148,8 +149,8 @@ export function renderLanding(user) {
       <p>Yes. Lifetime access to all 5 sessions, your saved answers, and your downloadable Brand Guide PDF. Come back and refine as your business grows.</p>
     </details>
     <details class="faq__item">
-      <summary>I bought the $250 experience. Can I add the strategy call later?</summary>
-      <p>Absolutely. Once you've finished a few sessions, you'll see an option to add a 1-hour 1:1 strategy call with me for $300. No pressure, no expiration.</p>
+      <summary>What are Office Hours?</summary>
+      <p>Once a month I host a live session where you can bring your brand, your questions, and whatever you're stuck on, and get real help from me. Included with your purchase, same link every month.</p>
     </details>
     <details class="faq__item">
       <summary>Who is this for?</summary>
@@ -323,7 +324,7 @@ export function renderOnboarding(user) {
 // APP: Dashboard
 // ============================================================
 
-export function renderDashboard(user, progressRows) {
+export function renderDashboard(user, progressRows, config) {
   const progressByTool = Object.fromEntries((progressRows || []).map(r => [r.tool, r]));
 
   // For each V with a journey, "complete" means its deliverables actually
@@ -382,8 +383,7 @@ export function renderDashboard(user, progressRows) {
   const resumeHref = resumeTarget ? `/brand-builder/${resumeTarget.tool}` : '/brand-guide';
   const resumeLabel = pct === 0 ? 'Begin' : pct === 100 ? 'See your Brand Guide' : 'Resume';
 
-  const isCoachingTier = user.tier === 'coaching' || user.has_call_credit;
-  const rightRail = isCoachingTier ? coachingCard(user, completedCount) : upsellCard(completedCount);
+  const rightRail = officeHoursCard(config);
 
   // Section overview list. Tight. No video chips. No workbook chips.
   const sectionList = sectionStatus.map((s) => {
@@ -571,6 +571,20 @@ function renderWelcomeVideoCard(opts = {}) {
   </aside>`;
 }
 
+function officeHoursCard(config) {
+  const copy = config?.copy || {};
+  const next = nextOfficeHours(copy);
+  const when = copy.office_hours_schedule || `${next.label} · ${copy.office_hours_time || '12:00pm Mountain'}`;
+  const today = next.isToday && !copy.office_hours_schedule;
+  return `<aside class="rail-card rail-card--gold is-unlocked">
+    <p class="rail-card__eyebrow">Included with your experience</p>
+    <h3 class="rail-card__title">Monthly Office Hours with Lisa</h3>
+    <p class="rail-card__desc">${today ? 'Today: ' : 'Next session: '}${esc(when)}.</p>
+    <a href="/coaching" class="btn btn--gold-ghost btn--sm">${today ? 'Join today →' : 'See details →'}</a>
+  </aside>`;
+}
+
+// Legacy: kept for reference; no longer rendered on the dashboard.
 function coachingCard(user, completedCount) {
   // $500 buyers and upsell-claimants. Unlocks at 3+ V's done.
   const unlocked = completedCount >= 3 && !user.call_booked_at;
@@ -1014,7 +1028,9 @@ export function renderBrandGuide(user, progressRows) {
 
 export function renderCoaching(user, config) {
   const copy = config?.copy || {};
-  const schedule = copy.office_hours_schedule || 'Schedule coming soon. Watch your email.';
+  const next = nextOfficeHours(copy);
+  const schedule = copy.office_hours_schedule || `${next.label} · ${copy.office_hours_time || '12:00pm Mountain'}`;
+  const cadence = cadenceLabel(copy);
   const link = copy.office_hours_link || '';
   const desc = copy.office_hours_desc || "Bring your brand, your questions, and whatever you're stuck on. Live, unscripted, and included with your experience.";
   const hasCallCredit = user.tier === 'coaching' || user.has_call_credit;
@@ -1026,8 +1042,9 @@ export function renderCoaching(user, config) {
   <p class="coaching__lede">${esc(desc)}</p>
 
   <div class="coaching__panel">
-    <h2 class="coaching__panel-title">Next session</h2>
+    <h2 class="coaching__panel-title">${next.isToday && !copy.office_hours_schedule ? 'Today.' : 'Next session'}</h2>
     <p class="coaching__schedule">${esc(schedule)}</p>
+    <p class="coaching__cadence">${esc(cadence)}.${link ? ' Same link every month.' : ''}</p>
     ${link
       ? `<a class="btn btn--primary" href="${esc(link)}" target="_blank" rel="noopener">Join the session</a>`
       : `<p class="coaching__note">The join link lands in your inbox before each session. Questions in the meantime? <a href="mailto:lisa@photolilo.com">Email Lisa</a>.</p>`}

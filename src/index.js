@@ -13,11 +13,68 @@ import {
 } from './pages.js';
 import { getJourneySteps } from './journey.js';
 import { getConfig } from './config.js';
+import { nextOfficeHours, denverToday } from './office-hours.js';
 import { getVData, findVForLessonSlug } from './course.js';
 import { TOOL_ORDER } from './prompts.js';
 import { redirect, htmlResponse } from './render.js';
 
 export default {
+  // Cron (daily, morning Mountain time): if today is Office Hours day and a
+  // join link is configured, email every member the link once.
+  async scheduled(event, env, ctx) {
+    try {
+      const config = await getConfig(env);
+      const copy = config?.copy || {};
+      const link = copy.office_hours_link || '';
+      if (!link || !env.RESEND_API_KEY) return;
+
+      const today = denverToday();
+      const next = nextOfficeHours(copy, today);
+      if (!next.isToday) return;
+
+      // Once per session date, even across cron retries.
+      const guardKey = 'ohmail:' + next.iso;
+      if (await env.SESSIONS.get(guardKey)) return;
+      await env.SESSIONS.put(guardKey, '1', { expirationTtl: 60 * 60 * 48 });
+
+      const { results: members } = await env.DB.prepare(
+        'SELECT email, first_name FROM users WHERE has_access = 1 AND email IS NOT NULL'
+      ).all();
+
+      const time = copy.office_hours_time || '12:00pm Mountain';
+      for (const m of (members || [])) {
+        const name = m.first_name || 'there';
+        const html = `<div style="font-family: Lato, Helvetica, Arial, sans-serif; color: #161616; max-width: 540px; margin: 0 auto; padding: 24px;">
+<p style="font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:#AF493B;font-weight:700;margin:0 0 16px;">Office Hours</p>
+<h1 style="font-family: 'Times New Roman', Times, serif; font-weight: 400; font-size: 28px; margin: 0 0 16px;">Today. ${time}.</h1>
+<p style="font-size:15px;line-height:1.6;margin:0 0 16px;">Hey ${name}. Office Hours is today. Bring your brand, your questions, and whatever you're stuck on.</p>
+<p style="margin:0 0 24px;"><a href="${link}" style="display:inline-block;background:#AF493B;color:#ffffff;text-decoration:none;padding:12px 28px;font-size:14px;letter-spacing:0.04em;">Join the session</a></p>
+<p style="font-size:13px;color:#6B6660;line-height:1.6;margin:0;">Same link every month. See you there.<br>Lisa</p>
+</div>`;
+        try {
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': 'Bearer ' + env.RESEND_API_KEY,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              from: 'Lisa | LiLo Brand Studio <hello@email.lilobrandstudio.com>',
+              to: [m.email],
+              reply_to: 'lisa@photolilo.com',
+              subject: 'Office Hours today at ' + time,
+              html,
+            }),
+          });
+        } catch (err) {
+          console.error('Office Hours email failed for', m.email, err.message);
+        }
+      }
+    } catch (err) {
+      console.error('Office Hours cron error:', err.message);
+    }
+  },
+
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname;
@@ -121,7 +178,8 @@ export default {
           const { results } = await env.DB.prepare(
             'SELECT tool, completed, summary, messages, step_progress FROM brand_progress WHERE user_id = ?'
           ).bind(user.id).all();
-          return renderDashboard(user, results || []);
+          const config = await getConfig(env);
+          return renderDashboard(user, results || [], config);
         }
         if (path === '/coaching') {
           const config = await getConfig(env);

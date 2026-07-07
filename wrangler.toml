@@ -30,6 +30,10 @@ binding = "BROWSER"
 # pattern = "brand.photolilo.com"
 # custom_domain = true
 
+# Daily cron, 15:00 UTC (9am MDT / 8am MST): Office Hours same-day reminder.
+[triggers]
+crons = ["0 15 * * *"]
+
 [vars]
 APP_NAME = "Build a Brand"
 APP_BRAND = "LiLo Photography & Branding"

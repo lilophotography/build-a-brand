@@ -79,9 +79,16 @@ const DEFAULTS = {
     how_step_3_title: 'Launch with confidence',
     how_step_3_body: 'Download your complete Brand Guide as a PDF. Your brand foundation, done.',
     // Office Hours (member page at /coaching). Lisa edits these in /admin
-    // without a deploy: schedule text, join link, description.
+    // without a deploy. The next session date is COMPUTED from nth + weekday,
+    // so nothing needs monthly upkeep. office_hours_link is the standing
+    // Google Meet link (a recurring Calendar event keeps one link forever).
+    // office_hours_schedule stays empty unless Lisa wants to override the
+    // computed date line with free text (e.g. a one-off reschedule).
     office_hours_title: 'Monthly Office Hours with Lisa.',
-    office_hours_schedule: 'First Wednesday of every month, 12:00pm Mountain.',
+    office_hours_nth: '1',
+    office_hours_weekday: 'wednesday',
+    office_hours_time: '12:00pm Mountain',
+    office_hours_schedule: '',
     office_hours_link: '',
     office_hours_desc: "Bring your brand, your questions, and whatever you're stuck on. Live, unscripted, and included with your experience.",
     // Auth + nav buttons
