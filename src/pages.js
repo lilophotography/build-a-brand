@@ -404,8 +404,8 @@ export function renderDashboard(user, progressRows) {
     const stateLabel = s.isComplete
       ? 'Complete'
       : s.inProgress
-      ? `${s.done} of ${s.total} steps done`
-      : s.hasJourney ? `Not started · ${s.total} steps` : 'Not started';
+      ? 'In progress'
+      : 'Not started';
     const stateClass = s.isComplete ? 'is-done' : s.inProgress ? 'is-progress' : 'is-pending';
     const ariaLabel = `${s.meta.label}: ${stateLabel}`;
     return `<li class="dash-section ${stateClass}">
@@ -426,7 +426,7 @@ export function renderDashboard(user, progressRows) {
       <span class="dash-section__num">★</span>
       <span class="dash-section__body">
         <span class="dash-section__label">Your Brand Guide</span>
-        <span class="dash-section__state">${guideUnlocked ? 'Ready to download' : `Unlocks after all 5 sections (${5 - completedCount} to go)`}</span>
+        <span class="dash-section__state">${guideUnlocked ? 'Ready to download' : 'Unlocks after all 5 sections'}</span>
       </span>
       <span class="dash-section__chev" aria-hidden="true">${guideUnlocked ? '→' : ''}</span>
     </a>
