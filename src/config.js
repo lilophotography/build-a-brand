@@ -78,6 +78,12 @@ const DEFAULTS = {
     how_step_2_body: 'Every session generates polished deliverables: statements, copy, checklists. All saved to your Brand Guide.',
     how_step_3_title: 'Launch with confidence',
     how_step_3_body: 'Download your complete Brand Guide as a PDF. Your brand foundation, done.',
+    // Office Hours (member page at /coaching). Lisa edits these in /admin
+    // without a deploy: schedule text, join link, description.
+    office_hours_title: 'Monthly Office Hours with Lisa.',
+    office_hours_schedule: 'First Wednesday of every month, 12:00pm Mountain.',
+    office_hours_link: '',
+    office_hours_desc: "Bring your brand, your questions, and whatever you're stuck on. Live, unscripted, and included with your experience.",
     // Auth + nav buttons
     signin_button: 'Sign in',
     signup_button: 'Create Account',

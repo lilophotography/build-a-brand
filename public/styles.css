@@ -1850,3 +1850,16 @@ h1, h2, h3, h4 { font-family: var(--serif); font-weight: 400; line-height: 1.2; 
   border-radius: 50%;
   cursor: grab;
 }
+
+/* ---- Single-price pricing grid + office hours schedule ---- */
+.pricing__grid--single {
+  grid-template-columns: minmax(0, 460px);
+  justify-content: center;
+}
+.coaching__schedule {
+  font-family: var(--serif);
+  font-size: 22px;
+  line-height: 1.4;
+  color: var(--ink);
+  margin: 0 0 var(--space-4);
+}

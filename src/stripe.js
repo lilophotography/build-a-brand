@@ -1,16 +1,56 @@
-// Stripe: checkout sessions for 3 prices + webhook handler.
+// Stripe: checkout sessions + webhook handler.
 //
-// Three product flows:
-//   tier=course           -> $250 course only           (price_course)
-//   tier=coaching         -> $500 course + strategy call (price_course_coaching)
-//   tier=upsell_call      -> $300 add-on call (only after course-only purchase)
+// Pricing model (July 2026): ONE price, $297, for The Next Level Brand
+// Experience. Monthly Office Hours with Lisa are included for every member.
+// The optional private strategy call remains as an add-on.
+//
+//   tier=course        -> $297 The Experience (tier key kept for data continuity)
+//   tier=upsell_call   -> $300 add-on private call
+//
+// The Experience price is resolved LIVE from Stripe: we look up the product
+// behind STRIPE_PRICE_COURSE and charge its current default_price. Lisa can
+// change the price in Stripe (new price, set as default) with no deploy.
 //
 // On checkout.session.completed:
 //   - course        -> users.has_access=1, tier='course'
-//   - coaching      -> users.has_access=1, tier='coaching', has_call_credit=1
+//   - coaching      -> legacy path kept for old $500 buyers' webhook retries
 //   - upsell_call   -> users.has_call_credit=1   (does NOT change tier)
 
 const STRIPE_BASE = 'https://api.stripe.com/v1';
+
+// Resolve the current price for The Experience. Uses the configured anchor
+// price to find the product, then charges the product's default_price so
+// price changes made in the Stripe dashboard take effect with no deploy.
+// Cached per isolate for 5 minutes.
+let priceCache = { id: null, at: 0 };
+async function resolveExperiencePrice(env) {
+  const anchor = env.STRIPE_PRICE_EXPERIENCE || env.STRIPE_PRICE_COURSE;
+  if (!anchor) return null;
+  const now = Date.now();
+  if (priceCache.id && (now - priceCache.at) < 5 * 60 * 1000) return priceCache.id;
+  try {
+    const auth = { 'Authorization': 'Bearer ' + env.STRIPE_SECRET_KEY };
+    const priceRes = await fetch(STRIPE_BASE + '/prices/' + anchor, { headers: auth });
+    if (!priceRes.ok) throw new Error('price lookup ' + priceRes.status);
+    const price = await priceRes.json();
+    const productId = typeof price.product === 'string' ? price.product : price.product?.id;
+    if (productId) {
+      const prodRes = await fetch(STRIPE_BASE + '/products/' + productId, { headers: auth });
+      if (prodRes.ok) {
+        const product = await prodRes.json();
+        const def = typeof product.default_price === 'string' ? product.default_price : product.default_price?.id;
+        if (def) {
+          priceCache = { id: def, at: now };
+          return def;
+        }
+      }
+    }
+  } catch (err) {
+    console.error('resolveExperiencePrice fallback:', err.message);
+  }
+  priceCache = { id: anchor, at: now };
+  return anchor;
+}
 
 export async function handleStripe(request, env, url, user) {
   const path = url.pathname;
@@ -28,15 +68,12 @@ async function checkout(request, env, user) {
   const { tier } = await request.json().catch(() => ({ tier: 'course' }));
 
   let priceId, label;
-  if (tier === 'coaching') {
-    priceId = env.STRIPE_PRICE_COURSE_COACHING;
-    label = 'The Experience + Strategy Call';
-  } else if (tier === 'upsell_call') {
+  if (tier === 'upsell_call') {
     if (!user) return json({ error: 'Sign in to add a strategy call.' }, 401);
     priceId = env.STRIPE_PRICE_UPSELL_CALL;
     label = 'Add a Strategy Call';
   } else {
-    priceId = env.STRIPE_PRICE_COURSE;
+    priceId = await resolveExperiencePrice(env);
     label = 'The Next Level Brand Experience';
   }
 

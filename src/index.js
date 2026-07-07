@@ -12,6 +12,7 @@ import {
   renderJourney, renderBrandGuide, renderBrandGuidePrint, renderCoaching, renderVComplete,
 } from './pages.js';
 import { getJourneySteps } from './journey.js';
+import { getConfig } from './config.js';
 import { getVData, findVForLessonSlug } from './course.js';
 import { TOOL_ORDER } from './prompts.js';
 import { redirect, htmlResponse } from './render.js';
@@ -122,7 +123,10 @@ export default {
           ).bind(user.id).all();
           return renderDashboard(user, results || []);
         }
-        if (path === '/coaching') return renderCoaching(user);
+        if (path === '/coaching') {
+          const config = await getConfig(env);
+          return renderCoaching(user, config);
+        }
         if (path === '/brand-guide') {
           const { results } = await env.DB.prepare(
             'SELECT tool, completed, summary, step_progress FROM brand_progress WHERE user_id = ?'

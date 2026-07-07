@@ -105,39 +105,24 @@ export function renderLanding(user) {
 
 <section id="pricing" class="pricing">
   <p class="eyebrow eyebrow--gold">Pricing</p>
-  <h2 class="section-title section-title--inverse">Choose your path</h2>
-  <p class="pricing__lede">Both options give you lifetime access to all 5 sessions and your Brand Guide.</p>
+  <h2 class="section-title section-title--inverse">Join the Experience</h2>
+  <p class="pricing__lede">One price. Everything included. Lifetime access.</p>
 
-  <div class="pricing__grid">
-    <div class="price-card">
+  <div class="pricing__grid pricing__grid--single">
+    <div class="price-card price-card--featured">
       <p class="price-card__tier">The Experience</p>
-      <p class="price-card__amount"><span class="price-card__num">$250</span><span class="price-card__when">one-time</span></p>
-      <p class="price-card__desc">Full access to all 5 AI brand-building sessions and your downloadable Brand Guide PDF.</p>
+      <p class="price-card__amount"><span class="price-card__num">$297</span><span class="price-card__when">one-time</span></p>
+      <p class="price-card__desc">The full Next Level Brand Experience, plus live monthly Office Hours with Lisa.</p>
       <ul class="price-card__list">
-        <li>5 AI-guided sessions</li>
-        <li>Downloadable Brand Guide PDF</li>
-        <li>Lifetime access</li>
-        <li>Build at your own pace</li>
+        <li>All 5 guided brand sessions</li>
+        <li>20+ crafted brand deliverables</li>
+        <li>Your downloadable Brand Guide PDF</li>
+        <li>Monthly live Office Hours with Lisa</li>
+        <li>Lifetime access, build at your own pace</li>
       </ul>
       ${isSignedIn
         ? `<a href="/dashboard" class="btn btn--ghost-light">Go to Dashboard</a>`
-        : `<button class="btn btn--ghost-light" data-checkout="course">Get Started for $250</button>`}
-    </div>
-
-    <div class="price-card price-card--featured">
-      <span class="price-card__badge">Most Popular</span>
-      <p class="price-card__tier">The Experience + Strategy Call</p>
-      <p class="price-card__amount"><span class="price-card__num">$500</span><span class="price-card__when">one-time</span></p>
-      <p class="price-card__desc">Everything in the experience plus a private 1-hour strategy call with Lisa to bring your brand to life.</p>
-      <ul class="price-card__list">
-        <li>Everything in The Experience</li>
-        <li>1-hour 1:1 strategy call with Lisa</li>
-        <li>Brand review + feedback</li>
-        <li>Personalized action plan</li>
-      </ul>
-      ${isSignedIn
-        ? `<a href="/dashboard" class="btn btn--gold">Go to Dashboard</a>`
-        : `<button class="btn btn--gold" data-checkout="coaching">Get Started for $500</button>`}
+        : `<button class="btn btn--gold" data-checkout="course">Get Started for $297</button>`}
     </div>
   </div>
 </section>
@@ -1027,42 +1012,47 @@ export function renderBrandGuide(user, progressRows) {
 // APP: Coaching page (tier-aware)
 // ============================================================
 
-export function renderCoaching(user) {
-  const isCoachingTier = user.tier === 'coaching' || user.has_call_credit;
+export function renderCoaching(user, config) {
+  const copy = config?.copy || {};
+  const schedule = copy.office_hours_schedule || 'Schedule coming soon. Watch your email.';
+  const link = copy.office_hours_link || '';
+  const desc = copy.office_hours_desc || "Bring your brand, your questions, and whatever you're stuck on. Live, unscripted, and included with your experience.";
+  const hasCallCredit = user.tier === 'coaching' || user.has_call_credit;
 
-  const main = isCoachingTier ? `
+  const main = `
 <section class="coaching">
-  <p class="eyebrow">Work with Lisa</p>
-  <h1 class="coaching__title">Your strategy call.</h1>
-  <p class="coaching__lede">A private 1-hour conversation to pressure-test your brand, sharpen your direction, and map your next moves.</p>
+  <p class="eyebrow">Included with your experience</p>
+  <h1 class="coaching__title">${esc(copy.office_hours_title || 'Monthly Office Hours with Lisa.')}</h1>
+  <p class="coaching__lede">${esc(desc)}</p>
 
   <div class="coaching__panel">
-    <h2 class="coaching__panel-title">How to book</h2>
-    <p>Send a note to <a href="mailto:lisa@photolilo.com">lisa@photolilo.com</a> with two or three time windows that work for you in the next two weeks. Lisa will confirm a time within one business day.</p>
-    <p class="coaching__note">A direct booking link is on the way. For now this concierge step keeps things personal, and you'll get on Lisa's calendar fast.</p>
-
-    <a class="btn btn--primary" href="mailto:lisa@photolilo.com?subject=Book%20my%20Build%20a%20Brand%20strategy%20call">Email Lisa to book</a>
+    <h2 class="coaching__panel-title">Next session</h2>
+    <p class="coaching__schedule">${esc(schedule)}</p>
+    ${link
+      ? `<a class="btn btn--primary" href="${esc(link)}" target="_blank" rel="noopener">Join the session</a>`
+      : `<p class="coaching__note">The join link lands in your inbox before each session. Questions in the meantime? <a href="mailto:lisa@photolilo.com">Email Lisa</a>.</p>`}
   </div>
-</section>
-` : `
-<section class="coaching">
-  <p class="eyebrow">Take it further</p>
-  <h1 class="coaching__title">Bring your brand to life with Lisa.</h1>
-  <p class="coaching__lede">You've built the foundation. A 1-hour 1:1 with Lisa turns it into a plan you can actually execute.</p>
 
-  <div class="coaching__panel coaching__panel--terracotta">
-    <p class="coaching__panel-tier">Add a Strategy Call · $300</p>
+  ${hasCallCredit
+    ? `<div class="coaching__panel">
+    <h2 class="coaching__panel-title">Your private strategy call</h2>
+    <p>You have a 1:1 call with Lisa${user.call_booked_at ? ', and it is booked. She will see you at your scheduled time.' : ' waiting to be scheduled.'}</p>
+    ${user.call_booked_at ? '' : `<p>Send a note to <a href="mailto:lisa@photolilo.com">lisa@photolilo.com</a> with two or three time windows that work for you in the next two weeks.</p>
+    <a class="btn btn--primary" href="mailto:lisa@photolilo.com?subject=Book%20my%20strategy%20call">Email Lisa to book</a>`}
+  </div>`
+    : `<div class="coaching__panel coaching__panel--terracotta">
+    <p class="coaching__panel-tier">Want it 1:1? Add a private Strategy Call · $300</p>
     <ul class="coaching__list">
       <li>1-hour private 1:1 with Lisa</li>
       <li>Brand review and feedback</li>
       <li>Personalized action plan</li>
     </ul>
     <button class="btn btn--gold" data-checkout="upsell_call">Add a strategy call →</button>
-  </div>
+  </div>`}
 </section>
 `;
   return htmlResponse(page({
-    title: 'Coaching · The Next Level Brand Experience',
+    title: 'Office Hours · The Next Level Brand Experience',
     nav: appNav('/coaching', user),
     main,
     bodyClass: 'page-coaching',
