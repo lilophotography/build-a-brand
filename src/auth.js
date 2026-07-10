@@ -150,81 +150,161 @@ export async function handleAuth(request, env, url) {
   const path = url.pathname;
   const method = request.method;
 
-  if (path === '/api/auth/signup' && method === 'POST') return signup(request, env);
-  if (path === '/api/auth/signin' && method === 'POST') return signin(request, env);
+  if (path === '/api/auth/request-code' && method === 'POST') return requestCode(request, env);
+  if (path === '/api/auth/verify-code' && method === 'POST') return verifyCode(request, env);
   if (path === '/api/auth/signout' && method === 'POST') return signout(request, env);
   if (path === '/api/auth/me' && method === 'GET') return me(request, env);
 
   return json({ error: 'Not found' }, 404);
 }
 
-async function signup(request, env) {
-  const body = await request.json().catch(() => ({}));
-  const email = (body.email || '').trim().toLowerCase();
-  const password = body.password || '';
+// ---------- Passwordless email-code login ----------
+// Flow: request-code emails a 6-digit code (15 min TTL). verify-code checks it,
+// creates the member row on first login, claims any pre-paid entitlement, and
+// opens a 30-day session. Admins (email in admin_users) also get an admin_token
+// back so the /admin panel opens from the same login. No passwords anywhere.
 
-  if (!isValidEmail(email)) return json({ error: 'Please enter a valid email address.' }, 400);
-  if (password.length < 8) return json({ error: 'Password must be at least 8 characters.' }, 400);
+const CODE_TTL_SECONDS = 15 * 60;
+const CODE_RESEND_THROTTLE_MS = 30 * 1000;
+const MAX_CODE_ATTEMPTS = 5;
 
-  const existing = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first();
-  if (existing) return json({ error: 'An account with this email already exists. Try signing in instead.' }, 409);
-
-  const id = uuid();
-  const passwordHash = await hashPassword(password);
-
-  await env.DB.prepare(
-    `INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)`
-  ).bind(id, email, passwordHash).run();
-
-  // If the user paid before signup, the webhook stashed a pending entitlement
-  // keyed by email. Claim it now so they land on /lisa with access already set.
-  await claimPendingEntitlement(env, id, email);
-
-  const token = await createSession(env, id);
-  return json({ ok: true, user: { id, email } }, 200, {
-    'Set-Cookie': sessionCookie(token),
-  });
+function generateCode() {
+  const n = crypto.getRandomValues(new Uint32Array(1))[0] % 1000000;
+  return String(n).padStart(6, '0');
 }
 
-async function signin(request, env) {
+// Only email codes to addresses we recognise: an existing member, a paid buyer
+// whose entitlement is waiting, or an admin. Everyone else gets a silent ok so
+// we never reveal who has an account.
+async function isKnownEmail(env, email) {
+  const u = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first();
+  if (u) return true;
+  const pending = await env.SESSIONS.get(`pe:${email}`);
+  if (pending) return true;
+  try {
+    const a = await env.DB.prepare('SELECT id FROM admin_users WHERE email = ?').bind(email).first();
+    if (a) return true;
+  } catch {}
+  return false;
+}
+
+async function requestCode(request, env) {
   const body = await request.json().catch(() => ({}));
   const email = (body.email || '').trim().toLowerCase();
-  const password = body.password || '';
+  if (!isValidEmail(email)) return json({ error: 'Please enter a valid email address.' }, 400);
 
-  const row = await env.DB.prepare(
-    'SELECT id, password_hash FROM users WHERE email = ?'
-  ).bind(email).first();
+  // Always answer the same way, whether or not we send anything.
+  if (!(await isKnownEmail(env, email))) return json({ ok: true });
 
-  // Always run hash verification even if user not found, to avoid timing leaks
-  const valid = row ? await verifyPassword(password, row.password_hash) : false;
-
-  if (!row || !valid) {
-    return json({ error: 'That email and password don’t match what we have on file.' }, 401);
+  // Light throttle: at most one code per email per 30 seconds.
+  const existing = await env.SESSIONS.get(`authcode:${email}`, 'json');
+  if (existing && existing.sentAt && (Date.now() - existing.sentAt) < CODE_RESEND_THROTTLE_MS) {
+    return json({ ok: true });
   }
 
-  const token = await createSession(env, row.id);
+  const code = generateCode();
+  await env.SESSIONS.put(
+    `authcode:${email}`,
+    JSON.stringify({ code, attempts: 0, sentAt: Date.now() }),
+    { expirationTtl: CODE_TTL_SECONDS }
+  );
+  await sendCodeEmail(env, email, code);
+  return json({ ok: true });
+}
 
-  // Unified login: if this user's email also has an admin_users row, mint an
-  // admin session token and return it. The sign-in page writes it into
-  // localStorage.admin_token so /admin works without a second login.
+async function verifyCode(request, env) {
+  const body = await request.json().catch(() => ({}));
+  const email = (body.email || '').trim().toLowerCase();
+  const code = (body.code || '').trim();
+  if (!isValidEmail(email) || !/^\d{6}$/.test(code)) {
+    return json({ error: 'Enter the 6-digit code we emailed you.' }, 400);
+  }
+
+  const record = await env.SESSIONS.get(`authcode:${email}`, 'json');
+  if (!record) return json({ error: 'That code has expired. Request a new one.' }, 400);
+
+  if (record.attempts >= MAX_CODE_ATTEMPTS) {
+    await env.SESSIONS.delete(`authcode:${email}`);
+    return json({ error: 'Too many tries. Request a new code.' }, 429);
+  }
+
+  if (code !== record.code) {
+    record.attempts += 1;
+    await env.SESSIONS.put(`authcode:${email}`, JSON.stringify(record), { expirationTtl: CODE_TTL_SECONDS });
+    return json({ error: 'That code isn’t right. Try again.' }, 401);
+  }
+
+  // Correct: burn the code so it can't be reused.
+  await env.SESSIONS.delete(`authcode:${email}`);
+
+  // Find or create the member. Passwordless rows carry an empty password_hash.
+  const row = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first();
+  let userId;
+  if (row) {
+    userId = row.id;
+  } else {
+    userId = uuid();
+    await env.DB.prepare(
+      'INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)'
+    ).bind(userId, email, '').run();
+  }
+
+  // Apply any pre-purchased entitlement now that we have a user id.
+  await claimPendingEntitlement(env, userId, email);
+
+  const token = await createSession(env, userId);
+
+  // Unified login: also open the admin panel when this email is an admin.
   let adminToken = null;
   try {
     const adminRow = await env.DB.prepare(
       'SELECT id FROM admin_users WHERE email = ?'
     ).bind(email).first();
-    if (adminRow) {
-      adminToken = await mintAdminSession(env, adminRow.id);
-    }
+    if (adminRow) adminToken = await mintAdminSession(env, adminRow.id);
   } catch {}
 
   return json({ ok: true, ...(adminToken ? { admin_token: adminToken } : {}) }, 200, { 'Set-Cookie': sessionCookie(token) });
+}
+
+async function sendCodeEmail(env, email, code) {
+  if (!env.RESEND_API_KEY) {
+    console.error('RESEND_API_KEY missing - cannot email login code to', email);
+    return;
+  }
+  const html = `<div style="font-family: Lato, Helvetica, Arial, sans-serif; color: #161616; max-width: 480px; margin: 0 auto; padding: 24px;">
+<p style="font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:#AF493B;font-weight:700;margin:0 0 16px;">The Next Level Brand Experience</p>
+<h1 style="font-family: 'Times New Roman', Times, serif; font-weight: 400; font-size: 26px; margin: 0 0 12px;">Your sign-in code</h1>
+<p style="font-size:15px;line-height:1.6;margin:0 0 20px;color:#3A3A3A;">Enter this code to sign in. It expires in 15 minutes.</p>
+<p style="font-family:'Times New Roman',Times,serif;font-size:40px;letter-spacing:0.18em;font-weight:400;margin:0 0 24px;color:#161616;">${code}</p>
+<p style="font-size:13px;color:#6B6660;line-height:1.6;margin:0;">If you didn't ask to sign in, you can ignore this email.<br>Lisa</p>
+</div>`;
+  const text = `Your sign-in code is ${code}. It expires in 15 minutes. If you didn't ask to sign in, ignore this email.`;
+  try {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + env.RESEND_API_KEY,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'The Next Level Brand Experience <hello@email.lilobrandstudio.com>',
+        to: [email],
+        reply_to: 'lisa@photolilo.com',
+        subject: `Your sign-in code: ${code}`,
+        html,
+        text,
+      }),
+    });
+  } catch (err) {
+    console.error('Login code email failed for', email, err.message);
+  }
 }
 
 async function mintAdminSession(env, adminId) {
   const bytes = new Uint8Array(32);
   crypto.getRandomValues(bytes);
   const token = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
   await env.DB.prepare(
     'INSERT INTO admin_sessions (admin_id, token, expires_at) VALUES (?, ?, ?)'
   ).bind(adminId, token, expiresAt).run();

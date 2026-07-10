@@ -91,29 +91,58 @@
   // ============================================================
   // 1. Auth forms (sign-in, sign-up)
   // ============================================================
-  $$('form[data-auth]').forEach(form => {
+  // Passwordless email-code login. Two steps in one form: enter email (server
+  // emails a 6-digit code), then enter the code to open a 30-day session.
+  $$('form[data-auth-code]').forEach(form => {
+    const emailStep = form.querySelector('[data-step="email"]');
+    const codeStep  = form.querySelector('[data-step="code"]');
+    const errEl     = form.querySelector('[data-auth-error]');
+    const echo      = form.querySelector('[data-email-echo]');
+    const restart   = form.querySelector('[data-code-restart]');
+    let stage = 'email';
+
+    const showErr = (msg) => { if (errEl) { errEl.textContent = msg; errEl.hidden = false; } };
+    const clearErr = () => { if (errEl) errEl.hidden = true; };
+
+    if (restart) restart.addEventListener('click', () => {
+      stage = 'email';
+      if (codeStep) codeStep.hidden = true;
+      if (emailStep) emailStep.hidden = false;
+      clearErr();
+    });
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const mode = form.dataset.auth; // 'signin' | 'signup'
+      clearErr();
       const email = form.email.value.trim().toLowerCase();
-      const password = form.password.value;
-      const submitBtn = form.querySelector('button[type="submit"]');
-      setBusy(submitBtn, true, mode === 'signin' ? 'Signing in…' : 'Creating account…');
+
+      if (stage === 'email') {
+        const btn = emailStep.querySelector('button[type="submit"]');
+        if (!email) { showErr('Enter your email.'); return; }
+        setBusy(btn, true, 'Sending…');
+        const { ok, data } = await postJSON('/api/auth/request-code', { email });
+        setBusy(btn, false);
+        if (!ok) { showErr((data && data.error) || 'Could not send a code. Please try again.'); return; }
+        if (echo) echo.textContent = email;
+        emailStep.hidden = true;
+        codeStep.hidden = false;
+        stage = 'code';
+        if (form.code) form.code.focus();
+        return;
+      }
+
+      // stage === 'code'
+      const btn = codeStep.querySelector('button[type="submit"]');
+      const code = (form.code.value || '').trim();
+      if (!/^\d{6}$/.test(code)) { showErr('Enter the 6-digit code.'); return; }
+      setBusy(btn, true, 'Signing in…');
       try {
-        const path = mode === 'signin' ? '/api/auth/signin' : '/api/auth/signup';
-        const { ok, data } = await postJSON(path, { email, password });
-        if (!ok) {
-          showError(form, (data && data.error) || 'Something went wrong. Please try again.');
-          setBusy(submitBtn, false);
-          return;
-        }
-        // Unified login: server returns admin_token when the user is also an admin.
-        // Stash it so /admin opens without a second login.
+        const { ok, data } = await postJSON('/api/auth/verify-code', { email, code });
+        if (!ok) { setBusy(btn, false); showErr((data && data.error) || 'That code did not work.'); return; }
+        // Unified login: stash admin_token so /admin opens without a second login.
         if (data && data.admin_token) {
           try { localStorage.setItem('admin_token', data.admin_token); } catch {}
         }
-        // Decide where to send them next. The server cookie is now set.
-        // Hit /api/auth/me, then route based on user state.
         const r = await fetch('/api/auth/me', { credentials: 'same-origin' });
         const j = await r.json().catch(() => ({}));
         const u = j.user;
@@ -123,8 +152,8 @@
         if (!u.welcomed)   { window.location.href = '/lisa'; return; }
         window.location.href = '/dashboard';
       } catch (err) {
-        showError(form, 'Network error. Please try again.');
-        setBusy(submitBtn, false);
+        setBusy(btn, false);
+        showErr('Network error. Please try again.');
       }
     });
   });

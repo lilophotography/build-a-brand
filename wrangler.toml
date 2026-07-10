@@ -2,6 +2,7 @@ name = "build-a-brand-app"
 main = "src/index.js"
 compatibility_date = "2025-01-15"
 compatibility_flags = ["nodejs_compat"]
+workers_dev = true
 
 # Static assets (CSS, client JS, images, favicon)
 [assets]
@@ -24,11 +25,10 @@ id = "0fa2cc146d6b4f9f9806d7e3ee481e52"
 [browser]
 binding = "BROWSER"
 
-# Custom domain attaches after Lisa updates GoDaddy nameservers and the
-# photolilo.com zone moves from "pending" to "active" on her CF account.
-# [[routes]]
-# pattern = "brand.photolilo.com"
-# custom_domain = true
+# Custom domain on the lilobrandstudio.com Cloudflare zone.
+[[routes]]
+pattern = "next-level-brand.lilobrandstudio.com"
+custom_domain = true
 
 # Daily cron, 15:00 UTC (9am MDT / 8am MST): Office Hours same-day reminder.
 [triggers]
@@ -37,7 +37,7 @@ crons = ["0 15 * * *"]
 [vars]
 APP_NAME = "Build a Brand"
 APP_BRAND = "LiLo Photography & Branding"
-APP_URL = "https://brand.photolilo.com"
+APP_URL = "https://next-level-brand.lilobrandstudio.com"
 # Stripe price IDs (live)
 STRIPE_PRICE_COURSE = "price_1TRbrdILMmwtGFlFcNoHpguJ"
 STRIPE_PRICE_COURSE_COACHING = "price_1TRbrgILMmwtGFlF9sSCACmX"

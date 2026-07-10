@@ -182,7 +182,7 @@ FLOW:
 
 4. SUMMARY: Create a visibility strategy summary including: chosen platforms and why, long-form content type, and a photo checklist organized by the 3 P's. Tell them to copy and save it.
 
-IMPORTANT: Do NOT let them get into content creation, as that is a separate session. End the chat by reminding them their Brand Guide is now complete and they should book a call with Lisa to bring it all to life.`,
+IMPORTANT: Do NOT let them get into content creation, as that is a separate session. End the chat by reminding them their Brand Guide is now complete, and that they can bring whatever they are working on to monthly Office Hours with Lisa.`,
 };
 
 const TOOL_META = {

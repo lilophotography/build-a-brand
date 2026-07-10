@@ -57,7 +57,7 @@ First-login flow: `/lisa` → `/onboarding` → `/dashboard`
 - `GET /coaching` — tier-aware: $500=book, $250=upsell
 
 ### API
-- `POST /api/auth/signup`, `signin`, `signout`; `GET /api/auth/me`
+- `POST /api/auth/request-code` (emails a 6-digit code), `verify-code` (opens a 30-day session), `signout`; `GET /api/auth/me`. Passwordless: no passwords stored or checked.
 - `POST /api/chat` (streamed text)
 - `GET /api/progress`, `POST /api/progress`
 - `POST /api/profile`

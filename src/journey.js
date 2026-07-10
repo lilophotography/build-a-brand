@@ -1368,7 +1368,7 @@ export const VISIBILITY_STEPS = [
     kind: 'mirror',
     section: 'Visibility module',
     title: 'Your Visibility plan: locked in.',
-    subtitle: 'Your Brand Guide is complete. This is the moment to book your call with Lisa and bring it all to life.',
+    subtitle: 'Your Brand Guide is complete. Bring it to life, and bring your questions to monthly Office Hours with Lisa.',
     estimatedMinutes: 2,
     mirror: { kind: 'visibility-summary' },
   },

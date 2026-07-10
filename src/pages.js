@@ -177,23 +177,37 @@ export function renderLanding(user) {
 // PUBLIC: Sign in / Sign up
 // ============================================================
 
-export function renderSignIn({ error, email = '' } = {}) {
+// Shared two-step passwordless form: email -> 6-digit code. app.js wires the
+// [data-auth-code] form, toggling the two steps and calling request/verify.
+function codeAuthForm({ email = '', readonly = false } = {}) {
+  return `
+    <form class="auth__form" data-auth-code novalidate>
+      <div data-step="email">
+        <label>Email
+          <input type="email" name="email" autocomplete="email" required value="${esc(email)}" ${readonly ? 'readonly' : ''}>
+        </label>
+        <button type="submit" class="btn btn--primary btn--full">Email me a code</button>
+      </div>
+      <div data-step="code" hidden>
+        <p class="auth__hint">We sent a 6-digit code to <strong data-email-echo>${esc(email)}</strong>. It's good for 15 minutes.</p>
+        <label>Code
+          <input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" placeholder="6-digit code">
+        </label>
+        <button type="submit" class="btn btn--primary btn--full">Sign in</button>
+        <button type="button" class="auth__linkbtn" data-code-restart>Use a different email</button>
+      </div>
+      <p class="auth__error" data-auth-error hidden></p>
+    </form>`;
+}
+
+export function renderSignIn({ email = '' } = {}) {
   const main = `
 <section class="auth">
   <div class="auth__panel">
     <p class="eyebrow">Welcome back</p>
     <h1 class="auth__title">Sign in</h1>
-    <p class="auth__lede">Pick up where you left off.</p>
-    ${error ? `<p class="auth__error">${esc(error)}</p>` : ''}
-    <form class="auth__form" data-auth="signin">
-      <label>Email
-        <input type="email" name="email" autocomplete="email" required value="${esc(email)}">
-      </label>
-      <label>Password
-        <input type="password" name="password" autocomplete="current-password" required minlength="8">
-      </label>
-      <button type="submit" class="btn btn--primary btn--full">Sign in</button>
-    </form>
+    <p class="auth__lede">Enter your email and we'll send you a code. No password to remember.</p>
+    ${codeAuthForm({ email })}
     <p class="auth__alt">New here? <a href="/#pricing">Get started</a></p>
   </div>
 </section>
@@ -201,53 +215,35 @@ export function renderSignIn({ error, email = '' } = {}) {
   return htmlResponse(page({ title: 'Sign in', nav: publicNav(null), main, bodyClass: 'page-auth' }));
 }
 
-export function renderSignUp({ error, email = '', preheading = null, lede = null } = {}) {
+export function renderSignUp({ email = '', preheading = null, lede = null } = {}) {
   const main = `
 <section class="auth">
   <div class="auth__panel">
     ${preheading ? `<p class="eyebrow">${esc(preheading)}</p>` : `<p class="eyebrow">Get started</p>`}
-    <h1 class="auth__title">${preheading ? `You're in.` : `Create your account`}</h1>
-    <p class="auth__lede">${esc(lede || 'It only takes a moment. Use the email you’d like your Brand Guide tied to.')}</p>
-    ${error ? `<p class="auth__error">${esc(error)}</p>` : ''}
-    <form class="auth__form" data-auth="signup">
-      <label>Email
-        <input type="email" name="email" autocomplete="email" required value="${esc(email)}">
-      </label>
-      <label>Password
-        <input type="password" name="password" autocomplete="new-password" required minlength="8" placeholder="at least 8 characters">
-      </label>
-      <button type="submit" class="btn btn--primary btn--full">Create account</button>
-    </form>
-    <p class="auth__alt">Already have an account? <a href="/sign-in">Sign in</a></p>
+    <h1 class="auth__title">${preheading ? `You're in.` : `Sign in`}</h1>
+    <p class="auth__lede">${esc(lede || 'Enter your email and we\'ll send you a code. No password to remember.')}</p>
+    ${codeAuthForm({ email })}
+    <p class="auth__alt">Already started? <a href="/sign-in">Sign in</a></p>
   </div>
 </section>
 `;
-  return htmlResponse(page({ title: 'Create your account', nav: publicNav(null), main, bodyClass: 'page-auth' }));
+  return htmlResponse(page({ title: 'Sign in', nav: publicNav(null), main, bodyClass: 'page-auth' }));
 }
 
 // ============================================================
 // POST-STRIPE: Welcome (verifies the just-completed session)
 // ============================================================
 
-export function renderWelcomeAfterStripe({ email, error } = {}) {
+export function renderWelcomeAfterStripe({ email } = {}) {
   // No nav - this is a focused conversion moment.
   const main = `
 <section class="auth">
   <div class="auth__panel">
-    <div class="auth__success-pill">✓ Payment confirmed</div>
+    <div class="auth__success-pill">Payment confirmed</div>
     <h1 class="auth__title">You're in. Let's build your brand.</h1>
-    <p class="auth__lede">Create your account so your work saves to your Brand Guide. Use the same email you paid with.</p>
-    ${error ? `<p class="auth__error">${esc(error)}</p>` : ''}
-    <form class="auth__form" data-auth="signup">
-      <label>Email
-        <input type="email" name="email" autocomplete="email" required value="${esc(email || '')}" ${email ? 'readonly' : ''}>
-      </label>
-      <label>Password
-        <input type="password" name="password" autocomplete="new-password" required minlength="8" placeholder="at least 8 characters">
-      </label>
-      <button type="submit" class="btn btn--primary btn--full">Create account &amp; continue</button>
-    </form>
-    <p class="auth__alt">Already have an account with us? <a href="/sign-in">Sign in</a>. Your purchase will be linked automatically.</p>
+    <p class="auth__lede">Enter your email and we'll send a code to log you in. Use the same email you paid with, and your work saves to your Brand Guide.</p>
+    ${codeAuthForm({ email: email || '', readonly: !!email })}
+    <p class="auth__alt">Trouble? <a href="/sign-in">Sign in here</a>. Your purchase links automatically.</p>
   </div>
 </section>
 `;
@@ -581,45 +577,6 @@ function officeHoursCard(config) {
     <h3 class="rail-card__title">Monthly Office Hours with Lisa</h3>
     <p class="rail-card__desc">${today ? 'Today: ' : 'Next session: '}${esc(when)}.</p>
     <a href="/coaching" class="btn btn--gold-ghost btn--sm">${today ? 'Join today →' : 'See details →'}</a>
-  </aside>`;
-}
-
-// Legacy: kept for reference; no longer rendered on the dashboard.
-function coachingCard(user, completedCount) {
-  // $500 buyers and upsell-claimants. Unlocks at 3+ V's done.
-  const unlocked = completedCount >= 3 && !user.call_booked_at;
-  const booked = !!user.call_booked_at;
-  return `<aside class="rail-card rail-card--gold ${unlocked ? 'is-unlocked' : ''}">
-    <p class="rail-card__eyebrow">Your strategy call</p>
-    ${booked
-      ? `<h3 class="rail-card__title">You're booked.</h3>
-         <p class="rail-card__desc">Lisa will see you at your scheduled time.</p>
-         <a href="/coaching" class="btn btn--gold-ghost btn--sm">View details</a>`
-      : unlocked
-      ? `<h3 class="rail-card__title">Ready when you are.</h3>
-         <p class="rail-card__desc">You've built a foundation. Let's bring it to life together.</p>
-         <a href="/coaching" class="btn btn--gold btn--sm">Book your call →</a>`
-      : `<h3 class="rail-card__title">Unlocks at 3 of 5.</h3>
-         <p class="rail-card__desc">Your call with Lisa is included. We'll open it once your foundation is solid.</p>
-         <p class="rail-card__lock">${3 - completedCount} more session${(3 - completedCount) === 1 ? '' : 's'} to unlock</p>`}
-  </aside>`;
-}
-
-function upsellCard(completedCount) {
-  // $250 buyers - offer to add the call for $300.
-  if (completedCount < 3) {
-    return `<aside class="rail-card">
-      <p class="rail-card__eyebrow">Want to go deeper later?</p>
-      <h3 class="rail-card__title">A 1:1 with Lisa</h3>
-      <p class="rail-card__desc">Once you've built your foundation, you can add a private strategy call to put it into motion.</p>
-      <p class="rail-card__lock">Available after 3 sessions</p>
-    </aside>`;
-  }
-  return `<aside class="rail-card rail-card--terracotta">
-    <p class="rail-card__eyebrow">Take it further</p>
-    <h3 class="rail-card__title">Add a strategy call with Lisa</h3>
-    <p class="rail-card__desc">A private 1-hour 1:1 to pressure-test your brand and map your next moves. <strong>$300 add-on.</strong></p>
-    <button class="btn btn--primary btn--sm" data-checkout="upsell_call">Add a call →</button>
   </aside>`;
 }
 
@@ -1033,7 +990,6 @@ export function renderCoaching(user, config) {
   const cadence = cadenceLabel(copy);
   const link = copy.office_hours_link || '';
   const desc = copy.office_hours_desc || "Bring your brand, your questions, and whatever you're stuck on. Live, unscripted, and included with your experience.";
-  const hasCallCredit = user.tier === 'coaching' || user.has_call_credit;
 
   const main = `
 <section class="coaching">
@@ -1049,23 +1005,6 @@ export function renderCoaching(user, config) {
       ? `<a class="btn btn--primary" href="${esc(link)}" target="_blank" rel="noopener">Join the session</a>`
       : `<p class="coaching__note">The join link lands in your inbox before each session. Questions in the meantime? <a href="mailto:lisa@photolilo.com">Email Lisa</a>.</p>`}
   </div>
-
-  ${hasCallCredit
-    ? `<div class="coaching__panel">
-    <h2 class="coaching__panel-title">Your private strategy call</h2>
-    <p>You have a 1:1 call with Lisa${user.call_booked_at ? ', and it is booked. She will see you at your scheduled time.' : ' waiting to be scheduled.'}</p>
-    ${user.call_booked_at ? '' : `<p>Send a note to <a href="mailto:lisa@photolilo.com">lisa@photolilo.com</a> with two or three time windows that work for you in the next two weeks.</p>
-    <a class="btn btn--primary" href="mailto:lisa@photolilo.com?subject=Book%20my%20strategy%20call">Email Lisa to book</a>`}
-  </div>`
-    : `<div class="coaching__panel coaching__panel--terracotta">
-    <p class="coaching__panel-tier">Want it 1:1? Add a private Strategy Call · $300</p>
-    <ul class="coaching__list">
-      <li>1-hour private 1:1 with Lisa</li>
-      <li>Brand review and feedback</li>
-      <li>Personalized action plan</li>
-    </ul>
-    <button class="btn btn--gold" data-checkout="upsell_call">Add a strategy call →</button>
-  </div>`}
 </section>
 `;
   return htmlResponse(page({

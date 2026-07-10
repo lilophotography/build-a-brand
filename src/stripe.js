@@ -2,10 +2,9 @@
 //
 // Pricing model (July 2026): ONE price, $297, for The Next Level Brand
 // Experience. Monthly Office Hours with Lisa are included for every member.
-// The optional private strategy call remains as an add-on.
+// There are no add-ons.
 //
 //   tier=course        -> $297 The Experience (tier key kept for data continuity)
-//   tier=upsell_call   -> $300 add-on private call
 //
 // The Experience price is resolved LIVE from Stripe: we look up the product
 // behind STRIPE_PRICE_COURSE and charge its current default_price. Lisa can
@@ -13,8 +12,7 @@
 //
 // On checkout.session.completed:
 //   - course        -> users.has_access=1, tier='course'
-//   - coaching      -> legacy path kept for old $500 buyers' webhook retries
-//   - upsell_call   -> users.has_call_credit=1   (does NOT change tier)
+//   - coaching/upsell_call -> legacy webhook paths kept only for old buyers' retries
 
 const STRIPE_BASE = 'https://api.stripe.com/v1';
 
@@ -67,15 +65,10 @@ export async function handleStripe(request, env, url, user) {
 async function checkout(request, env, user) {
   const { tier } = await request.json().catch(() => ({ tier: 'course' }));
 
-  let priceId, label;
-  if (tier === 'upsell_call') {
-    if (!user) return json({ error: 'Sign in to add a strategy call.' }, 401);
-    priceId = env.STRIPE_PRICE_UPSELL_CALL;
-    label = 'Add a Strategy Call';
-  } else {
-    priceId = await resolveExperiencePrice(env);
-    label = 'The Next Level Brand Experience';
-  }
+  // Single-price model: every checkout buys The Experience. The tier param is
+  // ignored for pricing and kept only so old clients POSTing it don't error.
+  const priceId = await resolveExperiencePrice(env);
+  const label = 'The Next Level Brand Experience';
 
   if (!priceId) return json({ error: 'Pricing not configured' }, 500);
 

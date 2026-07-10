@@ -192,14 +192,21 @@
 <body>
 
 
-<!-- Login Screen -->
+<!-- Login Screen (passwordless: email -> 6-digit code) -->
 <div id="login-screen" class="login-wrap">
   <div class="login-box">
     <h1>Admin Login</h1>
     <div id="login-error" class="login-error" style="display:none"></div>
-    <input type="email" id="login-email" placeholder="Email" autocomplete="email">
-    <input type="password" id="login-password" placeholder="Password" autocomplete="current-password">
-    <button onclick="doLogin()">Sign In</button>
+    <div id="login-email-step">
+      <input type="email" id="login-email" placeholder="Email" autocomplete="email">
+      <button onclick="requestAdminCode()">Email me a code</button>
+    </div>
+    <div id="login-code-step" style="display:none">
+      <p style="font-size:.85rem;color:var(--text-light);margin-bottom:.75rem">Enter the 6-digit code we emailed you.</p>
+      <input type="text" id="login-code" placeholder="6-digit code" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+      <button onclick="verifyAdminCode()">Sign In</button>
+      <button onclick="resetAdminLogin()" style="background:none;color:var(--text-light);margin-top:.5rem">Use a different email</button>
+    </div>
   </div>
 </div>
 
@@ -434,25 +441,53 @@ async function api(path, opts = {}) {
   return res.json();
 }
 
-async function doLogin() {
-  const email = document.getElementById('login-email').value;
-  const password = document.getElementById('login-password').value;
+// Passwordless login. Reuses the same email-code endpoints as the main app;
+// verify-code returns an admin_token when the email is an admin account.
+async function requestAdminCode() {
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+  if (!email) { errEl.textContent = 'Enter your email'; errEl.style.display = 'block'; return; }
+
+  const res = await fetch('/api/auth/request-code', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) { errEl.textContent = data.error || 'Could not send code'; errEl.style.display = 'block'; return; }
+
+  document.getElementById('login-email-step').style.display = 'none';
+  document.getElementById('login-code-step').style.display = 'block';
+  document.getElementById('login-code').focus();
+}
+
+async function verifyAdminCode() {
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const code = document.getElementById('login-code').value.trim();
   const errEl = document.getElementById('login-error');
   errEl.style.display = 'none';
 
-  const data = await api('/auth/login', {
+  const res = await fetch('/api/auth/verify-code', {
     method: 'POST',
-    body: JSON.stringify({ email, password }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, code }),
   });
-
-  if (!data || data.error) {
-    errEl.textContent = data?.error || 'Login failed';
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.admin_token) {
+    errEl.textContent = data.error || 'That code did not work, or this email is not an admin.';
     errEl.style.display = 'block';
     return;
   }
 
-  setToken(data.token);
+  setToken(data.admin_token);
   startApp();
+}
+
+function resetAdminLogin() {
+  document.getElementById('login-code-step').style.display = 'none';
+  document.getElementById('login-email-step').style.display = 'block';
+  document.getElementById('login-error').style.display = 'none';
 }
 
 function doLogout() {
